@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import type { AuditResult } from "@/types";
 import { AuditResults } from "./AuditResults";
 import { ProgressIndicator } from "./ProgressIndicator";
@@ -14,6 +15,7 @@ const STAGES = [
 ];
 
 export function AuditForm() {
+  const { data: session } = useSession();
   const [keyword, setKeyword]   = useState("");
   const [url, setUrl]           = useState("");
   const [location, setLocation] = useState("Toronto, Canada");
@@ -45,7 +47,12 @@ export function AuditForm() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${apiUrl}/workflow/seo-audit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.accessToken
+            ? { Authorization: `Bearer ${session.accessToken}` }
+            : {}),
+        },
         body: JSON.stringify({ keyword, target_url: url, location }),
       });
 
@@ -76,10 +83,21 @@ export function AuditForm() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-slate-900">Local SEO Audit</h1>
             <p className="text-slate-500 text-sm">3 AI agents — keyword research, on-page SEO, and local strategy</p>
           </div>
+          {session?.user && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-slate-500 hidden sm:block">{session.user.email}</span>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="text-sm text-slate-600 hover:text-slate-900 border border-slate-300 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
