@@ -2,6 +2,8 @@ export interface AuditRequest {
   keyword: string;
   target_url: string;
   location: string;
+  business_name?: string;
+  business_type?: string;
 }
 
 // ── Keyword Research ────────────────────────────────────────────────
@@ -104,6 +106,7 @@ export interface LocalContentStrategy {
 }
 
 export interface LocalRecommendations {
+  local_seo_score?: number;
   gbp_optimization: GbpOptimization;
   citations: Citation[];
   link_opportunities: LinkOpportunity[];
@@ -150,9 +153,12 @@ export interface LocalSeoAgent {
 
 export interface AuditResult {
   audit_id: string;
+  business_name?: string;
+  business_type?: string;
   keyword: string;
   target_url: string;
   location: string;
+  local_seo_score?: number;
   status: string;
   agents_executed: number;
   execution_time_seconds: number;

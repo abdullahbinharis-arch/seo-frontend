@@ -40,6 +40,15 @@ export function AuditResults({ data }: { data: AuditResult }) {
         </div>
       </div>
 
+      {/* Local SEO Score */}
+      {typeof data.local_seo_score === "number" && (
+        <LocalSeoScoreCard
+          score={data.local_seo_score}
+          businessName={data.business_name}
+          businessType={data.business_type}
+        />
+      )}
+
       {/* Quick Wins */}
       {data.summary?.quick_wins?.length > 0 && (
         <Card title="Quick Wins" icon="⚡" badgeColor="blue">
@@ -589,3 +598,65 @@ function getKw(d: any) { return d; }
 function getOp(d: any) { return d; }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getLocal(d: any) { return d; }
+
+// ── Local SEO Score card ─────────────────────────────────────────────
+
+function LocalSeoScoreCard({
+  score,
+  businessName,
+  businessType,
+}: {
+  score: number;
+  businessName?: string;
+  businessType?: string;
+}) {
+  const clamped = Math.max(0, Math.min(100, score));
+  const isGood   = clamped >= 70;
+  const isOk     = clamped >= 40;
+
+  const colorBar   = isGood ? "bg-green-500"  : isOk ? "bg-yellow-400"  : "bg-red-500";
+  const colorScore = isGood ? "text-green-600" : isOk ? "text-yellow-500" : "text-red-600";
+  const colorBg    = isGood ? "bg-green-50 border-green-200" : isOk ? "bg-yellow-50 border-yellow-200" : "bg-red-50 border-red-200";
+  const label      = isGood ? "Good"          : isOk ? "Needs Work"     : "Poor";
+  const hint       = isGood
+    ? "Your local presence is strong. Focus on maintaining and growing from here."
+    : isOk
+    ? "You have a foundation — targeted improvements will move you into the Map Pack."
+    : "Significant local SEO gaps found. Follow the recommendations below to improve quickly.";
+
+  return (
+    <div className={`rounded-2xl border p-6 ${colorBg}`}>
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Local SEO Score</h2>
+          {(businessName || businessType) && (
+            <p className="text-sm text-slate-500 mt-0.5">
+              {[businessName, businessType && `(${businessType})`].filter(Boolean).join(" ")}
+            </p>
+          )}
+        </div>
+        <div className="text-right shrink-0">
+          <span className={`text-6xl font-black leading-none ${colorScore}`}>{clamped}</span>
+          <span className="text-slate-400 text-lg font-semibold">/100</span>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="bg-white/60 rounded-full h-3 mb-3 overflow-hidden">
+        <div
+          className={`h-3 rounded-full ${colorBar} transition-all duration-500`}
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+
+      {/* Scale labels */}
+      <div className="flex justify-between text-xs text-slate-400 mb-4">
+        <span>0 — Poor</span>
+        <span className={`font-semibold ${colorScore}`}>{label}</span>
+        <span>100 — Excellent</span>
+      </div>
+
+      <p className="text-sm text-slate-600">{hint}</p>
+    </div>
+  );
+}

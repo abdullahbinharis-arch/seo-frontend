@@ -7,6 +7,6 @@ export const config = {
   //  - Next.js internals (_next/static, _next/image)
   //  - favicon
   matcher: [
-    "/((?!login|register|api/auth|_next/static|_next/image|favicon.ico).*)",
+    "/((?!login|register|api/auth|_next/static|_next/image|favicon.ico).+)",
   ],
 };
