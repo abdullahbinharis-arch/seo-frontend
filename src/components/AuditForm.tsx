@@ -27,6 +27,7 @@ export function AuditForm() {
   const { data: session } = useSession();
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
+  const [keyword, setKeyword]           = useState("");
   const [url, setUrl]                   = useState("");
   const [location, setLocation]         = useState("Toronto, Canada");
   const [loading, setLoading]           = useState(false);
@@ -34,6 +35,12 @@ export function AuditForm() {
   const [progress, setProgress]         = useState(0);
   const [error, setError]               = useState("");
   const [result, setResult]             = useState<AuditResult | null>(null);
+
+  function handleBusinessTypeChange(val: string) {
+    setBusinessType(val);
+    // Auto-fill keyword only if user hasn't manually edited it
+    setKeyword(getKeyword(val));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +61,7 @@ export function AuditForm() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const keyword = getKeyword(businessType);
+      const finalKeyword = keyword.trim() || getKeyword(businessType);
 
       const res = await fetch(`${apiUrl}/workflow/seo-audit`, {
         method: "POST",
@@ -65,7 +72,7 @@ export function AuditForm() {
             : {}),
         },
         body: JSON.stringify({
-          keyword,
+          keyword: finalKeyword,
           target_url: url,
           location,
           business_name: businessName,
@@ -151,14 +158,28 @@ export function AuditForm() {
                   id="businessType"
                   type="text"
                   value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  placeholder="e.g. Dentist, Plumber, Salon…"
+                  onChange={(e) => handleBusinessTypeChange(e.target.value)}
+                  placeholder="e.g. Dental Clinic, Kitchen Remodeler, General Contractor"
                   required
                   disabled={loading}
                   className={inputClass}
                 />
               </Field>
             </div>
+
+            <Field label="Search Keyword" htmlFor="keyword">
+              <input
+                id="keyword"
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="e.g. kitchen renovation near me, general contractor Toronto"
+                required
+                disabled={loading}
+                className={inputClass}
+              />
+              <p className="text-xs text-zinc-500 mt-1">How your customers search for you on Google. Edit to make it more specific.</p>
+            </Field>
 
             <div className="grid md:grid-cols-2 gap-5">
               <Field label="Website URL" htmlFor="url">
