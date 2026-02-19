@@ -23,7 +23,7 @@ const STAGES = [
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm";
 
-export function AuditForm() {
+export function AuditForm({ onComplete }: { onComplete?: (result: AuditResult) => void } = {}) {
   const { data: session } = useSession();
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
@@ -88,6 +88,7 @@ export function AuditForm() {
       const data: AuditResult = await res.json();
       setProgress(100);
       setResult(data);
+      onComplete?.(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

@@ -1,5 +1,6 @@
-import { AuditForm } from "@/components/AuditForm";
+import { redirect } from "next/navigation";
 
-export default function AuditPage() {
-  return <AuditForm />;
+// Legacy /audit route — redirect to the dashboard audit page
+export default function LegacyAuditPage() {
+  redirect("/dashboard/audit");
 }

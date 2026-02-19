@@ -45,13 +45,13 @@ export default function RegisterPage() {
     if (result?.error) {
       setError("Account created but sign-in failed. Please go to the login page.");
     } else {
-      router.push("/audit");
+      router.push("/dashboard/audit");
       router.refresh();
     }
   }
 
   async function handleGoogle() {
-    await signIn("google", { callbackUrl: "/audit" });
+    await signIn("google", { callbackUrl: "/dashboard/audit" });
   }
 
   return (

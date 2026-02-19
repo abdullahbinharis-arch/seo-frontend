@@ -4,13 +4,19 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import type {
   AuditResult,
+  CrawledPage,
+  SiteAggregate,
   HighIntentKeyword,
   Citation,
   LinkOpportunity,
   InternalLink,
+  LocalPackEntry,
+  GbpCheckItem,
+  CitationRecommendation,
+  LinkBuildingOpportunity,
 } from "@/types";
 
-// ── Root results component ───────────────────────────────────────────
+// ── Root results component ────────────────────────────────────────────
 
 export function AuditResults({ data }: { data: AuditResult }) {
   const [showJson, setShowJson] = useState(false);
@@ -44,9 +50,16 @@ export function AuditResults({ data }: { data: AuditResult }) {
     }
   }
 
-  const kw    = data.agents?.keyword_research?.recommendations;
-  const op    = data.agents?.on_page_seo?.recommendations;
-  const local = data.agents?.local_seo?.recommendations;
+  const kw       = data.agents?.keyword_research?.recommendations;
+  const op       = data.agents?.on_page_seo?.recommendations;
+  const local    = data.agents?.local_seo?.recommendations;
+  const rankData = data.agents?.rank_tracker;
+  const gbpData  = data.agents?.gbp_audit;
+  const citData  = data.agents?.citation_builder;
+  const blData   = data.agents?.backlink_analysis;
+  const lbData   = data.agents?.link_building;
+  const aiData   = data.agents?.ai_seo;
+  const rwData   = data.agents?.content_rewriter;
 
   return (
     <div className="space-y-6">
@@ -96,6 +109,17 @@ export function AuditResults({ data }: { data: AuditResult }) {
         />
       )}
 
+      {/* Site Crawl — only shown when domain mode was used */}
+      {data.site_aggregate && data.site_aggregate.pages_crawled > 0 && (
+        <SiteCrawlSection
+          aggregate={data.site_aggregate}
+          pages={data.pages_crawled ?? []}
+        />
+      )}
+
+      {/* Rank Tracker */}
+      {rankData && <RankTrackerSection data={rankData} />}
+
       {/* Quick Wins */}
       {data.summary?.quick_wins?.length > 0 && (
         <Card title="Quick Wins" icon="⚡" badgeColor="blue">
@@ -118,6 +142,24 @@ export function AuditResults({ data }: { data: AuditResult }) {
 
       {/* Local SEO */}
       {local && <LocalSection data={local} />}
+
+      {/* GBP Audit */}
+      {gbpData && <GbpAuditSection data={gbpData} />}
+
+      {/* Citation Builder */}
+      {citData && <CitationBuilderSection data={citData} />}
+
+      {/* Backlink Analysis */}
+      {blData && <BacklinkSection data={blData} />}
+
+      {/* Link Building */}
+      {lbData && <LinkBuildingSection data={lbData} />}
+
+      {/* AI SEO */}
+      {aiData && <AiSeoSection data={aiData} />}
+
+      {/* Content Rewriter */}
+      {rwData && <ContentRewriterSection data={rwData} />}
 
       {/* Raw JSON */}
       <div className="glass rounded-2xl overflow-hidden">
@@ -146,9 +188,940 @@ export function AuditResults({ data }: { data: AuditResult }) {
   );
 }
 
-// ── Keyword Research section ─────────────────────────────────────────
+// ── Site Crawl section ────────────────────────────────────────────────
 
-function KeywordSection({
+export function SiteCrawlSection({
+  aggregate,
+  pages,
+}: {
+  aggregate: SiteAggregate;
+  pages: CrawledPage[];
+}) {
+  const [showPages, setShowPages] = useState(false);
+
+  const stats = [
+    { label: "Pages crawled", value: aggregate.pages_crawled, color: "text-blue-400" },
+    { label: "Avg word count", value: aggregate.avg_word_count, color: "text-zinc-200" },
+    { label: "Thin pages", value: aggregate.thin_content_count, color: aggregate.thin_content_count > 0 ? "text-amber-400" : "text-emerald-400" },
+    { label: "Coverage score", value: `${aggregate.coverage_score}/100`, color: aggregate.coverage_score >= 80 ? "text-emerald-400" : aggregate.coverage_score >= 50 ? "text-amber-400" : "text-red-400" },
+  ];
+
+  return (
+    <Card title="Site-Wide Crawl" icon="🕷️" badgeColor="blue">
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
+            <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+            <div className="text-xs text-zinc-500 mt-0.5">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Missing meta bar */}
+      {aggregate.pages_crawled > 0 && (
+        <div className="space-y-2 mb-4">
+          {[
+            { label: "Missing title tags", count: aggregate.missing_title },
+            { label: "Missing meta descriptions", count: aggregate.missing_meta_description },
+            { label: "Missing H1s", count: aggregate.missing_h1 },
+          ].map(({ label, count }) => (
+            <div key={label} className="flex items-center gap-3">
+              <span className="text-xs text-zinc-400 w-44 shrink-0">{label}</span>
+              <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${count > 0 ? "bg-red-500" : "bg-emerald-500"}`}
+                  style={{ width: `${(count / aggregate.pages_crawled) * 100}%` }}
+                />
+              </div>
+              <span className={`text-xs font-medium w-8 text-right ${count > 0 ? "text-red-400" : "text-emerald-400"}`}>
+                {count}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Per-page breakdown toggle */}
+      {pages.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowPages((v) => !v)}
+            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+          >
+            {showPages ? "Hide" : "Show"} per-page breakdown ({pages.length} pages)
+            <svg className={`w-3 h-3 transition-transform ${showPages ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showPages && (
+            <div className="mt-3 space-y-2">
+              {pages.map((page, i) => (
+                <div key={i} className="bg-white/5 rounded-xl p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <a
+                      href={page.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:underline font-mono break-all"
+                    >
+                      {page.url}
+                    </a>
+                    <span className="text-xs text-zinc-500 shrink-0">{page.word_count} words</span>
+                  </div>
+                  {page.title && (
+                    <p className="text-xs text-zinc-300 mt-1 truncate">{page.title}</p>
+                  )}
+                  {page.issues.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {page.issues.map((issue, j) => (
+                        <span key={j} className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full">
+                          {issue}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {page.issues.length === 0 && (
+                    <span className="text-[10px] text-emerald-400 mt-1 block">No issues found</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+
+// ── Rank Tracker section ──────────────────────────────────────────────
+
+export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["agents"]["rank_tracker"]> }) {
+  const r = data.rankings;
+
+  function healthColor(h: string) {
+    if (h === "excellent") return "text-emerald-400";
+    if (h === "good") return "text-blue-400";
+    if (h === "improving") return "text-yellow-400";
+    if (h === "needs_work") return "text-orange-400";
+    return "text-zinc-500";
+  }
+
+  function rankLabel(rank: number | null, type: "organic" | "map") {
+    if (!rank) return type === "map" ? "Not in pack" : "Not in top 20";
+    return `#${rank}`;
+  }
+
+  return (
+    <Card title="Rankings" icon="📊" badge={`Live snapshot`} badgeColor="slate">
+      {/* Rank tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <RankTile
+          label="Organic Rank"
+          value={rankLabel(r.organic_rank, "organic")}
+          sub={r.organic_health.replace(/_/g, " ")}
+          color={healthColor(r.organic_health)}
+        />
+        <RankTile
+          label="Map Pack"
+          value={rankLabel(r.map_pack_rank, "map")}
+          sub={r.map_pack_health.replace(/_/g, " ")}
+          color={healthColor(r.map_pack_health)}
+        />
+        <RankTile
+          label="To Page 1"
+          value={r.positions_to_page_1 === 0 ? "✓ On P1" : `${r.positions_to_page_1} positions`}
+          sub={r.in_top_10 ? "already top 10" : "to close"}
+          color={r.in_top_10 ? "text-emerald-400" : "text-zinc-400"}
+        />
+        <RankTile
+          label="SERP Features"
+          value={data.serp_features.length.toString()}
+          sub={data.serp_features.join(", ") || "none detected"}
+          color="text-zinc-400"
+        />
+      </div>
+
+      {/* Local pack */}
+      {data.local_pack.length > 0 && (
+        <div className="mb-4">
+          <SectionHeading>Map Pack — Top 3</SectionHeading>
+          <div className="space-y-2">
+            {data.local_pack.map((e: LocalPackEntry) => (
+              <div key={e.rank} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                <span className="text-lg font-black text-zinc-500 w-5 shrink-0">#{e.rank}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{e.title}</p>
+                  <p className="text-xs text-zinc-500 truncate">{e.address}</p>
+                </div>
+                {e.rating && (
+                  <span className="text-xs text-amber-400 shrink-0">
+                    {e.rating}★ ({e.reviews?.toLocaleString()})
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top organic */}
+      {data.top_10_organic.length > 0 && (
+        <div>
+          <SectionHeading>Top Organic Competitors</SectionHeading>
+          <div className="space-y-1.5">
+            {data.top_10_organic.slice(0, 5).map((r) => (
+              <div key={r.rank} className="flex items-center gap-3 text-sm">
+                <span className="text-xs text-zinc-600 font-mono w-5 shrink-0">#{r.rank}</span>
+                <span className="text-zinc-300 truncate flex-1">{r.title}</span>
+                <span className="text-xs text-zinc-600 truncate max-w-[180px] hidden sm:block">{r.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function RankTile({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
+  return (
+    <div className="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
+      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className={`text-xl font-black ${color}`}>{value}</p>
+      <p className="text-xs text-zinc-600 mt-0.5 capitalize truncate">{sub}</p>
+    </div>
+  );
+}
+
+// ── GBP Audit section ─────────────────────────────────────────────────
+
+export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agents"]["gbp_audit"]> }) {
+  const a = data.analysis;
+  if (!a) return null;
+
+  const score = a.gbp_score ?? 0;
+  const scoreColor = score >= 70 ? "text-emerald-400" : score >= 40 ? "text-yellow-400" : "text-red-400";
+  const barColor   = score >= 70 ? "bg-emerald-500" : score >= 40 ? "bg-yellow-400"   : "bg-red-500";
+
+  const checkColors: Record<string, string> = {
+    pass:    "text-emerald-400",
+    warn:    "text-yellow-400",
+    fail:    "text-red-400",
+    unknown: "text-zinc-500",
+  };
+  const checkIcons: Record<string, string> = {
+    pass: "✓", warn: "⚠", fail: "✕", unknown: "?",
+  };
+
+  return (
+    <Card
+      title="GBP Audit"
+      icon="🗺️"
+      badge={a.map_pack_status?.in_pack ? `In pack #${a.map_pack_status.current_rank}` : "Not in pack"}
+      badgeColor={a.map_pack_status?.in_pack ? "green" : "amber"}
+    >
+      {/* Score bar */}
+      <div className="mb-6">
+        <div className="flex items-end justify-between mb-2">
+          <p className="text-sm text-zinc-400">GBP Optimisation Score</p>
+          <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-zinc-600">/100</span></span>
+        </div>
+        <div className="bg-white/10 rounded-full h-2 overflow-hidden">
+          <div className={`h-2 rounded-full ${barColor} transition-all duration-500`} style={{ width: `${score}%` }} />
+        </div>
+        {a.summary && (
+          <p className="text-xs text-zinc-500 mt-2">After fixes: <span className="text-zinc-300">{a.summary.score_after_fixes}/100</span> · Timeline: <span className="text-zinc-300">{a.summary.estimated_pack_entry_timeline}</span></p>
+        )}
+      </div>
+
+      {/* Completeness checklist */}
+      {a.completeness_audit && Object.keys(a.completeness_audit).length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Profile Completeness</SectionHeading>
+          <div className="grid md:grid-cols-2 gap-2">
+            {Object.entries(a.completeness_audit).map(([key, val]) => {
+              const item = val as GbpCheckItem;
+              return (
+                <div key={key} className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2.5 border border-white/5">
+                  <span className={`text-sm font-bold shrink-0 mt-0.5 ${checkColors[item.status] ?? "text-zinc-500"}`}>
+                    {checkIcons[item.status] ?? "?"}
+                  </span>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-300 capitalize">{key.replace(/_/g, " ")}</p>
+                    <p className="text-xs text-zinc-500">{item.note}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Priority actions */}
+      {a.priority_actions?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Priority Actions</SectionHeading>
+          <div className="space-y-3">
+            {a.priority_actions.map((action, i) => (
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <ImpactBadge impact={action.impact} />
+                  <EffortBadge effort={action.effort} />
+                  <p className="text-sm font-semibold text-white flex-1">{action.action}</p>
+                </div>
+                <p className="text-xs text-zinc-500 mb-1">{action.reason}</p>
+                {action.how_to && (
+                  <p className="text-xs text-[#6ee7b7]/70 border-l-2 border-[#6ee7b7]/30 pl-3">{action.how_to}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Review strategy */}
+      {a.review_strategy && (
+        <div className="mb-6">
+          <SectionHeading>Review Strategy</SectionHeading>
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+            <p className="text-sm text-emerald-300 mb-2">{a.review_strategy.recommended_target}</p>
+            {a.review_strategy.acquisition_tactics?.length > 0 && (
+              <ul className="space-y-1">
+                {a.review_strategy.acquisition_tactics.map((t: string, i: number) => (
+                  <li key={i} className="text-xs text-zinc-400 flex gap-2"><span className="text-[#6ee7b7]">→</span>{t}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Competitor insights */}
+      {a.competitor_insights && (
+        <div>
+          <SectionHeading>Competitor Insights</SectionHeading>
+          <div className="grid md:grid-cols-2 gap-3">
+            {a.competitor_insights.what_competitors_do_better?.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-2">They do better</p>
+                <ul className="space-y-1">
+                  {a.competitor_insights.what_competitors_do_better.map((s: string, i: number) => (
+                    <li key={i} className="text-xs text-zinc-400">· {s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {a.competitor_insights.gaps_to_exploit?.length > 0 && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wide mb-2">Gaps to exploit</p>
+                <ul className="space-y-1">
+                  {a.competitor_insights.gaps_to_exploit.map((s: string, i: number) => (
+                    <li key={i} className="text-xs text-zinc-400">· {s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Citation Builder section ───────────────────────────────────────────
+
+export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult["agents"]["citation_builder"]> }) {
+  const [showNap, setShowNap] = useState(false);
+  const plan = data.plan;
+  if (!plan) return null;
+
+  const recs = plan.recommendations ?? {};
+  const tier1 = recs.tier_1_critical ?? [];
+  const tier2 = recs.tier_2_important ?? [];
+  const tier3 = recs.tier_3_supplemental ?? [];
+  const summary = plan.summary;
+
+  return (
+    <Card
+      title="Citation Builder"
+      icon="📋"
+      badge={`${summary?.total_recommended ?? tier1.length + tier2.length + tier3.length} citations`}
+      badgeColor="blue"
+    >
+      {/* Summary row */}
+      {summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <CitStat label="Tier 1" value={summary.tier_1_count} color="text-red-400" />
+          <CitStat label="Tier 2" value={summary.tier_2_count} color="text-orange-400" />
+          <CitStat label="Tier 3" value={summary.tier_3_count} color="text-zinc-400" />
+          <CitStat label="DA Impact" value={summary.estimated_da_impact ?? "—"} color="text-emerald-400" isText />
+        </div>
+      )}
+
+      <CitationTierList title="Tier 1 — Critical (submit first)" items={tier1} accentClass="border-red-500/30 bg-red-500/5" labelClass="text-red-400" />
+      <CitationTierList title="Tier 2 — Important" items={tier2} accentClass="border-orange-500/30 bg-orange-500/5" labelClass="text-orange-400" />
+      {tier3.length > 0 && (
+        <CitationTierList title="Tier 3 — Supplemental" items={tier3} accentClass="border-white/10 bg-white/5" labelClass="text-zinc-400" />
+      )}
+
+      {/* NAP consistency rules */}
+      {plan.consistency_rules?.length > 0 && (
+        <div className="mb-4">
+          <SectionHeading>NAP Consistency Rules</SectionHeading>
+          <ul className="space-y-1.5">
+            {plan.consistency_rules.map((rule: string, i: number) => (
+              <li key={i} className="text-xs text-zinc-400 flex gap-2">
+                <span className="text-[#6ee7b7] shrink-0">→</span>{rule}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* NAP template */}
+      {plan.nap_template && (
+        <div>
+          <button
+            onClick={() => setShowNap(v => !v)}
+            className="flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 mb-2"
+          >
+            <svg className={`w-3.5 h-3.5 transition-transform ${showNap ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+            {showNap ? "Hide" : "Show"} NAP template (copy for all submissions)
+          </button>
+          {showNap && (
+            <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-xs text-zinc-300 font-mono leading-relaxed space-y-1">
+              <p><span className="text-zinc-500">Name: </span>{plan.nap_template.business_name}</p>
+              <p><span className="text-zinc-500">Address: </span>{plan.nap_template.address}</p>
+              <p><span className="text-zinc-500">Phone: </span>{plan.nap_template.phone}</p>
+              <p><span className="text-zinc-500">Website: </span>{plan.nap_template.website}</p>
+              <p><span className="text-zinc-500">Categories: </span>{plan.nap_template.categories?.join(", ")}</p>
+              {plan.nap_template.description && (
+                <div className="mt-2 pt-2 border-t border-white/10 font-sans text-zinc-400 leading-relaxed">
+                  {plan.nap_template.description}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function CitStat({ label, value, color, isText }: { label: string; value: number | string; color: string; isText?: boolean }) {
+  return (
+    <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className={`${isText ? "text-xs leading-tight" : "text-xl font-black"} ${color}`}>{value}</p>
+    </div>
+  );
+}
+
+function CitationTierList({ title, items, accentClass, labelClass }: {
+  title: string;
+  items: CitationRecommendation[];
+  accentClass: string;
+  labelClass: string;
+}) {
+  if (!items.length) return null;
+  return (
+    <div className="mb-5">
+      <SectionHeading>{title}</SectionHeading>
+      <div className="space-y-2">
+        {items.map((c: CitationRecommendation, i: number) => (
+          <div key={i} className={`border rounded-xl px-4 py-3 ${accentClass}`}>
+            <div className="flex items-center justify-between gap-2 mb-0.5">
+              <p className="text-sm font-semibold text-white">{c.name}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-zinc-500 font-mono">DA:{c.da}</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.free ? "bg-emerald-500/15 text-emerald-400" : "bg-zinc-500/15 text-zinc-400"}`}>
+                  {c.free ? "FREE" : "PAID"}
+                </span>
+              </div>
+            </div>
+            {c.reason && <p className="text-xs text-zinc-500 mb-1">{c.reason}</p>}
+            {c.submit_url && (
+              <a href={c.submit_url} target="_blank" rel="noopener noreferrer" className={`text-xs font-medium ${labelClass} hover:underline`}>
+                Submit listing →
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Backlink Analysis section ─────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function BacklinkSection({ data }: { data: any }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const a = data?.analysis as any;
+  if (!a) return null;
+
+  const client = a.client ?? {};
+  const isVerified = client.data_source === "verified";
+  const da = client.domain_authority ?? 0;
+  const pa = client.page_authority ?? 0;
+
+  return (
+    <Card
+      title="Backlink Analysis"
+      icon="🔗"
+      badge={isVerified ? "Moz verified" : "AI estimated"}
+      badgeColor={isVerified ? "green" : "slate"}
+    >
+      {/* DA / PA tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <RankTile label="Domain Authority" value={String(da)} sub={isVerified ? "verified" : "estimated"} color={da >= 50 ? "text-emerald-400" : da >= 30 ? "text-yellow-400" : "text-red-400"} />
+        <RankTile label="Page Authority" value={String(pa)} sub={isVerified ? "verified" : "estimated"} color={pa >= 40 ? "text-emerald-400" : pa >= 20 ? "text-yellow-400" : "text-red-400"} />
+        {client.linking_domains != null && (
+          <RankTile label="Linking Domains" value={client.linking_domains.toLocaleString()} sub="unique root domains" color="text-zinc-300" />
+        )}
+        {client.spam_score != null && (
+          <RankTile label="Spam Score" value={`${client.spam_score}%`} sub={client.spam_score < 5 ? "healthy" : "review needed"} color={client.spam_score < 5 ? "text-emerald-400" : "text-red-400"} />
+        )}
+      </div>
+
+      {/* Competitor comparison */}
+      {a.competitors?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Competitor Comparison</SectionHeading>
+          <div className="space-y-2">
+            {a.competitors.map((comp: { url: string; domain_authority: number; page_authority: number; data_source: string }, i: number) => {
+              const cDa = comp.domain_authority ?? 0;
+              const gap = cDa - da;
+              return (
+                <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-300 truncate">{comp.url.replace(/^https?:\/\/(www\.)?/, "")}</p>
+                    <p className="text-xs text-zinc-500">DA:{cDa} · PA:{comp.page_authority}</p>
+                  </div>
+                  <span className={`text-xs font-semibold shrink-0 ${gap > 0 ? "text-red-400" : "text-emerald-400"}`}>
+                    {gap > 0 ? `+${gap} ahead` : gap < 0 ? `${gap} behind` : "tied"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Issues */}
+      {a.top_issues?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Top Issues</SectionHeading>
+          <ul className="space-y-1.5">
+            {a.top_issues.map((issue: string, i: number) => (
+              <li key={i} className="flex gap-2 text-sm text-red-400">
+                <span className="shrink-0 mt-0.5">✕</span>{issue}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Quick wins */}
+      {a.quick_wins?.length > 0 && (
+        <div>
+          <SectionHeading>Quick Wins</SectionHeading>
+          <ul className="space-y-1.5">
+            {a.quick_wins.map((win: string, i: number) => (
+              <li key={i} className="flex gap-2 text-sm text-zinc-300">
+                <span className="text-[#6ee7b7] shrink-0 mt-0.5">→</span>{win}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Link Building section ─────────────────────────────────────────────
+
+const LB_CATEGORIES: Array<{ key: keyof NonNullable<AuditResult["agents"]["link_building"]>["recommendations"]; label: string; icon: string }> = [
+  { key: "quick_wins",         label: "Quick Wins",          icon: "⚡" },
+  { key: "guest_posting",      label: "Guest Posting",       icon: "✍️" },
+  { key: "resource_pages",     label: "Resource Pages",      icon: "📚" },
+  { key: "local_opportunities",label: "Local Opportunities", icon: "🏙️" },
+  { key: "competitor_gaps",    label: "Competitor Gaps",     icon: "🎯" },
+];
+
+export function LinkBuildingSection({ data }: { data: NonNullable<AuditResult["agents"]["link_building"]> }) {
+  const [expandedTemplate, setExpandedTemplate] = useState<string | null>(null);
+  const recs = data.recommendations;
+  const summary = recs.summary;
+
+  return (
+    <Card title="Link Building" icon="🔗" badge={`${data.total_opportunities} opportunities`} badgeColor="blue">
+      {/* Summary */}
+      {summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <RankTile label="Total" value={String(summary.total_opportunities)} sub="opportunities" color="text-zinc-300" />
+          <RankTile label="DA Gain (3mo)" value={summary.estimated_da_gain_3mo} sub="estimated" color="text-emerald-400" />
+          <RankTile label="Monthly Target" value={`${summary.monthly_link_target} links`} sub="per month" color="text-blue-400" />
+          <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+            <p className="text-xs text-zinc-500 mb-1">Priority Order</p>
+            <ol className="space-y-0.5">
+              {summary.priority_order?.slice(0, 3).map((cat: string, i: number) => (
+                <li key={i} className="text-xs text-zinc-400 capitalize">{i + 1}. {cat.replace(/_/g, " ")}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* Categories */}
+      {LB_CATEGORIES.map(({ key, label, icon }) => {
+        const items = (recs[key] as LinkBuildingOpportunity[]) ?? [];
+        if (!items.length) return null;
+        return (
+          <div key={key} className="mb-6">
+            <SectionHeading>{icon} {label} ({items.length})</SectionHeading>
+            <div className="space-y-2">
+              {items.map((item: LinkBuildingOpportunity, i: number) => {
+                const tid = `${key}-${i}`;
+                const isOpen = expandedTemplate === tid;
+                return (
+                  <div key={i} className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                    <div className="px-4 py-3">
+                      <div className="flex items-start gap-2 mb-1">
+                        <p className="text-sm font-semibold text-white flex-1">{item.name}</p>
+                        <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0">DA {item.expected_da}</span>
+                        <EffortBadge effort={item.difficulty} />
+                      </div>
+                      <p className="text-xs text-zinc-500 mb-2">
+                        {item.reason ?? item.topic_idea ?? item.angle ?? ""}
+                      </p>
+                      {item.url && (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline mr-3">
+                          {item.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 50)}
+                        </a>
+                      )}
+                      {item.outreach_template && (
+                        <button
+                          onClick={() => setExpandedTemplate(isOpen ? null : tid)}
+                          className="text-xs text-[#6ee7b7] hover:underline"
+                        >
+                          {isOpen ? "Hide template" : "View outreach template"}
+                        </button>
+                      )}
+                    </div>
+                    {isOpen && item.outreach_template && (
+                      <div className="border-t border-white/5 px-4 pb-4 pt-3 bg-[#09090b]/60">
+                        <p className="text-xs font-medium text-zinc-500 mb-1">Subject:</p>
+                        <p className="text-xs text-zinc-300 font-mono mb-3 bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.subject}</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-1">Body:</p>
+                        <pre className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.body}</pre>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </Card>
+  );
+}
+
+// ── AI SEO section ────────────────────────────────────────────────────
+
+export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]["ai_seo"]> }) {
+  const [expandedSchema, setExpandedSchema] = useState<number | null>(null);
+  const [showAllFaq, setShowAllFaq] = useState(false);
+  const a = data.analysis;
+  if (!a) return null;
+
+  const score = a.ai_visibility_score ?? 0;
+  const scoreColor = score >= 70 ? "text-emerald-400" : score >= 40 ? "text-yellow-400" : "text-red-400";
+  const barColor   = score >= 70 ? "bg-emerald-500" : score >= 40 ? "bg-yellow-400"   : "bg-red-500";
+
+  const likelihoodColors: Record<string, string> = {
+    low: "bg-red-500/15 text-red-400",
+    medium: "bg-yellow-500/15 text-yellow-400",
+    high: "bg-emerald-500/15 text-emerald-400",
+  };
+
+  const signals = data.signals_collected;
+
+  return (
+    <Card
+      title="AI SEO Visibility"
+      icon="🤖"
+      badge={`Score: ${score}/100`}
+      badgeColor={score >= 70 ? "green" : score >= 40 ? "amber" : "red"}
+    >
+      {/* Score + likelihood */}
+      <div className="flex items-start gap-4 mb-5">
+        <div className="flex-1">
+          <div className="flex items-end justify-between mb-2">
+            <p className="text-sm text-zinc-400">AI Visibility Score</p>
+            <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-zinc-600">/100</span></span>
+          </div>
+          <div className="bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className={`h-2 rounded-full ${barColor} transition-all duration-500`} style={{ width: `${score}%` }} />
+          </div>
+          {a.summary && (
+            <p className="text-xs text-zinc-500 mt-1">After fixes: {a.summary.estimated_score_after_fixes}/100 · {a.summary.time_to_implement}</p>
+          )}
+        </div>
+        <span className={`text-xs font-semibold px-3 py-1.5 rounded-full capitalize shrink-0 ${likelihoodColors[a.ai_mention_likelihood] ?? "bg-white/10 text-zinc-400"}`}>
+          {a.ai_mention_likelihood} likelihood
+        </span>
+      </div>
+
+      {/* Score breakdown */}
+      {a.score_breakdown && (
+        <div className="mb-6">
+          <SectionHeading>Score Breakdown</SectionHeading>
+          <div className="space-y-2">
+            {Object.entries(a.score_breakdown).map(([dim, val]) => {
+              const max = dim === "schema_markup" ? 25 : dim === "eeat_signals" ? 25 : dim === "faq_content" ? 20 : dim === "content_depth" ? 20 : 10;
+              const pct = Math.round(((val as number) / max) * 100);
+              return (
+                <div key={dim} className="flex items-center gap-3">
+                  <p className="text-xs text-zinc-500 w-36 capitalize shrink-0">{dim.replace(/_/g, " ")}</p>
+                  <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-[#6ee7b7]" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="text-xs text-zinc-400 w-12 text-right tabular-nums">{val as number}/{max}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* AI answer preview */}
+      {a.ai_answer_preview && (
+        <div className="mb-6">
+          <SectionHeading>AI Answer Preview</SectionHeading>
+          <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm text-zinc-300 leading-relaxed italic">
+            &ldquo;{a.ai_answer_preview}&rdquo;
+          </div>
+        </div>
+      )}
+
+      {/* Current gaps */}
+      {a.current_gaps?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Current Gaps</SectionHeading>
+          <ul className="space-y-1.5">
+            {a.current_gaps.map((gap: string, i: number) => (
+              <li key={i} className="flex gap-2 text-sm text-red-400">
+                <span className="shrink-0 mt-0.5">✕</span>{gap}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Schema signals */}
+      {(signals.schema_types_found.length > 0 || signals.schema_types_missing.length > 0) && (
+        <div className="mb-6">
+          <SectionHeading>Schema Markup</SectionHeading>
+          <div className="grid md:grid-cols-2 gap-2">
+            {signals.schema_types_found.length > 0 && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                <p className="text-xs font-medium text-emerald-400 mb-1.5">Found ({signals.schema_types_found.length})</p>
+                <div className="flex flex-wrap gap-1">
+                  {signals.schema_types_found.map((s: string, i: number) => (
+                    <span key={i} className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {signals.schema_types_missing.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                <p className="text-xs font-medium text-red-400 mb-1.5">Missing ({signals.schema_types_missing.length})</p>
+                <div className="flex flex-wrap gap-1">
+                  {signals.schema_types_missing.map((s: string, i: number) => (
+                    <span key={i} className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Priority actions */}
+      {a.priority_actions?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Priority Actions</SectionHeading>
+          <div className="space-y-3">
+            {a.priority_actions.map((action: { action: string; impact: string; effort: string; why: string; how: string }, i: number) => (
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <ImpactBadge impact={action.impact} />
+                  <EffortBadge effort={action.effort} />
+                  <p className="text-sm font-semibold text-white flex-1">{action.action}</p>
+                </div>
+                <p className="text-xs text-zinc-500 mb-1">{action.why}</p>
+                <p className="text-xs text-[#6ee7b7]/70 border-l-2 border-[#6ee7b7]/30 pl-3">{action.how}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Schema templates */}
+      {a.schema_templates?.length > 0 && (
+        <div className="mb-6">
+          <SectionHeading>Schema Templates (ready to paste)</SectionHeading>
+          <div className="space-y-2">
+            {a.schema_templates.map((tmpl: { type: string; priority: string; description: string; json_ld: string }, i: number) => (
+              <div key={i} className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                <button
+                  onClick={() => setExpandedSchema(expandedSchema === i ? null : i)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <PriorityBadge priority={tmpl.priority} />
+                    <p className="text-sm font-semibold text-white">{tmpl.type}</p>
+                  </div>
+                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${expandedSchema === i ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {expandedSchema === i && (
+                  <div className="border-t border-white/5 p-4 bg-[#09090b]/60">
+                    <p className="text-xs text-zinc-400 mb-3">{tmpl.description}</p>
+                    <pre className="text-xs text-zinc-300 bg-white/5 p-3 rounded-lg overflow-auto max-h-64 leading-relaxed whitespace-pre-wrap">{
+                      (() => { try { return JSON.stringify(JSON.parse(tmpl.json_ld), null, 2); } catch { return tmpl.json_ld; } })()
+                    }</pre>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FAQ content */}
+      {a.faq_content?.length > 0 && (
+        <div>
+          <SectionHeading>FAQ Content (AI-optimised)</SectionHeading>
+          <div className="space-y-3">
+            {(showAllFaq ? a.faq_content : a.faq_content.slice(0, 4)).map(
+              (faq: { question: string; answer: string; ai_intent: string }, i: number) => (
+                <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className="text-sm font-semibold text-white">{faq.question}</p>
+                    <span className="text-xs bg-blue-500/15 text-blue-400 px-2 py-0.5 rounded-full shrink-0 capitalize">{faq.ai_intent?.replace(/-/g, " ")}</span>
+                  </div>
+                  <p className="text-sm text-zinc-400 leading-relaxed">{faq.answer}</p>
+                </div>
+              )
+            )}
+          </div>
+          {a.faq_content.length > 4 && (
+            <button onClick={() => setShowAllFaq(v => !v)} className="mt-3 text-xs text-zinc-500 hover:text-zinc-300 underline">
+              {showAllFaq ? "Show less" : `Show ${a.faq_content.length - 4} more Q&As`}
+            </button>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Content Rewriter section ──────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function ContentRewriterSection({ data }: { data: any }) {
+  const [showContent, setShowContent] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const analysis = data?.analysis as any;
+  const content  = data?.rewritten_content as string | undefined;
+  const wc       = data?.word_count as number | undefined;
+
+  return (
+    <Card title="Content Rewriter" icon="✍️" badge={wc ? `${wc.toLocaleString()} words` : undefined} badgeColor="blue">
+      {/* Benchmark */}
+      {analysis?.benchmark && (
+        <div className="mb-5">
+          <SectionHeading>Content Benchmark</SectionHeading>
+          <div className="grid grid-cols-3 gap-3">
+            <RankTile label="Current" value={String(analysis.benchmark.current_word_count ?? 0)} sub="words" color="text-red-400" />
+            <RankTile label="Competitor Avg" value={String(analysis.benchmark.avg_competitor_word_count ?? 0)} sub="words" color="text-zinc-400" />
+            <RankTile label="Target" value={String(analysis.benchmark.target_word_count ?? 0)} sub="words" color="text-emerald-400" />
+          </div>
+        </div>
+      )}
+
+      {/* SEO template */}
+      {analysis?.seo_template && (
+        <div className="mb-5">
+          <SectionHeading>SEO Template</SectionHeading>
+          <div className="bg-white/5 rounded-xl p-4 border border-white/5 space-y-2 text-sm">
+            {analysis.seo_template.primary_keyword && (
+              <p><span className="text-zinc-500">Primary: </span><span className="text-white">{analysis.seo_template.primary_keyword}</span></p>
+            )}
+            {analysis.seo_template.keyword_density_target && (
+              <p><span className="text-zinc-500">Density target: </span><span className="text-white">{analysis.seo_template.keyword_density_target}</span></p>
+            )}
+            {analysis.seo_template.lsi_keywords?.length > 0 && (
+              <div>
+                <p className="text-zinc-500 mb-1.5">LSI keywords:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {analysis.seo_template.lsi_keywords.map((k: string, i: number) => (
+                    <span key={i} className="text-xs bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded-full">{k}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Quick wins from analysis */}
+      {analysis?.quick_wins?.length > 0 && (
+        <div className="mb-5">
+          <SectionHeading>Quick Wins</SectionHeading>
+          <ul className="space-y-1.5">
+            {analysis.quick_wins.map((w: string, i: number) => (
+              <li key={i} className="text-sm text-zinc-300 flex gap-2"><span className="text-[#6ee7b7] shrink-0">→</span>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Rewritten content */}
+      {content && (
+        <div>
+          <button
+            onClick={() => setShowContent(v => !v)}
+            className="flex items-center gap-2 text-sm font-medium text-[#6ee7b7] hover:text-[#a7f3d0] mb-3"
+          >
+            <svg className={`w-4 h-4 transition-transform ${showContent ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+            {showContent ? "Hide" : "Show"} rewritten content ({wc?.toLocaleString()} words)
+          </button>
+          {showContent && (
+            <div className="bg-[#09090b] border border-white/10 rounded-xl p-5 text-sm text-zinc-300 leading-relaxed max-h-[32rem] overflow-y-auto whitespace-pre-wrap font-sans">
+              {content}
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Keyword Research section ──────────────────────────────────────────
+
+export function KeywordSection({
   data,
   competitorsAnalyzed,
 }: {
@@ -157,7 +1130,6 @@ function KeywordSection({
 }) {
   return (
     <Card title="Keyword Research" icon="🔍" badge={`${competitorsAnalyzed} competitors analysed`}>
-      {/* High-intent keyword table */}
       {data.high_intent_keywords?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>High-Intent Keywords</SectionHeading>
@@ -175,15 +1147,11 @@ function KeywordSection({
                 {data.high_intent_keywords.slice(0, 10).map((k: HighIntentKeyword, i: number) => (
                   <tr key={i} className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 font-medium text-white">{k.keyword}</td>
-                    <td className="py-2.5">
-                      <IntentBadge intent={k.intent} />
-                    </td>
+                    <td className="py-2.5"><IntentBadge intent={k.intent} /></td>
                     <td className="py-2.5 text-right text-zinc-400 tabular-nums">
                       {k.estimated_monthly_searches?.toLocaleString() ?? "—"}
                     </td>
-                    <td className="py-2.5 text-right">
-                      <DifficultyBadge difficulty={k.difficulty} />
-                    </td>
+                    <td className="py-2.5 text-right"><DifficultyBadge difficulty={k.difficulty} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -192,21 +1160,17 @@ function KeywordSection({
         </div>
       )}
 
-      {/* Long-tail */}
       {data.long_tail_keywords?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Long-Tail Opportunities</SectionHeading>
           <div className="flex flex-wrap gap-2">
             {data.long_tail_keywords.map((lt: string, i: number) => (
-              <span key={i} className="bg-blue-500/10 text-blue-300 border border-blue-500/20 text-xs font-medium px-3 py-1.5 rounded-full">
-                {lt}
-              </span>
+              <span key={i} className="bg-blue-500/10 text-blue-300 border border-blue-500/20 text-xs font-medium px-3 py-1.5 rounded-full">{lt}</span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Clusters */}
       {data.keyword_clusters?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Keyword Clusters</SectionHeading>
@@ -221,21 +1185,17 @@ function KeywordSection({
         </div>
       )}
 
-      {/* Competitor gaps */}
       {data.competitor_keywords_we_miss?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Competitor Keyword Gaps</SectionHeading>
           <div className="flex flex-wrap gap-2">
             {data.competitor_keywords_we_miss.map((kw: string, i: number) => (
-              <span key={i} className="bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-medium px-3 py-1.5 rounded-full">
-                {kw}
-              </span>
+              <span key={i} className="bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-medium px-3 py-1.5 rounded-full">{kw}</span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Strategy summary */}
       {data.recommendation && (
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-sm text-blue-300 leading-relaxed">
           {data.recommendation}
@@ -245,9 +1205,9 @@ function KeywordSection({
   );
 }
 
-// ── On-Page SEO section ──────────────────────────────────────────────
+// ── On-Page SEO section ───────────────────────────────────────────────
 
-function OnPageSection({
+export function OnPageSection({
   data,
   pageScraped,
 }: {
@@ -269,7 +1229,6 @@ function OnPageSection({
         : "red"
       }
     >
-      {/* Current issues */}
       {current?.issues_found?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Issues Found</SectionHeading>
@@ -284,28 +1243,19 @@ function OnPageSection({
         </div>
       )}
 
-      {/* Recommended meta */}
       {recs && (
         <div className="mb-6 space-y-4">
           <SectionHeading>Recommended Meta Tags</SectionHeading>
-          {recs.meta_title && (
-            <MetaField label="Title tag" value={recs.meta_title} charLimit={60} />
-          )}
-          {recs.meta_description && (
-            <MetaField label="Meta description" value={recs.meta_description} charLimit={160} />
-          )}
-          {recs.h1 && (
-            <MetaField label="H1" value={recs.h1} />
-          )}
+          {recs.meta_title && <MetaField label="Title tag" value={recs.meta_title} charLimit={60} />}
+          {recs.meta_description && <MetaField label="Meta description" value={recs.meta_description} charLimit={160} />}
+          {recs.h1 && <MetaField label="H1" value={recs.h1} />}
           {recs.target_word_count && (
             <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
               <span className="text-sm font-medium text-zinc-400">Target word count</span>
               <span className="text-lg font-bold text-white">
                 {recs.target_word_count.toLocaleString()} words
                 {current?.word_count > 0 && (
-                  <span className="text-sm font-normal text-zinc-500 ml-2">
-                    (currently {current.word_count.toLocaleString()})
-                  </span>
+                  <span className="text-sm font-normal text-zinc-500 ml-2">(currently {current.word_count.toLocaleString()})</span>
                 )}
               </span>
             </div>
@@ -313,7 +1263,6 @@ function OnPageSection({
         </div>
       )}
 
-      {/* Priority actions */}
       {data.priority_actions?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Priority Actions</SectionHeading>
@@ -330,25 +1279,19 @@ function OnPageSection({
         </div>
       )}
 
-      {/* Suggested heading structure */}
       {recs?.heading_structure?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Suggested Heading Structure</SectionHeading>
           <div className="space-y-1">
             {recs.heading_structure.map((h: string, i: number) => {
-              const level = h.startsWith("H2") ? "pl-0" : h.startsWith("H3") ? "pl-5" : "pl-10";
+              const level  = h.startsWith("H2") ? "pl-0" : h.startsWith("H3") ? "pl-5" : "pl-10";
               const weight = h.startsWith("H2") ? "font-semibold" : "font-normal";
-              return (
-                <p key={i} className={`text-sm text-zinc-400 ${level} ${weight}`}>
-                  {h}
-                </p>
-              );
+              return <p key={i} className={`text-sm text-zinc-400 ${level} ${weight}`}>{h}</p>;
             })}
           </div>
         </div>
       )}
 
-      {/* Internal links */}
       {data.internal_links?.length > 0 && (
         <div>
           <SectionHeading>Internal Links to Add</SectionHeading>
@@ -358,9 +1301,7 @@ function OnPageSection({
                 <p className="text-sm font-medium text-white">
                   <span className="text-[#6ee7b7]">&ldquo;{link.anchor_text}&rdquo;</span>
                   <span className="text-zinc-500 mx-2">→</span>
-                  <code className="text-zinc-400 text-xs bg-white/10 px-1.5 py-0.5 rounded">
-                    {link.target_path}
-                  </code>
+                  <code className="text-zinc-400 text-xs bg-white/10 px-1.5 py-0.5 rounded">{link.target_path}</code>
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">{link.reason}</p>
               </div>
@@ -372,12 +1313,11 @@ function OnPageSection({
   );
 }
 
-// ── Local SEO section ────────────────────────────────────────────────
+// ── Local SEO section ─────────────────────────────────────────────────
 
-function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
+export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
   return (
     <Card title="Local SEO" icon="📍">
-      {/* Quick wins */}
       {data.quick_wins?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Quick Wins</SectionHeading>
@@ -392,7 +1332,6 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
         </div>
       )}
 
-      {/* GBP */}
       {data.gbp_optimization && (
         <div className="mb-6">
           <SectionHeading>Google Business Profile</SectionHeading>
@@ -418,14 +1357,12 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
               </div>
             )}
           </div>
-
           {data.gbp_optimization.photo_strategy && (
             <div className="mt-3 bg-white/5 rounded-xl p-4 border border-white/5 text-sm text-zinc-300">
               <span className="font-medium text-white">Photo strategy: </span>
               {data.gbp_optimization.photo_strategy}
             </div>
           )}
-
           {data.gbp_optimization.review_strategy && (
             <div className="mt-3 bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20 text-sm text-emerald-300">
               <span className="font-medium">Review target: </span>
@@ -435,16 +1372,12 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
         </div>
       )}
 
-      {/* Citations */}
       {data.citations?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Citations to Build</SectionHeading>
           <div className="grid md:grid-cols-2 gap-2">
             {data.citations.map((c: Citation, i: number) => (
-              <div
-                key={i}
-                className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 border border-white/5"
-              >
+              <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                 <div>
                   <p className="text-sm font-medium text-white">{c.site}</p>
                   <p className="text-xs text-zinc-500 capitalize">{c.category}</p>
@@ -456,7 +1389,6 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
         </div>
       )}
 
-      {/* Link opportunities */}
       {data.link_opportunities?.length > 0 && (
         <div className="mb-6">
           <SectionHeading>Link Building Opportunities</SectionHeading>
@@ -465,15 +1397,11 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
               <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="text-sm font-semibold text-white">{opp.name}</p>
-                  <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0 capitalize">
-                    {opp.link_type}
-                  </span>
+                  <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0 capitalize">{opp.link_type}</span>
                 </div>
                 <p className="text-xs text-zinc-500 mb-2">{opp.reason}</p>
                 {opp.outreach_template && (
-                  <p className="text-xs text-[#6ee7b7]/80 italic border-l-2 border-[#6ee7b7]/30 pl-3">
-                    {opp.outreach_template}
-                  </p>
+                  <p className="text-xs text-[#6ee7b7]/80 italic border-l-2 border-[#6ee7b7]/30 pl-3">{opp.outreach_template}</p>
                 )}
               </div>
             ))}
@@ -481,7 +1409,6 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
         </div>
       )}
 
-      {/* Content strategy */}
       {data.local_content_strategy && (
         <div className="mb-6">
           <SectionHeading>Content Strategy</SectionHeading>
@@ -510,7 +1437,6 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
         </div>
       )}
 
-      {/* Estimated impact */}
       {data.estimated_impact && (
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-sm text-blue-300 leading-relaxed">
           <span className="font-semibold">Estimated impact: </span>
@@ -521,9 +1447,9 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
   );
 }
 
-// ── Shared helper components ─────────────────────────────────────────
+// ── Shared primitive components ───────────────────────────────────────
 
-function Card({
+export function Card({
   title,
   icon,
   badge,
@@ -570,15 +1496,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MetaField({
-  label,
-  value,
-  charLimit,
-}: {
-  label: string;
-  value: string;
-  charLimit?: number;
-}) {
+function MetaField({ label, value, charLimit }: { label: string; value: string; charLimit?: number }) {
   const over = charLimit && value.length > charLimit;
   return (
     <div>
@@ -638,7 +1556,33 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-// tiny type-helpers so TS is happy with the loose API data
+export function ImpactBadge({ impact }: { impact: string }) {
+  const styles: Record<string, string> = {
+    high:   "bg-red-500/15 text-red-400",
+    medium: "bg-yellow-500/15 text-yellow-400",
+    low:    "bg-white/10 text-zinc-500",
+  };
+  return (
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize shrink-0 ${styles[impact] ?? styles.low}`}>
+      {impact} impact
+    </span>
+  );
+}
+
+function EffortBadge({ effort }: { effort: string }) {
+  const styles: Record<string, string> = {
+    easy:   "bg-emerald-500/15 text-emerald-400",
+    medium: "bg-blue-500/15 text-blue-400",
+    hard:   "bg-purple-500/15 text-purple-400",
+  };
+  return (
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize shrink-0 ${styles[effort] ?? styles.medium}`}>
+      {effort}
+    </span>
+  );
+}
+
+// tiny type-helpers
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getKw(d: any) { return d; }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -646,9 +1590,9 @@ function getOp(d: any) { return d; }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getLocal(d: any) { return d; }
 
-// ── Local SEO Score card ─────────────────────────────────────────────
+// ── Local SEO Score card ──────────────────────────────────────────────
 
-function LocalSeoScoreCard({
+export function LocalSeoScoreCard({
   score,
   businessName,
   businessType,
@@ -661,13 +1605,9 @@ function LocalSeoScoreCard({
   const isGood  = clamped >= 70;
   const isOk    = clamped >= 40;
 
-  const colorBar   = isGood ? "bg-emerald-500"       : isOk ? "bg-yellow-400"       : "bg-red-500";
-  const colorScore = isGood ? "text-emerald-400"     : isOk ? "text-yellow-400"     : "text-red-400";
-  const colorBg    = isGood
-    ? "bg-emerald-500/10 border-emerald-500/20"
-    : isOk
-    ? "bg-yellow-500/10 border-yellow-500/20"
-    : "bg-red-500/10 border-red-500/20";
+  const colorBar   = isGood ? "bg-emerald-500"             : isOk ? "bg-yellow-400"             : "bg-red-500";
+  const colorScore = isGood ? "text-emerald-400"           : isOk ? "text-yellow-400"           : "text-red-400";
+  const colorBg    = isGood ? "bg-emerald-500/10 border-emerald-500/20" : isOk ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
   const label = isGood ? "Good" : isOk ? "Needs Work" : "Poor";
   const hint  = isGood
     ? "Your local presence is strong. Focus on maintaining and growing from here."
@@ -692,15 +1632,10 @@ function LocalSeoScoreCard({
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="bg-white/10 rounded-full h-3 mb-3 overflow-hidden">
-        <div
-          className={`h-3 rounded-full ${colorBar} transition-all duration-500`}
-          style={{ width: `${clamped}%` }}
-        />
+        <div className={`h-3 rounded-full ${colorBar} transition-all duration-500`} style={{ width: `${clamped}%` }} />
       </div>
 
-      {/* Scale labels */}
       <div className="flex justify-between text-xs text-zinc-500 mb-4">
         <span>0 — Poor</span>
         <span className={`font-semibold ${colorScore}`}>{label}</span>
