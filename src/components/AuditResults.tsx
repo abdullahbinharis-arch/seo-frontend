@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import type {
   AuditResult,
   HighIntentKeyword,
@@ -13,6 +14,35 @@ import type {
 
 export function AuditResults({ data }: { data: AuditResult }) {
   const [showJson, setShowJson] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const { data: session } = useSession();
+
+  async function handleDownloadPdf() {
+    setDownloading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/audits/${data.audit_id}/export`, {
+        method: "POST",
+        headers: {
+          ...(session?.accessToken
+            ? { Authorization: `Bearer ${session.accessToken}` }
+            : {}),
+        },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `localrank-audit-${data.audit_id?.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("PDF download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   const kw    = data.agents?.keyword_research?.recommendations;
   const op    = data.agents?.on_page_seo?.recommendations;
@@ -35,8 +65,25 @@ export function AuditResults({ data }: { data: AuditResult }) {
             </p>
           </div>
         </div>
-        <div className="text-right text-xs text-zinc-500 font-mono">
-          #{data.audit_id?.slice(0, 8)}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-xs text-zinc-500 font-mono hidden sm:block">#{data.audit_id?.slice(0, 8)}</span>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            className="btn-secondary flex items-center gap-2 text-xs font-medium text-zinc-300 px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {downloading ? (
+              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            )}
+            {downloading ? "Generating…" : "Download PDF"}
+          </button>
         </div>
       </div>
 
