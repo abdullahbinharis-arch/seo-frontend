@@ -10,15 +10,15 @@ export function ProgressIndicator({
   return (
     <div className="space-y-3">
       {/* Bar */}
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
         <div
-          className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out"
+          className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Stage label */}
-      <div className="flex items-center gap-2.5 text-blue-600">
+      <div className="flex items-center gap-2.5 text-[#6ee7b7]">
         <span className="inline-flex">
           <svg
             className="w-4 h-4 animate-spin"
@@ -41,7 +41,7 @@ export function ProgressIndicator({
           </svg>
         </span>
         <span className="text-sm font-medium">{stage || "Starting audit…"}</span>
-        <span className="ml-auto text-xs text-slate-400 tabular-nums">{progress}%</span>
+        <span className="ml-auto text-xs text-zinc-500 tabular-nums">{progress}%</span>
       </div>
 
       {/* Steps */}
@@ -54,13 +54,13 @@ export function ProgressIndicator({
               key={step}
               className={`flex-1 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
                 active
-                  ? "bg-blue-100 text-blue-700 font-medium"
-                  : "bg-slate-100 text-slate-400"
+                  ? "bg-emerald-500/10 text-[#6ee7b7] font-medium border border-emerald-500/20"
+                  : "bg-white/5 text-zinc-500 border border-white/5"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  active ? "bg-blue-500" : "bg-slate-300"
+                  active ? "bg-emerald-400" : "bg-zinc-600"
                 }`}
               />
               {step}

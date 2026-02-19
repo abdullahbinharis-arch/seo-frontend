@@ -21,21 +21,21 @@ export function AuditResults({ data }: { data: AuditResult }) {
   return (
     <div className="space-y-6">
       {/* Audit complete banner */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-center justify-between">
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-emerald-500 rounded-full p-1">
+          <div className="bg-emerald-500 rounded-full p-1 shrink-0">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-emerald-900">Audit complete</p>
-            <p className="text-sm text-emerald-600">
+            <p className="font-semibold text-white">Audit complete</p>
+            <p className="text-sm text-emerald-400">
               {data.agents_executed} agents · {data.execution_time_seconds?.toFixed(1)}s · Est. cost ${data.summary?.estimated_api_cost?.toFixed(3)}
             </p>
           </div>
         </div>
-        <div className="text-right text-xs text-emerald-500 font-mono">
+        <div className="text-right text-xs text-zinc-500 font-mono">
           #{data.audit_id?.slice(0, 8)}
         </div>
       </div>
@@ -54,8 +54,8 @@ export function AuditResults({ data }: { data: AuditResult }) {
         <Card title="Quick Wins" icon="⚡" badgeColor="blue">
           <ul className="space-y-2">
             {data.summary.quick_wins.map((win, i) => (
-              <li key={i} className="flex gap-3 text-slate-700 text-sm">
-                <span className="text-blue-500 font-bold shrink-0 mt-0.5">→</span>
+              <li key={i} className="flex gap-3 text-zinc-300 text-sm">
+                <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">→</span>
                 <span>{win}</span>
               </li>
             ))}
@@ -73,10 +73,10 @@ export function AuditResults({ data }: { data: AuditResult }) {
       {local && <LocalSection data={local} />}
 
       {/* Raw JSON */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      <div className="glass rounded-2xl overflow-hidden">
         <button
           onClick={() => setShowJson((v) => !v)}
-          className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors"
         >
           <span>View raw JSON</span>
           <svg
@@ -90,7 +90,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
           </svg>
         </button>
         {showJson && (
-          <pre className="bg-slate-900 text-slate-100 p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed">
+          <pre className="bg-[#09090b] text-zinc-300 p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed border-t border-white/5">
             {JSON.stringify(data, null, 2)}
           </pre>
         )}
@@ -117,21 +117,21 @@ function KeywordSection({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-xs text-slate-400 uppercase tracking-wide">
+                <tr className="border-b border-white/10 text-left text-xs text-zinc-500 uppercase tracking-wide">
                   <th className="pb-2 font-medium">Keyword</th>
                   <th className="pb-2 font-medium">Intent</th>
                   <th className="pb-2 font-medium text-right">Searches/mo</th>
                   <th className="pb-2 font-medium text-right">Difficulty</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-white/5">
                 {data.high_intent_keywords.slice(0, 10).map((k: HighIntentKeyword, i: number) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 font-medium text-slate-800">{k.keyword}</td>
+                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 font-medium text-white">{k.keyword}</td>
                     <td className="py-2.5">
                       <IntentBadge intent={k.intent} />
                     </td>
-                    <td className="py-2.5 text-right text-slate-600 tabular-nums">
+                    <td className="py-2.5 text-right text-zinc-400 tabular-nums">
                       {k.estimated_monthly_searches?.toLocaleString() ?? "—"}
                     </td>
                     <td className="py-2.5 text-right">
@@ -151,7 +151,7 @@ function KeywordSection({
           <SectionHeading>Long-Tail Opportunities</SectionHeading>
           <div className="flex flex-wrap gap-2">
             {data.long_tail_keywords.map((lt: string, i: number) => (
-              <span key={i} className="bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full">
+              <span key={i} className="bg-blue-500/10 text-blue-300 border border-blue-500/20 text-xs font-medium px-3 py-1.5 rounded-full">
                 {lt}
               </span>
             ))}
@@ -165,9 +165,9 @@ function KeywordSection({
           <SectionHeading>Keyword Clusters</SectionHeading>
           <div className="grid md:grid-cols-2 gap-3">
             {data.keyword_clusters.map((c: { theme: string; keywords: string[] }, i: number) => (
-              <div key={i} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="font-semibold text-slate-800 text-sm mb-2">{c.theme}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{c.keywords?.join(" · ")}</p>
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="font-semibold text-white text-sm mb-2">{c.theme}</p>
+                <p className="text-xs text-zinc-500 leading-relaxed">{c.keywords?.join(" · ")}</p>
               </div>
             ))}
           </div>
@@ -180,7 +180,7 @@ function KeywordSection({
           <SectionHeading>Competitor Keyword Gaps</SectionHeading>
           <div className="flex flex-wrap gap-2">
             {data.competitor_keywords_we_miss.map((kw: string, i: number) => (
-              <span key={i} className="bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1.5 rounded-full border border-amber-100">
+              <span key={i} className="bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-medium px-3 py-1.5 rounded-full">
                 {kw}
               </span>
             ))}
@@ -190,7 +190,7 @@ function KeywordSection({
 
       {/* Strategy summary */}
       {data.recommendation && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 leading-relaxed">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-sm text-blue-300 leading-relaxed">
           {data.recommendation}
         </div>
       )}
@@ -228,8 +228,8 @@ function OnPageSection({
           <SectionHeading>Issues Found</SectionHeading>
           <ul className="space-y-1.5">
             {current.issues_found.map((issue: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-red-700">
-                <span className="text-red-400 shrink-0 mt-0.5">✕</span>
+              <li key={i} className="flex items-start gap-2 text-sm text-red-400">
+                <span className="text-red-500 shrink-0 mt-0.5">✕</span>
                 {issue}
               </li>
             ))}
@@ -251,12 +251,12 @@ function OnPageSection({
             <MetaField label="H1" value={recs.h1} />
           )}
           {recs.target_word_count && (
-            <div className="flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-100">
-              <span className="text-sm font-medium text-slate-600">Target word count</span>
-              <span className="text-lg font-bold text-slate-900">
+            <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
+              <span className="text-sm font-medium text-zinc-400">Target word count</span>
+              <span className="text-lg font-bold text-white">
                 {recs.target_word_count.toLocaleString()} words
                 {current?.word_count > 0 && (
-                  <span className="text-sm font-normal text-slate-400 ml-2">
+                  <span className="text-sm font-normal text-zinc-500 ml-2">
                     (currently {current.word_count.toLocaleString()})
                   </span>
                 )}
@@ -272,8 +272,8 @@ function OnPageSection({
           <SectionHeading>Priority Actions</SectionHeading>
           <ol className="space-y-2">
             {data.priority_actions.map((action: string, i: number) => (
-              <li key={i} className="flex gap-3 items-start text-sm text-slate-700">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold flex items-center justify-center mt-0.5">
+              <li key={i} className="flex gap-3 items-start text-sm text-zinc-300">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-orange-500/15 text-orange-400 text-xs font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 {action}
@@ -292,7 +292,7 @@ function OnPageSection({
               const level = h.startsWith("H2") ? "pl-0" : h.startsWith("H3") ? "pl-5" : "pl-10";
               const weight = h.startsWith("H2") ? "font-semibold" : "font-normal";
               return (
-                <p key={i} className={`text-sm text-slate-600 ${level} ${weight}`}>
+                <p key={i} className={`text-sm text-zinc-400 ${level} ${weight}`}>
                   {h}
                 </p>
               );
@@ -307,15 +307,15 @@ function OnPageSection({
           <SectionHeading>Internal Links to Add</SectionHeading>
           <div className="space-y-2">
             {data.internal_links.map((link: InternalLink, i: number) => (
-              <div key={i} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-sm font-medium text-slate-800">
-                  <span className="text-blue-600">"{link.anchor_text}"</span>
-                  <span className="text-slate-400 mx-2">→</span>
-                  <code className="text-slate-600 text-xs bg-slate-100 px-1.5 py-0.5 rounded">
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-sm font-medium text-white">
+                  <span className="text-[#6ee7b7]">&ldquo;{link.anchor_text}&rdquo;</span>
+                  <span className="text-zinc-500 mx-2">→</span>
+                  <code className="text-zinc-400 text-xs bg-white/10 px-1.5 py-0.5 rounded">
                     {link.target_path}
                   </code>
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{link.reason}</p>
+                <p className="text-xs text-zinc-500 mt-1">{link.reason}</p>
               </div>
             ))}
           </div>
@@ -336,8 +336,8 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <SectionHeading>Quick Wins</SectionHeading>
           <ul className="space-y-2">
             {data.quick_wins.map((win: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+              <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">✓</span>
                 {win}
               </li>
             ))}
@@ -351,21 +351,21 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <SectionHeading>Google Business Profile</SectionHeading>
           <div className="grid md:grid-cols-2 gap-4">
             {data.gbp_optimization.priority_attributes?.length > 0 && (
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Priority Attributes</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Priority Attributes</p>
                 <ul className="space-y-1">
                   {data.gbp_optimization.priority_attributes.map((attr: string, i: number) => (
-                    <li key={i} className="text-sm text-slate-700">· {attr}</li>
+                    <li key={i} className="text-sm text-zinc-300">· {attr}</li>
                   ))}
                 </ul>
               </div>
             )}
             {data.gbp_optimization.categories?.length > 0 && (
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Recommended Categories</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Recommended Categories</p>
                 <ul className="space-y-1">
                   {data.gbp_optimization.categories.map((cat: string, i: number) => (
-                    <li key={i} className="text-sm text-slate-700">· {cat}</li>
+                    <li key={i} className="text-sm text-zinc-300">· {cat}</li>
                   ))}
                 </ul>
               </div>
@@ -373,14 +373,14 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           </div>
 
           {data.gbp_optimization.photo_strategy && (
-            <div className="mt-3 bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm text-slate-600">
-              <span className="font-medium text-slate-700">Photo strategy: </span>
+            <div className="mt-3 bg-white/5 rounded-xl p-4 border border-white/5 text-sm text-zinc-300">
+              <span className="font-medium text-white">Photo strategy: </span>
               {data.gbp_optimization.photo_strategy}
             </div>
           )}
 
           {data.gbp_optimization.review_strategy && (
-            <div className="mt-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-sm text-emerald-800">
+            <div className="mt-3 bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20 text-sm text-emerald-300">
               <span className="font-medium">Review target: </span>
               {data.gbp_optimization.review_strategy.target_reviews_per_month} reviews/month
             </div>
@@ -396,11 +396,11 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
             {data.citations.map((c: Citation, i: number) => (
               <div
                 key={i}
-                className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100"
+                className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 border border-white/5"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-800">{c.site}</p>
-                  <p className="text-xs text-slate-400 capitalize">{c.category}</p>
+                  <p className="text-sm font-medium text-white">{c.site}</p>
+                  <p className="text-xs text-zinc-500 capitalize">{c.category}</p>
                 </div>
                 <PriorityBadge priority={c.priority} />
               </div>
@@ -415,16 +415,16 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <SectionHeading>Link Building Opportunities</SectionHeading>
           <div className="space-y-3">
             {data.link_opportunities.map((opp: LinkOpportunity, i: number) => (
-              <div key={i} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-sm font-semibold text-slate-800">{opp.name}</p>
-                  <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full shrink-0 capitalize">
+                  <p className="text-sm font-semibold text-white">{opp.name}</p>
+                  <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0 capitalize">
                     {opp.link_type}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mb-2">{opp.reason}</p>
+                <p className="text-xs text-zinc-500 mb-2">{opp.reason}</p>
                 {opp.outreach_template && (
-                  <p className="text-xs text-blue-600 italic border-l-2 border-blue-200 pl-3">
+                  <p className="text-xs text-[#6ee7b7]/80 italic border-l-2 border-[#6ee7b7]/30 pl-3">
                     {opp.outreach_template}
                   </p>
                 )}
@@ -440,21 +440,21 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <SectionHeading>Content Strategy</SectionHeading>
           <div className="grid md:grid-cols-2 gap-4">
             {data.local_content_strategy.blog_topics?.length > 0 && (
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Blog Topics</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Blog Topics</p>
                 <ul className="space-y-1.5">
                   {data.local_content_strategy.blog_topics.map((t: string, i: number) => (
-                    <li key={i} className="text-sm text-slate-700">· {t}</li>
+                    <li key={i} className="text-sm text-zinc-300">· {t}</li>
                   ))}
                 </ul>
               </div>
             )}
             {data.local_content_strategy.service_area_pages?.length > 0 && (
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Service Area Pages</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Service Area Pages</p>
                 <ul className="space-y-1.5">
                   {data.local_content_strategy.service_area_pages.map((p: string, i: number) => (
-                    <li key={i} className="text-sm text-slate-700">· {p}</li>
+                    <li key={i} className="text-sm text-zinc-300">· {p}</li>
                   ))}
                 </ul>
               </div>
@@ -465,7 +465,7 @@ function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
 
       {/* Estimated impact */}
       {data.estimated_impact && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 leading-relaxed">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-sm text-blue-300 leading-relaxed">
           <span className="font-semibold">Estimated impact: </span>
           {data.estimated_impact}
         </div>
@@ -490,17 +490,17 @@ function Card({
   children: React.ReactNode;
 }) {
   const badgeColors: Record<string, string> = {
-    slate: "bg-slate-100 text-slate-600",
-    green: "bg-emerald-100 text-emerald-700",
-    amber: "bg-amber-100 text-amber-700",
-    red:   "bg-red-100 text-red-700",
-    blue:  "bg-blue-100 text-blue-700",
+    slate: "bg-white/10 text-zinc-400",
+    green: "bg-emerald-500/15 text-emerald-400",
+    amber: "bg-amber-500/15 text-amber-400",
+    red:   "bg-red-500/15 text-red-400",
+    blue:  "bg-blue-500/15 text-blue-400",
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+    <div className="glass rounded-2xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <h3 className="font-semibold text-white flex items-center gap-2">
           <span>{icon}</span>
           {title}
         </h3>
@@ -517,7 +517,7 @@ function Card({
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+    <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
       {children}
     </h4>
   );
@@ -536,15 +536,15 @@ function MetaField({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-medium text-slate-500">{label}</p>
+        <p className="text-xs font-medium text-zinc-500">{label}</p>
         {charLimit && (
-          <p className={`text-xs tabular-nums ${over ? "text-red-500" : "text-slate-400"}`}>
+          <p className={`text-xs tabular-nums ${over ? "text-red-400" : "text-zinc-500"}`}>
             {value.length}/{charLimit}
           </p>
         )}
       </div>
-      <div className={`bg-slate-50 border-l-4 ${over ? "border-red-400" : "border-blue-400"} rounded-r-xl px-4 py-3`}>
-        <p className="text-sm text-slate-800 font-mono leading-relaxed">{value}</p>
+      <div className={`bg-white/5 border-l-4 ${over ? "border-red-500" : "border-[#6ee7b7]/50"} rounded-r-xl px-4 py-3`}>
+        <p className="text-sm text-zinc-300 font-mono leading-relaxed">{value}</p>
       </div>
     </div>
   );
@@ -552,13 +552,13 @@ function MetaField({
 
 function IntentBadge({ intent }: { intent: string }) {
   const colors: Record<string, string> = {
-    transactional: "bg-green-100 text-green-700",
-    commercial:    "bg-blue-100 text-blue-700",
-    informational: "bg-slate-100 text-slate-600",
-    navigational:  "bg-purple-100 text-purple-700",
+    transactional: "bg-emerald-500/15 text-emerald-400",
+    commercial:    "bg-blue-500/15 text-blue-400",
+    informational: "bg-white/10 text-zinc-400",
+    navigational:  "bg-purple-500/15 text-purple-400",
   };
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${colors[intent] ?? "bg-slate-100 text-slate-600"}`}>
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${colors[intent] ?? "bg-white/10 text-zinc-400"}`}>
       {intent}
     </span>
   );
@@ -566,12 +566,12 @@ function IntentBadge({ intent }: { intent: string }) {
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
   const colors: Record<string, string> = {
-    low:    "text-emerald-600",
-    medium: "text-amber-600",
-    high:   "text-red-600",
+    low:    "text-emerald-400",
+    medium: "text-amber-400",
+    high:   "text-red-400",
   };
   return (
-    <span className={`text-xs font-semibold capitalize ${colors[difficulty] ?? "text-slate-500"}`}>
+    <span className={`text-xs font-semibold capitalize ${colors[difficulty] ?? "text-zinc-500"}`}>
       {difficulty}
     </span>
   );
@@ -579,10 +579,10 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const styles: Record<string, string> = {
-    critical: "bg-red-100 text-red-700",
-    high:     "bg-orange-100 text-orange-700",
-    medium:   "bg-yellow-100 text-yellow-700",
-    low:      "bg-slate-100 text-slate-500",
+    critical: "bg-red-500/15 text-red-400",
+    high:     "bg-orange-500/15 text-orange-400",
+    medium:   "bg-yellow-500/15 text-yellow-400",
+    low:      "bg-white/10 text-zinc-500",
   };
   return (
     <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize shrink-0 ${styles[priority] ?? styles.low}`}>
@@ -611,14 +611,18 @@ function LocalSeoScoreCard({
   businessType?: string;
 }) {
   const clamped = Math.max(0, Math.min(100, score));
-  const isGood   = clamped >= 70;
-  const isOk     = clamped >= 40;
+  const isGood  = clamped >= 70;
+  const isOk    = clamped >= 40;
 
-  const colorBar   = isGood ? "bg-green-500"  : isOk ? "bg-yellow-400"  : "bg-red-500";
-  const colorScore = isGood ? "text-green-600" : isOk ? "text-yellow-500" : "text-red-600";
-  const colorBg    = isGood ? "bg-green-50 border-green-200" : isOk ? "bg-yellow-50 border-yellow-200" : "bg-red-50 border-red-200";
-  const label      = isGood ? "Good"          : isOk ? "Needs Work"     : "Poor";
-  const hint       = isGood
+  const colorBar   = isGood ? "bg-emerald-500"       : isOk ? "bg-yellow-400"       : "bg-red-500";
+  const colorScore = isGood ? "text-emerald-400"     : isOk ? "text-yellow-400"     : "text-red-400";
+  const colorBg    = isGood
+    ? "bg-emerald-500/10 border-emerald-500/20"
+    : isOk
+    ? "bg-yellow-500/10 border-yellow-500/20"
+    : "bg-red-500/10 border-red-500/20";
+  const label = isGood ? "Good" : isOk ? "Needs Work" : "Poor";
+  const hint  = isGood
     ? "Your local presence is strong. Focus on maintaining and growing from here."
     : isOk
     ? "You have a foundation — targeted improvements will move you into the Map Pack."
@@ -628,21 +632,21 @@ function LocalSeoScoreCard({
     <div className={`rounded-2xl border p-6 ${colorBg}`}>
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Local SEO Score</h2>
+          <h2 className="text-lg font-bold text-white font-display">Local SEO Score</h2>
           {(businessName || businessType) && (
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-zinc-400 mt-0.5">
               {[businessName, businessType && `(${businessType})`].filter(Boolean).join(" ")}
             </p>
           )}
         </div>
         <div className="text-right shrink-0">
           <span className={`text-6xl font-black leading-none ${colorScore}`}>{clamped}</span>
-          <span className="text-slate-400 text-lg font-semibold">/100</span>
+          <span className="text-zinc-500 text-lg font-semibold">/100</span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-white/60 rounded-full h-3 mb-3 overflow-hidden">
+      <div className="bg-white/10 rounded-full h-3 mb-3 overflow-hidden">
         <div
           className={`h-3 rounded-full ${colorBar} transition-all duration-500`}
           style={{ width: `${clamped}%` }}
@@ -650,13 +654,13 @@ function LocalSeoScoreCard({
       </div>
 
       {/* Scale labels */}
-      <div className="flex justify-between text-xs text-slate-400 mb-4">
+      <div className="flex justify-between text-xs text-zinc-500 mb-4">
         <span>0 — Poor</span>
         <span className={`font-semibold ${colorScore}`}>{label}</span>
         <span>100 — Excellent</span>
       </div>
 
-      <p className="text-sm text-slate-600">{hint}</p>
+      <p className="text-sm text-zinc-400">{hint}</p>
     </div>
   );
 }

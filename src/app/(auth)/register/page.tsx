@@ -55,23 +55,28 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#09090b] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background glows */}
+      <div className="hero-glow hero-glow-1" />
+      <div className="hero-glow hero-glow-2" />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="bg-blue-600 text-white rounded-xl p-2.5">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <span className="text-xl font-bold text-slate-900">Local SEO Audit</span>
+          <span className="text-xl font-bold text-white font-display">LocalRank</span>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Create an account</h1>
-          <p className="text-slate-500 text-sm mb-6">
+        <div className="glass rounded-2xl p-8">
+          <h1 className="text-2xl font-bold text-white font-display mb-2">Create an account</h1>
+          <p className="text-zinc-400 text-sm mb-6">
             Already have one?{" "}
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            <Link href="/login" className="text-[#6ee7b7] hover:text-[#a7f3d0] font-medium transition-colors">
               Sign in
             </Link>
           </p>
@@ -80,7 +85,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 border border-slate-300 hover:border-slate-400 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors mb-6"
+            className="btn-secondary w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-zinc-300 mb-6"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -92,15 +97,15 @@ export default function RegisterPage() {
           </button>
 
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-xs text-slate-400 font-medium">or</span>
-            <div className="flex-1 h-px bg-slate-200" />
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-xs text-zinc-500 font-medium">or</span>
+            <div className="flex-1 h-px bg-white/10" />
           </div>
 
           {/* Email/password form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-slate-700">
+              <label htmlFor="email" className="text-sm font-medium text-zinc-300">
                 Email
               </label>
               <input
@@ -111,12 +116,12 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 required
                 disabled={loading}
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="text-sm font-medium text-zinc-300">
                 Password
               </label>
               <input
@@ -128,13 +133,13 @@ export default function RegisterPage() {
                 required
                 minLength={8}
                 disabled={loading}
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
               />
-              <p className="text-xs text-slate-400">At least 8 characters</p>
+              <p className="text-xs text-zinc-500">At least 8 characters</p>
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm">
                 <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -145,7 +150,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors"
+              className="btn-primary w-full text-white font-semibold py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "Creating account…" : "Create account"}
             </button>
