@@ -7,19 +7,8 @@ import { AuditResults } from "./AuditResults";
 import { ProgressIndicator } from "./ProgressIndicator";
 import Link from "next/link";
 
-const BUSINESS_TYPES = [
-  { value: "dentist", label: "Dentist" },
-  { value: "lawyer", label: "Lawyer" },
-  { value: "plumber", label: "Plumber" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "auto repair", label: "Auto Repair" },
-  { value: "salon", label: "Salon" },
-  { value: "contractor", label: "Contractor" },
-  { value: "other", label: "Other" },
-];
-
 function getKeyword(businessType: string): string {
-  if (!businessType || businessType === "other") return "local business near me";
+  if (!businessType) return "local business near me";
   return `${businessType} near me`;
 }
 
@@ -80,7 +69,7 @@ export function AuditForm() {
           target_url: url,
           location,
           business_name: businessName,
-          business_type: businessType || "other",
+          business_type: businessType || "local business",
         }),
       });
 
@@ -158,19 +147,16 @@ export function AuditForm() {
               </Field>
 
               <Field label="Business Type" htmlFor="businessType">
-                <select
+                <input
                   id="businessType"
+                  type="text"
                   value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
+                  placeholder="e.g. Dentist, Plumber, Salon…"
                   required
                   disabled={loading}
-                  className={`${inputClass} bg-[#1e1e22]`}
-                >
-                  <option value="" className="bg-[#1e1e22] text-zinc-400">Select business type…</option>
-                  {BUSINESS_TYPES.map(({ value, label }) => (
-                    <option key={value} value={value} className="bg-[#1e1e22] text-white">{label}</option>
-                  ))}
-                </select>
+                  className={inputClass}
+                />
               </Field>
             </div>
 
