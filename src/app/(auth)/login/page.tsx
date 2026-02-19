@@ -28,13 +28,13 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email or password.");
     } else {
-      router.push("/dashboard/audit");
+      router.push("/dashboard/overview");
       router.refresh();
     }
   }
 
   async function handleGoogle() {
-    await signIn("google", { callbackUrl: "/dashboard/audit" });
+    await signIn("google", { callbackUrl: "/dashboard/overview" });
   }
 
   return (
