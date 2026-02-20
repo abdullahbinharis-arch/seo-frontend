@@ -490,7 +490,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
           ))}
         </div>
       </div>
-      <AuditForm onComplete={onComplete} />
+      <AuditForm onComplete={onComplete} embedded />
     </div>
   );
 }

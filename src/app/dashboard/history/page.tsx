@@ -4,6 +4,43 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
+function ExportButton({ auditId, token }: { auditId: string; token?: string }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleExport() {
+    setBusy(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/audits/${auditId}/export`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `localrank-audit-${auditId.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("PDF export failed — please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleExport}
+      disabled={busy}
+      className="text-xs text-emerald-400 hover:text-emerald-300 font-medium disabled:opacity-50"
+    >
+      {busy ? "Exporting…" : "Export PDF"}
+    </button>
+  );
+}
+
 interface AuditRow {
   id: string;
   keyword: string;
@@ -111,12 +148,7 @@ export default function HistoryPage() {
                     })}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/dashboard/export?id=${row.id}`}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
-                    >
-                      Export PDF
-                    </Link>
+                    <ExportButton auditId={row.id} token={session?.accessToken} />
                   </td>
                 </tr>
               ))}

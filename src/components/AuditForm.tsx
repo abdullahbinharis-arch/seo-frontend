@@ -25,7 +25,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm";
 
-export function AuditForm({ onComplete }: { onComplete?: (result: AuditResult) => void } = {}) {
+export function AuditForm({ onComplete, embedded = false }: { onComplete?: (result: AuditResult) => void; embedded?: boolean } = {}) {
   const { data: session } = useSession();
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
@@ -130,37 +130,41 @@ export function AuditForm({ onComplete }: { onComplete?: (result: AuditResult) =
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b]">
-      {/* Header / Nav */}
-      <header className="nav-blur border-b border-white/5 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+    <div className={embedded ? "space-y-8" : "min-h-screen bg-[#09090b]"}>
+      {!embedded && (
+        <>
+          {/* Header / Nav — only shown in standalone mode */}
+          <header className="nav-blur border-b border-white/5 sticky top-0 z-50">
+            <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <span className="text-lg font-bold text-white font-display">LocalRank</span>
+              </Link>
+
+              <div className="flex-1" />
+
+              {session?.user && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-zinc-400 hidden sm:block">{session.user.email}</span>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="btn-secondary text-sm text-zinc-300 rounded-lg px-3 py-1.5"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
-            <span className="text-lg font-bold text-white font-display">LocalRank</span>
-          </Link>
+          </header>
+        </>
+      )}
 
-          <div className="flex-1" />
-
-          {session?.user && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-zinc-400 hidden sm:block">{session.user.email}</span>
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="btn-secondary text-sm text-zinc-300 rounded-lg px-3 py-1.5"
-              >
-                Sign out
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <main className={embedded ? "" : "max-w-5xl mx-auto px-6 py-10 space-y-8"}>
         {/* Form card */}
         <div className="glass rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white font-display mb-1">

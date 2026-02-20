@@ -11,7 +11,7 @@ export default function AuditPage() {
       <p className="text-sm text-zinc-400 mb-6">
         Full 11-agent audit — keyword research, on-page, technical, local SEO, backlinks, AI visibility and more.
       </p>
-      <AuditForm onComplete={setLastAudit} />
+      <AuditForm onComplete={setLastAudit} embedded />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "./DashboardContext";
 import { ProgressIndicator } from "./ProgressIndicator";
@@ -85,6 +85,24 @@ export function AgentRunner<T = unknown>({
   const [businessType, setBusinessType] = useState(() => has("businessType") ? lastFormValues.businessType : "");
 
   const [error, setError] = useState("");
+  const [agentProgress, setAgentProgress] = useState(0);
+
+  // Animate progress while loading
+  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startProgress = useCallback(() => {
+    setAgentProgress(0);
+    const start = Date.now();
+    progressTimer.current = setInterval(() => {
+      const elapsed = (Date.now() - start) / 1000;
+      // Ease toward 90% over ~30 seconds
+      setAgentProgress(Math.min(90, Math.round((1 - Math.exp(-elapsed / 12)) * 90)));
+    }, 500);
+  }, []);
+  const stopProgress = useCallback((final: number) => {
+    if (progressTimer.current) clearInterval(progressTimer.current);
+    progressTimer.current = null;
+    setAgentProgress(final);
+  }, []);
 
   // ── Mode state machine ───────────────────────────────────────────────
 
@@ -127,6 +145,7 @@ export function AgentRunner<T = unknown>({
     e.preventDefault();
     setMode({ type: "loading" });
     setError("");
+    startProgress();
 
     // Save form values to context so other pages pre-fill
     setLastFormValues({ keyword, url, location, businessName, businessType });
@@ -165,9 +184,11 @@ export function AgentRunner<T = unknown>({
       }
 
       const data = await res.json() as T;
+      stopProgress(100);
       setMode({ type: "result", data });
       onResult?.(data);
     } catch (err) {
+      stopProgress(0);
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       // Revert mode so the user can see the form again
       setMode({ type: "form", hasBack: hasResult });
@@ -329,7 +350,7 @@ export function AgentRunner<T = unknown>({
           {/* Progress */}
           {mode.type === "loading" && (
             <div className="mt-5 border-t border-white/5 pt-5">
-              <ProgressIndicator stage={progressMessage} progress={50} />
+              <ProgressIndicator stage={progressMessage} progress={agentProgress} />
             </div>
           )}
 

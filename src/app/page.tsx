@@ -413,9 +413,9 @@ export default function LandingPage() {
               <span className="font-display font-semibold text-sm">LocalRank</span>
             </div>
             <div className="flex items-center gap-8 text-sm text-zinc-600">
-              <a href="#" className="hover:text-zinc-400 transition-colors">Privacy</a>
-              <a href="#" className="hover:text-zinc-400 transition-colors">Terms</a>
-              <a href="#" className="hover:text-zinc-400 transition-colors">Support</a>
+              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Privacy</a>
+              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Terms</a>
+              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Support</a>
             </div>
             <p className="text-xs text-zinc-700">&copy; 2026 LocalRank. All rights reserved.</p>
           </div>
