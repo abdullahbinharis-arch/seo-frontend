@@ -29,7 +29,8 @@ export interface LastFormValues {
   businessType: string;
 }
 
-const FORM_LS_KEY = "lr_form_v1";
+const FORM_LS_KEY  = "lr_form_v1";
+const AUDIT_LS_KEY = "lr_last_audit_v1";
 
 function loadFormValues(): LastFormValues {
   try {
@@ -41,6 +42,18 @@ function loadFormValues(): LastFormValues {
 
 function persistFormValues(v: LastFormValues) {
   try { localStorage.setItem(FORM_LS_KEY, JSON.stringify(v)); } catch { /* ignore */ }
+}
+
+function loadLastAudit(): AuditResult | null {
+  try {
+    const raw = typeof window !== "undefined" && localStorage.getItem(AUDIT_LS_KEY);
+    if (raw) return JSON.parse(raw) as AuditResult;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function persistLastAudit(audit: AuditResult) {
+  try { localStorage.setItem(AUDIT_LS_KEY, JSON.stringify(audit)); } catch { /* ignore */ }
 }
 
 // ── Context value shape ───────────────────────────────────────────────
@@ -75,13 +88,32 @@ const DashboardContext = createContext<DashboardContextValue>({
 // ── Provider ──────────────────────────────────────────────────────────
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const [lastAudit,     setLastAuditState]   = useState<AuditResult | null>(null);
-  const [agentCache,    setAgentCacheState]   = useState<Partial<Record<AgentKey, unknown>>>({});
+  const [lastAudit,     setLastAuditState]   = useState<AuditResult | null>(loadLastAudit);
+  const [agentCache,    setAgentCacheState]   = useState<Partial<Record<AgentKey, unknown>>>(() => {
+    const stored = loadLastAudit();
+    if (!stored?.agents) return {};
+    const a = stored.agents as Record<string, unknown>;
+    return {
+      keyword_research:  a.keyword_research,
+      on_page_seo:       a.on_page_seo,
+      local_seo:         a.local_seo,
+      technical_seo:     a.technical_seo,
+      content_rewriter:  a.content_rewriter,
+      backlink_analysis: a.backlink_analysis,
+      link_building:     a.link_building,
+      gbp_audit:         a.gbp_audit,
+      citation_builder:  a.citation_builder,
+      rank_tracker:      a.rank_tracker,
+      ai_seo:            a.ai_seo,
+      blog_writer:       a.blog_writer,
+    };
+  });
   const [lastFormValues, setFormValuesState]  = useState<LastFormValues>(loadFormValues);
 
   /** Full audit completion: cache every agent result + extract form values. */
   const setLastAudit = useCallback((audit: AuditResult) => {
     setLastAuditState(audit);
+    persistLastAudit(audit);
 
     // Populate cache from every agent in the full audit
     const a = audit.agents as Record<string, unknown>;
