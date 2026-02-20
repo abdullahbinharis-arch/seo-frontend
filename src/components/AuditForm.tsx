@@ -12,12 +12,14 @@ function getKeyword(businessType: string): string {
   return `${businessType} near me`;
 }
 
-const STAGES = [
-  { delay: 0,     message: "Finding local competitors on Google…" },
-  { delay: 12000, message: "Analyzing keyword opportunities for your area…" },
-  { delay: 28000, message: "Auditing your website for local SEO signals…" },
-  { delay: 45000, message: "Building your local SEO strategy…" },
-  { delay: 58000, message: "Calculating your Local SEO Score…" },
+// Progress messages shown at different elapsed times during polling
+const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
+  { after: 0,   message: "Finding local competitors on Google…" },
+  { after: 12,  message: "Analyzing keyword opportunities for your area…" },
+  { after: 28,  message: "Auditing your website for local SEO signals…" },
+  { after: 45,  message: "Building your local SEO strategy…" },
+  { after: 65,  message: "Calculating your Local SEO Score…" },
+  { after: 85,  message: "Almost done — finalizing your report…" },
 ];
 
 const inputClass =
@@ -48,22 +50,14 @@ export function AuditForm({ onComplete }: { onComplete?: (result: AuditResult) =
     setError("");
     setResult(null);
     setProgress(0);
-
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    STAGES.forEach(({ delay, message }, i) => {
-      timers.push(
-        setTimeout(() => {
-          setStage(message);
-          setProgress(Math.round((i / STAGES.length) * 90));
-        }, delay)
-      );
-    });
+    setStage(STAGE_MESSAGES[0].message);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       const finalKeyword = keyword.trim() || getKeyword(businessType);
 
-      const res = await fetch(`${apiUrl}/workflow/seo-audit`, {
+      // Step 1 — kick off the audit, get back audit_id immediately
+      const kickoffRes = await fetch(`${apiUrl}/workflow/seo-audit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,19 +74,56 @@ export function AuditForm({ onComplete }: { onComplete?: (result: AuditResult) =
         }),
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.detail ?? `Server error ${res.status}`);
+      if (!kickoffRes.ok) {
+        const body = await kickoffRes.json().catch(() => null);
+        throw new Error(body?.detail ?? `Server error ${kickoffRes.status}`);
       }
 
-      const data: AuditResult = await res.json();
-      setProgress(100);
-      setResult(data);
-      onComplete?.(data);
+      const { audit_id } = await kickoffRes.json();
+      if (!audit_id) throw new Error("No audit_id returned from server");
+
+      // Step 2 — poll until done
+      const startedAt = Date.now();
+      const POLL_INTERVAL = 3000; // ms between polls
+      const MAX_WAIT = 240000;    // 4 minute timeout
+
+      while (Date.now() - startedAt < MAX_WAIT) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+
+        const elapsed = Math.round((Date.now() - startedAt) / 1000);
+
+        // Update stage message based on elapsed time
+        const stageMsg = [...STAGE_MESSAGES]
+          .reverse()
+          .find((s) => elapsed >= s.after);
+        if (stageMsg) setStage(stageMsg.message);
+
+        // Smoothly advance progress bar up to 95% while waiting
+        const cappedProgress = Math.min(95, Math.round((elapsed / 120) * 95));
+        setProgress(cappedProgress);
+
+        const pollRes = await fetch(`${apiUrl}/audits/${audit_id}/status`);
+        if (!pollRes.ok) continue; // transient error — keep polling
+
+        const data = await pollRes.json();
+
+        if (data.status === "failed") {
+          throw new Error("Audit failed — please try again");
+        }
+
+        if (data.status !== "processing") {
+          // status === "completed" → data IS the full report
+          setProgress(100);
+          setResult(data as AuditResult);
+          onComplete?.(data as AuditResult);
+          return;
+        }
+      }
+
+      throw new Error("Audit timed out — please try again");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
-      timers.forEach(clearTimeout);
       setLoading(false);
       setStage("");
     }
