@@ -76,15 +76,15 @@ function ScoreRing({ score, large }: { score: number; large?: boolean }) {
 const PILLAR_CFG = {
   website_seo: {
     label: "Website SEO",
-    iconBg: "rgba(59,130,246,0.1)",
-    glow: "rgba(59,130,246,0.2)",
+    iconBg: "rgba(34,211,238,0.12)",
+    glow: "rgba(34,211,238,0.25)",
     cardIcon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2">
         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
       </svg>
     ),
     pillarIcon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2">
         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
       </svg>
     ),
@@ -158,7 +158,7 @@ function priorityLabel(priority: string): string {
 
 function pillarTagStyle(pillar: string): React.CSSProperties {
   switch (pillar) {
-    case "website_seo": return { background: "rgba(59,130,246,0.08)", color: "#93c5fd" };
+    case "website_seo": return { background: "rgba(34,211,238,0.1)", color: "#22d3ee" };
     case "backlinks":   return { background: "rgba(244,63,94,0.08)", color: "#fca5a5" };
     case "local_seo":   return { background: "rgba(245,158,11,0.08)", color: "#fbbf24" };
     case "ai_seo":      return { background: "rgba(139,92,246,0.08)", color: "#c4b5fd" };
