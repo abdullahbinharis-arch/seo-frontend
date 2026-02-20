@@ -489,6 +489,51 @@ export interface BlogWriterAgent {
   timestamp: string;
 }
 
+// ── Dashboard Scores & Pillars ─────────────────────────────────────────
+
+export interface AuditScores {
+  overall: number;
+  website_seo: number;
+  backlinks: number;
+  local_seo: number;
+  ai_seo: number;
+}
+
+export interface QuickWin {
+  rank: number;
+  title: string;
+  description: string;
+  pillar: "website_seo" | "backlinks" | "local_seo" | "ai_seo";
+  priority: "high" | "medium" | "low";
+  impact: string;
+  time_estimate: string;
+}
+
+export interface ImprovementStep {
+  rank: number;
+  title: string;
+  description: string;
+  category: string;
+  priority: "high" | "medium" | "low";
+  impact: string;
+  time_estimate: string;
+}
+
+export interface PillarData {
+  score: number;
+  title: string;
+  subtitle: string;
+  color: string;
+  steps: ImprovementStep[];
+}
+
+export interface AuditPillars {
+  website_seo: PillarData;
+  backlinks: PillarData;
+  local_seo: PillarData;
+  ai_seo: PillarData;
+}
+
 // ── Full Audit Result ─────────────────────────────────────────────────
 
 export interface AuditResult {
@@ -499,7 +544,10 @@ export interface AuditResult {
   target_url: string;
   domain?: string;
   location: string;
-  local_seo_score?: number;
+  scores?: AuditScores;
+  local_seo_score?: number;  // backward compat
+  quick_wins?: QuickWin[];   // new structured format
+  pillars?: AuditPillars;
   status: string;
   agents_executed: number;
   execution_time_seconds: number;

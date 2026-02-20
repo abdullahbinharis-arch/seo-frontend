@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useDashboard } from "@/components/DashboardContext";
 
 // ── Nav tree ─────────────────────────────────────────────────────────
 
@@ -111,9 +112,26 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+// Score badge colors
+function scoreBadgeStyle(score: number): { bg: string; color: string } {
+  if (score >= 70) return { bg: "rgba(16,185,129,0.12)", color: "#6ee7b7" };
+  if (score >= 40) return { bg: "rgba(245,158,11,0.12)", color: "#fbbf24" };
+  return { bg: "rgba(244,63,94,0.12)", color: "#fb7185" };
+}
+
+// Which pillar group maps to which score key
+const GROUP_SCORE_MAP: Record<string, keyof { overall: number; website_seo: number; backlinks: number; local_seo: number; ai_seo: number }> = {
+  "Website SEO":      "website_seo",
+  "Backlink & Links": "backlinks",
+  "Local SEO":        "local_seo",
+  "AI SEO":           "ai_seo",
+};
+
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { lastAudit } = useDashboard();
+  const scores = lastAudit?.scores;
 
   // Which groups are expanded — default all open
   const groupDefaults = NAV.filter(isGroup).reduce<Record<string, boolean>>(
@@ -165,12 +183,28 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                     {item.icon}
                     <span>{item.label}</span>
                   </div>
-                  <svg
-                    className={`w-3 h-3 transition-transform shrink-0 ${open[item.label] ? "rotate-180" : ""}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <div className="flex items-center gap-1.5">
+                    {scores && GROUP_SCORE_MAP[item.label] && (() => {
+                      const scoreVal = scores[GROUP_SCORE_MAP[item.label]];
+                      const style = scoreBadgeStyle(scoreVal);
+                      return (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600,
+                          padding: "1px 6px", borderRadius: 8,
+                          background: style.bg, color: style.color,
+                          fontFamily: "monospace",
+                        }}>
+                          {scoreVal}
+                        </span>
+                      );
+                    })()}
+                    <svg
+                      className={`w-3 h-3 transition-transform shrink-0 ${open[item.label] ? "rotate-180" : ""}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </button>
 
                 {/* Children */}
@@ -209,7 +243,20 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               }`}
             >
               {item.icon}
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.label === "Dashboard" && scores && (() => {
+                const style = scoreBadgeStyle(scores.overall);
+                return (
+                  <span style={{
+                    fontSize: 10, fontWeight: 600,
+                    padding: "1px 6px", borderRadius: 8,
+                    background: style.bg, color: style.color,
+                    fontFamily: "monospace",
+                  }}>
+                    {scores.overall}
+                  </span>
+                );
+              })()}
             </Link>
           );
         })}

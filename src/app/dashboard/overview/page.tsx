@@ -1,234 +1,425 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
 import { AuditForm } from "@/components/AuditForm";
-import type { AuditResult } from "@/types";
+import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
-// ── Score helpers ──────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────
 
-interface Scores {
-  websiteSeo: number | null;
-  backlinkScore: number | null;
-  localSeo: number | null;
-  aiSeo: number | null;
-  overall: number | null;
+type TabKey = "overall" | "website_seo" | "backlinks" | "local_seo" | "ai_seo";
+
+// ── Score helpers ────────────────────────────────────────────────────────
+
+function scoreStroke(score: number): string {
+  if (score >= 70) return "#10b981";
+  if (score >= 40) return "#f59e0b";
+  return "#f43f5e";
 }
 
-function extractScores(audit: AuditResult): Scores {
-  // on_page seo_score is 0–10 → normalise to 0–100
-  const onPageRaw = audit.agents?.on_page_seo?.recommendations?.current_analysis?.seo_score ?? null;
-  const websiteSeo = onPageRaw != null ? Math.round((onPageRaw / 10) * 100) : null;
-
-  // domain_authority from backlink analysis (already 0–100)
-  const bl = audit.agents?.backlink_analysis?.analysis as Record<string, unknown> | undefined;
-  const backlinkScore = typeof bl?.domain_authority === "number" ? bl.domain_authority : null;
-
-  // local_seo_score top-level or inside local_seo agent
-  const localSeo =
-    typeof audit.local_seo_score === "number"
-      ? audit.local_seo_score
-      : typeof audit.agents?.local_seo?.recommendations?.local_seo_score === "number"
-        ? audit.agents.local_seo.recommendations.local_seo_score
-        : null;
-
-  // ai_visibility_score (0–100)
-  const aiSeo = audit.agents?.ai_seo?.analysis?.ai_visibility_score ?? null;
-
-  // Weighted overall — skips pillars that are null
-  const components = (
-    [
-      { score: websiteSeo, weight: 0.35 },
-      { score: backlinkScore, weight: 0.20 },
-      { score: localSeo, weight: 0.30 },
-      { score: aiSeo, weight: 0.15 },
-    ] as Array<{ score: number | null; weight: number }>
-  ).filter((c): c is { score: number; weight: number } => c.score != null);
-
-  let overall: number | null = null;
-  if (components.length > 0) {
-    const totalWeight = components.reduce((s, c) => s + c.weight, 0);
-    overall = Math.round(components.reduce((s, c) => s + c.score * c.weight, 0) / totalWeight);
-  }
-
-  return { websiteSeo, backlinkScore, localSeo, aiSeo, overall };
+function scoreTextColor(score: number): string {
+  if (score >= 70) return "#6ee7b7";
+  if (score >= 40) return "#fbbf24";
+  return "#fb7185";
 }
 
-// ── Quick-win helpers ──────────────────────────────────────────────────
-
-interface QuickWinItem {
-  text: string;
-  href: string;
-  label: string;
+function scoreLabel(score: number): string {
+  if (score >= 70) return "Good";
+  if (score >= 40) return "Needs Work";
+  return "Critical";
 }
 
-function extractQuickWins(audit: AuditResult): QuickWinItem[] {
-  const wins: QuickWinItem[] = [];
+// SVG ring exactly matching the reference HTML
+function ScoreRing({ score, large }: { score: number; large?: boolean }) {
+  const r = 42;
+  const circ = 2 * Math.PI * r; // ≈ 264
+  const offset = circ * (1 - score / 100);
+  const dim = large ? 68 : 56;
+  const sw = large ? 6 : 5;
+  const fs = large ? 22 : 17;
+  const color = scoreStroke(score);
 
-  for (const w of audit.agents?.on_page_seo?.recommendations?.priority_actions ?? []) {
-    if (typeof w === "string") wins.push({ text: w, href: "/dashboard/on-page", label: "On-Page SEO" });
-  }
-  for (const w of audit.agents?.local_seo?.recommendations?.quick_wins ?? []) {
-    if (typeof w === "string") wins.push({ text: w, href: "/dashboard/gbp", label: "Local SEO" });
-  }
-  for (const w of (audit.agents?.gbp_audit?.analysis?.priority_actions ?? []) as Array<{ action?: string }>) {
-    if (w?.action) wins.push({ text: w.action, href: "/dashboard/gbp", label: "GBP Audit" });
-  }
-  for (const w of (audit.agents?.ai_seo?.analysis?.priority_actions ?? []) as Array<{ action?: string }>) {
-    if (w?.action) wins.push({ text: w.action, href: "/dashboard/ai-seo", label: "AI Visibility" });
-  }
-  for (const w of audit.agents?.technical_seo?.recommendations?.priority_actions ?? []) {
-    if (typeof w === "string") wins.push({ text: w, href: "/dashboard/technical", label: "Technical SEO" });
-  }
-  // Summary quick wins as supplemental fill
-  for (const w of audit.summary?.quick_wins ?? []) {
-    if (typeof w === "string") wins.push({ text: w, href: "/dashboard/audit", label: "Full Audit" });
-  }
-
-  // Deduplicate by first 45 characters
-  const seen = new Set<string>();
-  return wins.filter((w) => {
-    const key = w.text.trim().slice(0, 45).toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).slice(0, 5);
-}
-
-// ── Colour helper ──────────────────────────────────────────────────────
-
-function scoreColor(score: number | null): string {
-  if (score == null) return "#3f3f46";
-  if (score >= 75) return "#6ee7b7";
-  if (score >= 50) return "#fbbf24";
-  return "#f87171";
-}
-
-// ── Score ring ─────────────────────────────────────────────────────────
-
-function ScoreRing({ score, size = 56 }: { score: number | null; size?: number }) {
-  const pct = score ?? 0;
-  const color = scoreColor(score);
-  const inner = Math.round(size * 0.7);
   return (
-    <div
-      className="rounded-full flex items-center justify-center shrink-0"
-      style={{
-        width: size,
-        height: size,
-        background: score != null
-          ? `conic-gradient(${color} ${pct}%, #27272a ${pct}%)`
-          : "#27272a",
-      }}
-    >
+    <div style={{ position: "relative", width: dim, height: dim, flexShrink: 0 }}>
+      <svg
+        width={dim}
+        height={dim}
+        viewBox="0 0 100 100"
+        style={{ transform: "rotate(-90deg)" }}
+      >
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} />
+        <circle
+          cx="50" cy="50" r={r} fill="none"
+          stroke={color} strokeWidth={sw}
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+        />
+      </svg>
       <div
-        className="rounded-full bg-[#09090b] flex items-center justify-center font-bold"
-        style={{ width: inner, height: inner, color, fontSize: size > 64 ? 18 : 12 }}
+        style={{
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Outfit', var(--font-display, sans-serif)",
+          fontWeight: 700, fontSize: fs, color,
+        }}
       >
-        {score ?? "—"}
+        {score}
       </div>
     </div>
   );
 }
 
-// ── Pillar card ────────────────────────────────────────────────────────
+// ── Pillar config ────────────────────────────────────────────────────────
 
-function PillarCard({
-  title, icon, description, score, href, cta,
+const PILLAR_CFG = {
+  website_seo: {
+    label: "Website SEO",
+    iconBg: "rgba(59,130,246,0.1)",
+    glow: "rgba(59,130,246,0.2)",
+    cardIcon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2">
+        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+      </svg>
+    ),
+    pillarIcon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2">
+        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+      </svg>
+    ),
+  },
+  backlinks: {
+    label: "Backlinks",
+    iconBg: "rgba(244,63,94,0.1)",
+    glow: "rgba(244,63,94,0.2)",
+    cardIcon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fb7185" strokeWidth="2">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+      </svg>
+    ),
+    pillarIcon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fb7185" strokeWidth="2">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+      </svg>
+    ),
+  },
+  local_seo: {
+    label: "Local SEO",
+    iconBg: "rgba(245,158,11,0.1)",
+    glow: "rgba(245,158,11,0.2)",
+    cardIcon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
+    pillarIcon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
+  },
+  ai_seo: {
+    label: "AI SEO",
+    iconBg: "rgba(139,92,246,0.1)",
+    glow: "rgba(139,92,246,0.2)",
+    cardIcon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2">
+        <path d="M12 2a4 4 0 014 4c0 1.95-2 4-4 6-2-2-4-4.05-4-6a4 4 0 014-4z" />
+        <path d="M12 12v10" />
+      </svg>
+    ),
+    pillarIcon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2">
+        <path d="M12 2a4 4 0 014 4c0 1.95-2 4-4 6-2-2-4-4.05-4-6a4 4 0 014-4z" />
+        <path d="M12 12v10" /><path d="M8 22h8" />
+      </svg>
+    ),
+  },
+} as const;
+
+// ── Tag style helpers ────────────────────────────────────────────────────
+
+function priorityTagStyle(priority: string): React.CSSProperties {
+  if (priority === "high") return { background: "rgba(244,63,94,0.1)", color: "#fb7185" };
+  if (priority === "medium") return { background: "rgba(245,158,11,0.1)", color: "#fbbf24" };
+  return { background: "rgba(16,185,129,0.1)", color: "#6ee7b7" };
+}
+
+function priorityLabel(priority: string): string {
+  if (priority === "high") return "High Impact";
+  if (priority === "medium") return "Medium";
+  return "Growth";
+}
+
+function pillarTagStyle(pillar: string): React.CSSProperties {
+  switch (pillar) {
+    case "website_seo": return { background: "rgba(59,130,246,0.08)", color: "#93c5fd" };
+    case "backlinks":   return { background: "rgba(244,63,94,0.08)", color: "#fca5a5" };
+    case "local_seo":   return { background: "rgba(245,158,11,0.08)", color: "#fbbf24" };
+    case "ai_seo":      return { background: "rgba(139,92,246,0.08)", color: "#c4b5fd" };
+    default:            return { background: "rgba(255,255,255,0.06)", color: "#a1a1aa" };
+  }
+}
+
+function pillarTagLabel(pillar: string): string {
+  switch (pillar) {
+    case "website_seo": return "Website SEO";
+    case "backlinks":   return "Backlinks";
+    case "local_seo":   return "Local SEO";
+    case "ai_seo":      return "AI SEO";
+    default:            return pillar;
+  }
+}
+
+function winNumStyle(rank: number): React.CSSProperties {
+  if (rank <= 3) return { background: "rgba(244,63,94,0.1)", color: "#fb7185" };
+  if (rank <= 6) return { background: "rgba(245,158,11,0.1)", color: "#fbbf24" };
+  return { background: "rgba(16,185,129,0.1)", color: "#6ee7b7" };
+}
+
+// ── Score strip ──────────────────────────────────────────────────────────
+
+function ScoreStrip({
+  scores,
+  activeTab,
+  onTabChange,
 }: {
-  title: string;
-  icon: string;
-  description: string;
-  score: number | null;
-  href: string;
-  cta: string;
+  scores: AuditScores;
+  activeTab: TabKey;
+  onTabChange: (t: TabKey) => void;
 }) {
-  const color = scoreColor(score);
-  return (
-    <div className="glass rounded-2xl p-5 flex flex-col gap-4 hover:bg-white/5 transition-colors">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-            {icon} {title}
-          </p>
-          <p className="text-xs text-zinc-500 leading-relaxed">{description}</p>
-        </div>
-        <ScoreRing score={score} size={52} />
-      </div>
-      <div className="flex items-center justify-between">
-        {score != null && (
-          <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ color, backgroundColor: `${color}18` }}
-          >
-            {score >= 75 ? "Good" : score >= 50 ? "Needs work" : "Critical"}
-          </span>
-        )}
-        {score == null && <span className="text-xs text-zinc-600">No data</span>}
-        <Link href={href} className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-          {cta}
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-      </div>
-    </div>
-  );
-}
+  const arrow: React.CSSProperties = {
+    position: "absolute", bottom: -7, left: "50%",
+    width: 14, height: 14,
+    background: "#09090b",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderTop: "none", borderLeft: "none",
+    transform: "translateX(-50%) rotate(45deg)",
+    zIndex: 2,
+  };
 
-// ── Overall score banner ───────────────────────────────────────────────
-
-function OverallBanner({ score }: { score: number | null }) {
-  const color = scoreColor(score);
-  const label = score == null ? "—" : score >= 75 ? "Strong" : score >= 50 ? "Average" : "Needs Attention";
   return (
-    <div className="glass rounded-2xl p-6 flex items-center gap-6">
-      <ScoreRing score={score} size={80} />
-      <div className="flex-1">
-        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Overall LocalRank Score</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-bold" style={{ color }}>
-            {score ?? "—"}
-          </span>
-          {score != null && <span className="text-lg text-zinc-500">/100</span>}
-        </div>
-        <p className="text-xs text-zinc-500 mt-1">
-          {score != null
-            ? `${label} — weighted average across all four pillars`
-            : "Run a full audit to calculate your score"}
-        </p>
-      </div>
-      <Link
-        href="/dashboard/audit"
-        className="btn-primary text-white font-semibold px-5 py-2.5 rounded-xl text-sm shrink-0 hidden sm:block"
+    <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+      {/* Overall card */}
+      <div
+        onClick={() => onTabChange("overall")}
+        style={{
+          flex: 1, minWidth: 170,
+          background: "linear-gradient(135deg, rgba(16,185,129,0.06), rgba(59,130,246,0.04))",
+          border: `1px solid ${activeTab === "overall" ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.06)"}`,
+          borderRadius: 16, padding: 18, cursor: "pointer",
+          transition: "all 0.3s", position: "relative", overflow: "hidden",
+        }}
       >
-        New Audit
-      </Link>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Score</span>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <ScoreRing score={scores.overall} large />
+          <div style={{ fontSize: 11.5, color: "#71717a", lineHeight: 1.45 }}>
+            {scoreLabel(scores.overall)}
+            <div style={{ fontSize: 10.5, marginTop: 2 }}>Weighted avg of 4 pillars</div>
+          </div>
+        </div>
+        {activeTab === "overall" && <div style={arrow} />}
+      </div>
+
+      {/* Pillar cards */}
+      {(["website_seo", "backlinks", "local_seo", "ai_seo"] as const).map((key) => {
+        const cfg = PILLAR_CFG[key];
+        const score = scores[key];
+        const isActive = activeTab === key;
+        return (
+          <div
+            key={key}
+            onClick={() => onTabChange(key)}
+            style={{
+              flex: 1, minWidth: 160,
+              background: "#18181b",
+              border: `1px solid ${isActive ? cfg.glow : "rgba(255,255,255,0.06)"}`,
+              borderRadius: 16, padding: 18, cursor: "pointer",
+              transition: "all 0.3s", position: "relative", overflow: "hidden",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cfg.label}</span>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {cfg.cardIcon}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <ScoreRing score={score} />
+              <div style={{ fontSize: 11.5, color: "#71717a", lineHeight: 1.45 }}>
+                <span style={{ color: scoreTextColor(score), fontWeight: 600 }}>{scoreLabel(score)}</span>
+                <div style={{ fontSize: 10.5, marginTop: 2 }}>{score} / 100</div>
+              </div>
+            </div>
+            {isActive && <div style={arrow} />}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-// ── Quick wins ─────────────────────────────────────────────────────────
+// ── Quick wins section ───────────────────────────────────────────────────
 
-function QuickWinsSectionFull({ wins }: { wins: QuickWinItem[] }) {
+function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
   return (
-    <div className="glass rounded-2xl p-6">
-      <h2 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
-        <span className="text-amber-400">⚡</span> Top 5 Quick Wins
-      </h2>
-      <div className="space-y-2">
-        {wins.map((win, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-xl px-4 py-3 bg-white/3 hover:bg-white/5 transition-colors">
-            <span className="text-zinc-600 font-mono text-xs shrink-0 w-4">{i + 1}.</span>
-            <span className="text-sm text-zinc-300 flex-1 leading-snug">{win.text}</span>
-            <Link
-              href={win.href}
-              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 shrink-0 whitespace-nowrap flex items-center gap-1 border border-emerald-500/30 hover:border-emerald-400 px-3 py-1.5 rounded-lg transition-colors"
+    <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 14, padding: "18px 22px",
+        background: "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.05))",
+      }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </div>
+        <div>
+          <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 17 }}>Top 10 Quick Wins</div>
+          <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>
+            Highest-impact actions sorted by expected ranking improvement. Do these first.
+          </div>
+        </div>
+      </div>
+
+      {/* Win list */}
+      <div style={{ padding: 22, background: "#0f0f12" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {wins.map((win) => (
+            <div
+              key={win.rank}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 10,
+              }}
             >
-              Fix this →
-            </Link>
+              <div style={{
+                width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "monospace", fontSize: 10, fontWeight: 600,
+                ...winNumStyle(win.rank),
+              }}>
+                {win.rank}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.45 }}>{win.title}</div>
+                {win.impact && (
+                  <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>
+                    {win.impact}{win.time_estimate ? ` · ${win.time_estimate}` : ""}
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
+                    textTransform: "uppercase", letterSpacing: "0.04em",
+                    ...priorityTagStyle(win.priority),
+                  }}>
+                    {priorityLabel(win.priority)}
+                  </span>
+                  <span style={{
+                    fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
+                    textTransform: "uppercase", letterSpacing: "0.04em",
+                    ...pillarTagStyle(win.pillar),
+                  }}>
+                    {pillarTagLabel(win.pillar)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Pillar detail section ────────────────────────────────────────────────
+
+function PillarSection({
+  pillarKey,
+  data,
+}: {
+  pillarKey: keyof typeof PILLAR_CFG;
+  data: { score: number; title: string; subtitle: string; steps: ImprovementStep[] };
+}) {
+  const cfg = PILLAR_CFG[pillarKey];
+
+  return (
+    <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 22px", background: "#18181b" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {cfg.pillarIcon}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 17 }}>{data.title}</div>
+          <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>{data.subtitle}</div>
+        </div>
+        <div style={{
+          fontFamily: "var(--font-display, 'Outfit', sans-serif)",
+          fontWeight: 700, fontSize: 34,
+          color: scoreTextColor(data.score),
+        }}>
+          {data.score}
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div style={{ padding: 22, background: "#0f0f12", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 14, marginBottom: 14 }}>
+          Improvement Steps
+        </div>
+        {data.steps.map((step, i) => (
+          <div
+            key={step.rank}
+            style={{
+              display: "flex", gap: 12, padding: "14px 0",
+              borderBottom: i < data.steps.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none",
+            }}
+          >
+            <div style={{
+              width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "monospace", fontSize: 11, fontWeight: 600,
+              background: "rgba(255,255,255,0.04)",
+              color: step.priority === "high" ? "#fb7185" : step.priority === "medium" ? "#fbbf24" : "#6ee7b7",
+            }}>
+              {step.rank}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 500, lineHeight: 1.4, marginBottom: 4 }}>{step.title}</div>
+              <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.55 }}>{step.description}</div>
+              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                {step.category && (
+                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, background: "rgba(255,255,255,0.04)", color: "#71717a", fontWeight: 500 }}>
+                    {step.category}
+                  </span>
+                )}
+                {step.priority && (
+                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, fontWeight: 600, ...priorityTagStyle(step.priority) }}>
+                    {step.priority === "high" ? "High Impact" : step.priority === "medium" ? "Medium Impact" : "Maintenance"}
+                  </span>
+                )}
+                {step.time_estimate && (
+                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, background: "rgba(255,255,255,0.04)", color: "#71717a", fontWeight: 500 }}>
+                    {step.time_estimate}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -236,70 +427,43 @@ function QuickWinsSectionFull({ wins }: { wins: QuickWinItem[] }) {
   );
 }
 
-// ── Recent audits ──────────────────────────────────────────────────────
+// ── Audit meta bar ───────────────────────────────────────────────────────
 
-interface AuditRow {
-  id: string;
-  keyword: string;
-  target_url: string;
-  location: string;
-  created_at: string;
-  execution_time: number | null;
-}
+function AuditMetaBar({ audit }: { audit: AuditResult }) {
+  const date = new Date(audit.timestamp).toLocaleDateString("en-CA", {
+    month: "short", day: "numeric", year: "numeric",
+  });
+  const displayUrl = audit.target_url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-function RecentAuditsSection({ rows }: { rows: AuditRow[] }) {
-  if (rows.length === 0) return null;
   return (
-    <div className="glass rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-        <h2 className="text-sm font-semibold text-zinc-300">Recent Audits</h2>
-        <Link href="/dashboard/history" className="text-xs text-emerald-400 hover:text-emerald-300 font-medium">
-          View all →
-        </Link>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 20, flexWrap: "wrap", gap: 12 }}>
+      <div>
+        <h1 style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 20, marginBottom: 4 }}>
+          {audit.business_name || displayUrl}
+        </h1>
+        <p style={{ fontSize: 12, color: "#71717a" }}>
+          {displayUrl} · {audit.keyword} · {audit.location} · {date}
+        </p>
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-zinc-600 uppercase tracking-wider border-b border-white/5">
-            <th className="px-6 py-3 font-medium">Keyword</th>
-            <th className="px-6 py-3 font-medium hidden sm:table-cell">URL</th>
-            <th className="px-6 py-3 font-medium hidden md:table-cell">Location</th>
-            <th className="px-6 py-3 font-medium text-right">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={row.id}
-              className={`border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors ${i % 2 === 1 ? "bg-white/[0.01]" : ""}`}
-            >
-              <td className="px-6 py-3 text-zinc-200 font-medium">{row.keyword}</td>
-              <td className="px-6 py-3 text-zinc-500 hidden sm:table-cell">
-                <span className="truncate max-w-40 block text-xs">
-                  {row.target_url.replace(/^https?:\/\//, "")}
-                </span>
-              </td>
-              <td className="px-6 py-3 text-zinc-500 text-xs hidden md:table-cell">{row.location}</td>
-              <td className="px-6 py-3 text-right">
-                <span className="text-zinc-600 text-xs font-mono">
-                  {new Date(row.created_at).toLocaleDateString("en-CA", {
-                    month: "short", day: "numeric",
-                  })}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Link
+        href="/dashboard/audit"
+        style={{
+          padding: "7px 16px", borderRadius: 8, fontSize: 12, fontWeight: 500,
+          background: "transparent", border: "1px solid rgba(255,255,255,0.10)",
+          color: "#a1a1aa", textDecoration: "none",
+        }}
+      >
+        Re-run Audit
+      </Link>
     </div>
   );
 }
 
-// ── Empty state ────────────────────────────────────────────────────────
+// ── Empty state ──────────────────────────────────────────────────────────
 
 function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
   return (
     <div className="space-y-6">
-      {/* Hero */}
       <div className="glass rounded-2xl p-8 sm:p-12 text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto">
           <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -312,53 +476,30 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             Get your LocalRank Score, keyword opportunities, technical issues, and a full action plan — in under 60 seconds.
           </p>
         </div>
-
-        {/* Pillar preview tiles */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-left max-w-2xl mx-auto">
           {[
-            { icon: "🌐", title: "Website SEO", desc: "Keywords · on-page · technical" },
-            { icon: "📍", title: "Local SEO", desc: "GBP · citations · map pack" },
-            { icon: "🔗", title: "Backlinks", desc: "DA score · link gaps" },
-            { icon: "🤖", title: "AI Visibility", desc: "ChatGPT · Perplexity · AI search" },
+            { title: "Website SEO", desc: "Keywords · on-page · technical" },
+            { title: "Local SEO", desc: "GBP · citations · map pack" },
+            { title: "Backlinks", desc: "DA score · link gaps" },
+            { title: "AI Visibility", desc: "ChatGPT · Perplexity · AI search" },
           ].map((p) => (
             <div key={p.title} className="bg-white/3 rounded-xl p-3">
-              <p className="text-xs font-semibold text-zinc-300 mb-0.5">{p.icon} {p.title}</p>
+              <p className="text-xs font-semibold text-zinc-300 mb-0.5">{p.title}</p>
               <p className="text-xs text-zinc-600">{p.desc}</p>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Embedded audit form */}
       <AuditForm onComplete={onComplete} />
     </div>
   );
 }
 
-// ── Overview page ──────────────────────────────────────────────────────
+// ── Main page ────────────────────────────────────────────────────────────
 
 export default function OverviewPage() {
   const { lastAudit, setLastAudit } = useDashboard();
-  const { data: session } = useSession();
-  const [recentAudits, setRecentAudits] = useState<AuditRow[]>([]);
-
-  // Fetch recent audits regardless of session state
-  useEffect(() => {
-    async function load() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-        const headers: Record<string, string> = {};
-        const token = (session as { accessToken?: string } | null)?.accessToken;
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const res = await fetch(`${apiUrl}/audits?limit=5`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setRecentAudits(data.audits ?? data ?? []);
-        }
-      } catch { /* recent audits are supplemental — fail silently */ }
-    }
-    load();
-  }, [session]);
+  const [activeTab, setActiveTab] = useState<TabKey>("overall");
 
   if (!lastAudit) {
     return (
@@ -368,85 +509,68 @@ export default function OverviewPage() {
           <p className="text-sm text-zinc-500 mt-1">Your SEO command centre.</p>
         </div>
         <EmptyState onComplete={setLastAudit} />
-        <RecentAuditsSection rows={recentAudits} />
       </div>
     );
   }
 
-  const scores = extractScores(lastAudit);
-  const quickWins = extractQuickWins(lastAudit);
+  // Use backend-computed scores when available; fall back gracefully
+  const scores: AuditScores = lastAudit.scores ?? {
+    overall: lastAudit.local_seo_score ?? 0,
+    website_seo: lastAudit.agents?.on_page_seo?.recommendations?.current_analysis?.seo_score ?? 0,
+    backlinks: 0,
+    local_seo: lastAudit.agents?.local_seo?.recommendations?.local_seo_score ?? 0,
+    ai_seo: lastAudit.agents?.ai_seo?.analysis?.ai_visibility_score ?? 0,
+  };
+
+  const quickWins: QuickWin[] = lastAudit.quick_wins ?? [];
+  const pillars = lastAudit.pillars;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white font-display">Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1">
-            Last audit:{" "}
-            <span className="text-zinc-300 font-medium">{lastAudit.keyword}</span>
-            {" · "}
-            <span className="text-zinc-400">{lastAudit.target_url.replace(/^https?:\/\//, "")}</span>
-            {" · "}
-            <span className="text-zinc-600 text-xs">
-              {new Date(lastAudit.timestamp).toLocaleDateString("en-CA", {
-                month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-              })}
-            </span>
-          </p>
-        </div>
-        <Link
-          href="/dashboard/audit"
-          className="btn-primary text-white font-semibold px-4 py-2 rounded-xl text-sm shrink-0"
-        >
-          + New Audit
-        </Link>
-      </div>
+    <div>
+      <AuditMetaBar audit={lastAudit} />
 
-      {/* 4 Pillar cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <PillarCard
-          title="Website SEO"
-          icon="🌐"
-          score={scores.websiteSeo}
-          description="On-page quality, keyword targeting, and technical health"
-          href="/dashboard/on-page"
-          cta="View details"
-        />
-        <PillarCard
-          title="Backlinks"
-          icon="🔗"
-          score={scores.backlinkScore}
-          description="Domain authority, linking domains, and link-building opportunities"
-          href="/dashboard/backlinks"
-          cta="View details"
-        />
-        <PillarCard
-          title="Local SEO"
-          icon="📍"
-          score={scores.localSeo}
-          description="GBP completeness, citations, map pack ranking, NAP consistency"
-          href="/dashboard/gbp"
-          cta="View details"
-        />
-        <PillarCard
-          title="AI Visibility"
-          icon="🤖"
-          score={scores.aiSeo}
-          description="How often ChatGPT, Perplexity, and AI search mention your business"
-          href="/dashboard/ai-seo"
-          cta="View details"
-        />
-      </div>
+      <ScoreStrip scores={scores} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Overall LocalRank score */}
-      <OverallBanner score={scores.overall} />
+      {/* Overall: Quick wins */}
+      {activeTab === "overall" && (
+        quickWins.length > 0 ? (
+          <QuickWinsSection wins={quickWins} />
+        ) : (
+          <div style={{ padding: "60px 0", textAlign: "center", color: "#71717a", fontSize: 14 }}>
+            No quick wins available. Run a new audit to see your action plan.
+          </div>
+        )
+      )}
 
-      {/* Quick wins */}
-      {quickWins.length > 0 && <QuickWinsSectionFull wins={quickWins} />}
+      {/* Pillar tabs */}
+      {activeTab === "website_seo" && (
+        pillars?.website_seo
+          ? <PillarSection pillarKey="website_seo" data={pillars.website_seo} />
+          : <NoData />
+      )}
+      {activeTab === "backlinks" && (
+        pillars?.backlinks
+          ? <PillarSection pillarKey="backlinks" data={pillars.backlinks} />
+          : <NoData />
+      )}
+      {activeTab === "local_seo" && (
+        pillars?.local_seo
+          ? <PillarSection pillarKey="local_seo" data={pillars.local_seo} />
+          : <NoData />
+      )}
+      {activeTab === "ai_seo" && (
+        pillars?.ai_seo
+          ? <PillarSection pillarKey="ai_seo" data={pillars.ai_seo} />
+          : <NoData />
+      )}
+    </div>
+  );
+}
 
-      {/* Recent audits */}
-      <RecentAuditsSection rows={recentAudits} />
+function NoData() {
+  return (
+    <div style={{ padding: "60px 0", textAlign: "center", color: "#71717a", fontSize: 14 }}>
+      Run a new audit to see detailed improvement steps for this pillar.
     </div>
   );
 }
