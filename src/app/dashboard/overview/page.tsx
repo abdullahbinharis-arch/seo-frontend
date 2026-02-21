@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
-import { AuditForm } from "@/components/AuditForm";
+import { COUNTRIES } from "@/data/countries";
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -433,38 +434,339 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
   );
 }
 
+// ── Particles seed (stable across re-renders) ──────────────────────────
+
+function makeParticles(count: number) {
+  const particles: Array<{
+    left: number;
+    bottom: number;
+    size: number;
+    color: string;
+    dur: number;
+    delay: number;
+  }> = [];
+  const colors = ["#6ee7b7", "#3b82f6", "#8b5cf6"];
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      left: Math.round(Math.random() * 100),
+      bottom: Math.round(Math.random() * 40),
+      size: 1 + Math.random() * 2,
+      color: colors[i % colors.length],
+      dur: 6 + Math.random() * 8,
+      delay: Math.random() * 10,
+    });
+  }
+  return particles;
+}
+
+const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
+  { after: 0,   message: "Scanning website structure..." },
+  { after: 8,   message: "Detecting business type and keywords..." },
+  { after: 20,  message: "Finding local competitors on Google..." },
+  { after: 35,  message: "Analyzing keyword opportunities..." },
+  { after: 50,  message: "Auditing on-page SEO signals..." },
+  { after: 65,  message: "Checking backlink profile..." },
+  { after: 80,  message: "Analyzing Google Business Profile..." },
+  { after: 100, message: "Scoring AI search visibility..." },
+  { after: 120, message: "Building local SEO strategy..." },
+  { after: 145, message: "Calculating your LocalRank Score..." },
+  { after: 170, message: "Almost done — finalizing report..." },
+];
+
 // ── Empty state ──────────────────────────────────────────────────────────
 
 function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
+  const { data: session } = useSession();
+  const [businessName, setBusinessName] = useState("");
+  const [url, setUrl]                   = useState("");
+  const [country, setCountry]           = useState("Canada");
+  const [city, setCity]                 = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState("");
+  const [stage, setStage]               = useState("");
+
+  const particles = useMemo(() => makeParticles(30), []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!businessName.trim() || !url.trim() || !country || !city.trim()) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setStage(STAGE_MESSAGES[0].message);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const location = `${city.trim()}, ${country}`;
+
+      const kickoffRes = await fetch(`${apiUrl}/workflow/seo-audit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.accessToken
+            ? { Authorization: `Bearer ${session.accessToken}` }
+            : {}),
+        },
+        body: JSON.stringify({
+          target_url: url.trim(),
+          location,
+          business_name: businessName.trim(),
+        }),
+      });
+
+      if (!kickoffRes.ok) {
+        const body = await kickoffRes.json().catch(() => null);
+        throw new Error(body?.detail ?? `Server error ${kickoffRes.status}`);
+      }
+
+      const { audit_id } = await kickoffRes.json();
+      if (!audit_id) throw new Error("No audit_id returned from server");
+
+      const startedAt = Date.now();
+      const POLL_INTERVAL = 3000;
+      const MAX_WAIT = 240000;
+
+      while (Date.now() - startedAt < MAX_WAIT) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+        const elapsed = Math.round((Date.now() - startedAt) / 1000);
+
+        const stageMsg = [...STAGE_MESSAGES].reverse().find((s) => elapsed >= s.after);
+        if (stageMsg) setStage(stageMsg.message);
+
+        const pollRes = await fetch(`${apiUrl}/audits/${audit_id}/status`);
+        if (!pollRes.ok) continue;
+
+        const data = await pollRes.json();
+        if (data.status === "failed") throw new Error("Audit failed — please try again");
+        if (data.status !== "processing") {
+          onComplete(data as AuditResult);
+          return;
+        }
+      }
+
+      throw new Error("Audit timed out — please try again");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+      setStage("");
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="glass rounded-2xl p-8 sm:p-12 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto">
-          <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white font-display mb-2">Run your first audit</h2>
-          <p className="text-sm text-zinc-400 max-w-md mx-auto">
-            Get your LocalRank Score, keyword opportunities, technical issues, and a full action plan — in under 60 seconds.
+    <div className="flex items-center justify-center min-h-[calc(100vh-80px)] relative overflow-hidden">
+      {/* ── Ambient orbs ── */}
+      <div className="empty-orb" style={{ width: 500, height: 500, background: "#6ee7b7", top: "-10%", left: "-5%" }} />
+      <div className="empty-orb" style={{ width: 450, height: 450, background: "#3b82f6", bottom: "-8%", right: "-3%", animationDelay: "-7s" }} />
+      <div className="empty-orb" style={{ width: 350, height: 350, background: "#8b5cf6", top: "30%", right: "10%", animationDelay: "-13s" }} />
+
+      {/* ── Grid background ── */}
+      <div className="absolute inset-0 empty-grid-bg" />
+
+      {/* ── Floating particles ── */}
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          className="empty-particle"
+          style={{
+            left: `${p.left}%`,
+            bottom: `${p.bottom}%`,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+
+      {/* ── Form card ── */}
+      <div
+        className="empty-card relative z-10 w-full"
+        style={{ maxWidth: 780, padding: "40px 48px 36px" }}
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center mb-7">
+          <div
+            className="empty-icon-pulse flex items-center justify-center rounded-2xl mb-4"
+            style={{
+              width: 48,
+              height: 48,
+              background: "linear-gradient(135deg, #059669, #10b981)",
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h2 className="font-display font-bold text-white" style={{ fontSize: 22 }}>
+            Run Your First Audit
+          </h2>
+          <p className="text-zinc-500 mt-1" style={{ fontSize: 13 }}>
+            Paste your website and we&apos;ll analyze everything
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-left max-w-2xl mx-auto">
-          {[
-            { title: "Website SEO", desc: "Keywords · on-page · technical" },
-            { title: "Local SEO", desc: "GBP · citations · map pack" },
-            { title: "Backlinks", desc: "DA score · link gaps" },
-            { title: "AI Visibility", desc: "ChatGPT · Perplexity · AI search" },
-          ].map((p) => (
-            <div key={p.title} className="bg-white/3 rounded-xl p-3">
-              <p className="text-xs font-semibold text-zinc-300 mb-0.5">{p.title}</p>
-              <p className="text-xs text-zinc-600">{p.desc}</p>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div
+            className="grid gap-[14px]"
+            style={{ gridTemplateColumns: "1fr 1fr" }}
+          >
+            {/* Business Name */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
+              label="Business Name"
+            >
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="Arch Kitchen Cabinets"
+                disabled={loading}
+                className="empty-field"
+              />
+            </FieldGroup>
+
+            {/* Website URL */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
+              label="Website URL"
+            >
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://yourbusiness.com"
+                disabled={loading}
+                className="empty-field"
+              />
+            </FieldGroup>
+
+            {/* Country */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
+              label="Country"
+            >
+              <div className="relative">
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  disabled={loading}
+                  className="empty-field empty-select"
+                >
+                  <option value="">Select country</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c} style={{ background: "#18181b" }}>{c}</option>
+                  ))}
+                </select>
+                <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </FieldGroup>
+
+            {/* City */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>}
+              label="City"
+            >
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. Toronto"
+                disabled={loading}
+                className="empty-field"
+              />
+            </FieldGroup>
+
+            {/* Submit button — full width */}
+            <div style={{ gridColumn: "1 / -1" }}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="empty-btn w-full flex items-center justify-center gap-2.5 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  padding: "14px 24px",
+                  borderRadius: 14,
+                  fontSize: 15,
+                  fontFamily: "'DM Sans', var(--font-geist-sans), sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                Run Free Audit
+              </button>
             </div>
-          ))}
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="flex items-center justify-center gap-2 mt-4" style={{ fontSize: 12 }}>
+          <span className="text-zinc-500">Takes about 60 seconds</span>
+          <span className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
+          <span className="text-zinc-500">No credit card required</span>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mt-4 flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3">
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm flex-1">{error}</p>
+            <button onClick={() => setError("")} className="shrink-0 text-red-400 hover:text-red-300">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* Loading overlay */}
+        {loading && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl" style={{ background: "rgba(9,9,11,0.85)", backdropFilter: "blur(4px)" }}>
+            <div className="empty-spinner mb-4" />
+            <p className="font-display font-medium text-white" style={{ fontSize: 14 }}>
+              {stage || "Analyzing your business..."}
+            </p>
+            <p className="text-zinc-500 mt-1.5" style={{ fontSize: 11 }}>
+              Scanning website &middot; Detecting keywords &middot; Checking rankings
+            </p>
+          </div>
+        )}
       </div>
-      <AuditForm onComplete={onComplete} embedded />
+    </div>
+  );
+}
+
+function FieldGroup({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-zinc-500">{icon}</span>
+        <span
+          className="text-zinc-500 font-semibold uppercase tracking-wider"
+          style={{ fontSize: 11 }}
+        >
+          {label}
+        </span>
+      </div>
+      {children}
     </div>
   );
 }
@@ -476,15 +778,7 @@ export default function OverviewPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("overall");
 
   if (!lastAudit) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white font-display">Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1">Your SEO command centre.</p>
-        </div>
-        <EmptyState onComplete={setLastAudit} />
-      </div>
-    );
+    return <EmptyState onComplete={setLastAudit} />;
   }
 
   // Use backend-computed scores when available; fall back gracefully

@@ -1,10 +1,18 @@
 export interface AuditRequest {
-  keyword: string;
+  keyword?: string;
   target_url?: string;
   domain?: string;   // Alternative to target_url — triggers site-wide crawl
   location: string;
   business_name?: string;
   business_type?: string;
+}
+
+export interface AutoDetected {
+  business_type: string;
+  primary_keyword: string;
+  secondary_keywords: string[];
+  services: string[];
+  detected_name: string;
 }
 
 // ── Site Crawl ────────────────────────────────────────────────────────
@@ -591,6 +599,7 @@ export interface AuditResult {
   pillars?: AuditPillars;
   seo_tasks?: SeoTask[];
   estimated_cost?: number;
+  auto_detected?: AutoDetected | null;
   status: string;
   agents_executed: number;
   execution_time_seconds: number;

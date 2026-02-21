@@ -7,22 +7,18 @@ import { AuditResults } from "./AuditResults";
 import { ProgressIndicator } from "./ProgressIndicator";
 import Link from "next/link";
 
-function getKeyword(businessType: string): string {
-  if (!businessType) return "local business near me";
-  return `${businessType} near me`;
-}
-
 // Progress messages shown at different elapsed times during polling
 const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
-  { after: 0,   message: "Finding local competitors on Google…" },
-  { after: 10,  message: "Analyzing keyword opportunities for your area…" },
-  { after: 25,  message: "Auditing your website for on-page SEO signals…" },
-  { after: 40,  message: "Checking backlink profile and domain authority…" },
-  { after: 55,  message: "Evaluating link building opportunities…" },
-  { after: 70,  message: "Analyzing your Google Business Profile…" },
-  { after: 90,  message: "Scoring your AI search visibility…" },
-  { after: 110, message: "Building your local SEO strategy…" },
-  { after: 140, message: "Calculating your LocalRank Score…" },
+  { after: 0,   message: "Analyzing your website…" },
+  { after: 8,   message: "Detecting your business type and best keyword…" },
+  { after: 20,  message: "Finding local competitors on Google…" },
+  { after: 35,  message: "Analyzing keyword opportunities for your area…" },
+  { after: 50,  message: "Auditing your website for on-page SEO signals…" },
+  { after: 65,  message: "Checking backlink profile and domain authority…" },
+  { after: 80,  message: "Analyzing your Google Business Profile…" },
+  { after: 100, message: "Scoring your AI search visibility…" },
+  { after: 120, message: "Building your local SEO strategy…" },
+  { after: 145, message: "Calculating your LocalRank Score…" },
   { after: 170, message: "Almost done — finalizing your report…" },
 ];
 
@@ -32,8 +28,6 @@ const inputClass =
 export function AuditForm({ onComplete, embedded = false }: { onComplete?: (result: AuditResult) => void; embedded?: boolean } = {}) {
   const { data: session } = useSession();
   const [businessName, setBusinessName] = useState("");
-  const [businessType, setBusinessType] = useState("");
-  const [keyword, setKeyword]           = useState("");
   const [url, setUrl]                   = useState("");
   const [location, setLocation]         = useState("Toronto, Canada");
   const [loading, setLoading]           = useState(false);
@@ -44,12 +38,6 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
   const [formCollapsed, setFormCollapsed] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  function handleBusinessTypeChange(val: string) {
-    setBusinessType(val);
-    // Auto-fill keyword only if user hasn't manually edited it
-    setKeyword(getKeyword(val));
-  }
 
   // Auto-scroll to results when they appear
   useEffect(() => {
@@ -69,9 +57,9 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const finalKeyword = keyword.trim() || getKeyword(businessType);
 
       // Step 1 — kick off the audit, get back audit_id immediately
+      // Keyword is omitted — backend auto-detects from the website
       const kickoffRes = await fetch(`${apiUrl}/workflow/seo-audit`, {
         method: "POST",
         headers: {
@@ -81,11 +69,9 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
             : {}),
         },
         body: JSON.stringify({
-          keyword: finalKeyword,
           target_url: url,
           location,
           business_name: businessName,
-          business_type: businessType || "local business",
         }),
       });
 
@@ -216,46 +202,17 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-5">
-                <Field label="Business Name" htmlFor="businessName">
-                  <input
-                    id="businessName"
-                    type="text"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="Smith Family Dental"
-                    required
-                    disabled={loading}
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Business Type" htmlFor="businessType">
-                  <input
-                    id="businessType"
-                    type="text"
-                    value={businessType}
-                    onChange={(e) => handleBusinessTypeChange(e.target.value)}
-                    placeholder="e.g. Dental Clinic, Kitchen Remodeler, General Contractor"
-                    required
-                    disabled={loading}
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-
-              <Field label="Search Keyword" htmlFor="keyword">
+              <Field label="Business Name" htmlFor="businessName">
                 <input
-                  id="keyword"
+                  id="businessName"
                   type="text"
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="e.g. kitchen renovation near me, general contractor Toronto"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  placeholder="Smith Family Dental"
                   required
                   disabled={loading}
                   className={inputClass}
                 />
-                <p className="text-xs text-zinc-500 mt-1">How your customers search for you on Google. Edit to make it more specific.</p>
               </Field>
 
               <div className="grid md:grid-cols-2 gap-5">
@@ -292,7 +249,7 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
                   disabled={loading}
                   className="btn-primary text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Running audit…" : "Run Local SEO Audit"}
+                  {loading ? "Running audit…" : "Run Free Audit"}
                 </button>
                 {!loading && (
                   <p className="text-sm text-zinc-500">Takes 60–90 seconds</p>
