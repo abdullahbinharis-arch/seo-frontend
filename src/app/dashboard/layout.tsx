@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar, MobileMenuButton } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { DashboardProvider } from "@/components/DashboardContext";
+import { Logo } from "@/components/brand/Logo";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,14 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Mobile top bar */}
           <header className="md:hidden nav-blur sticky top-0 z-30 border-b border-white/6 px-4 py-3 flex items-center gap-3">
             <MobileMenuButton onClick={() => setMobileOpen(true)} />
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5-10-5z" />
-                </svg>
-              </div>
-              <span className="text-sm font-bold text-white font-display">LocalRankr</span>
-            </div>
+            <Logo size="sidebar" animated={false} />
           </header>
 
           {/* Page content */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,14 +67,8 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-white font-display">LocalRankr</span>
+        <Link href="/" className="flex items-center justify-center mb-8">
+          <Logo size="medium" animated={false} />
         </Link>
 
         <div className="glass rounded-2xl p-8">
