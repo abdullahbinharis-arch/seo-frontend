@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
+import { Logo } from "@/components/brand/Logo";
 import { COUNTRIES } from "@/data/countries";
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
@@ -469,7 +470,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
   { after: 80,  message: "Analyzing Google Business Profile..." },
   { after: 100, message: "Scoring AI search visibility..." },
   { after: 120, message: "Building local SEO strategy..." },
-  { after: 145, message: "Calculating your LocalRank Score..." },
+  { after: 145, message: "Calculating your LocalRankr Score..." },
   { after: 170, message: "Almost done — finalizing report..." },
 ];
 
@@ -590,17 +591,8 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-7">
-          <div
-            className="empty-icon-pulse flex items-center justify-center rounded-2xl mb-4"
-            style={{
-              width: 48,
-              height: 48,
-              background: "linear-gradient(135deg, #059669, #10b981)",
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+          <div className="empty-icon-pulse mb-4">
+            <Logo size="large" animated={true} showText={false} />
           </div>
           <h2 className="font-display font-bold text-white" style={{ fontSize: 22 }}>
             Run Your First Audit
@@ -732,7 +724,9 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
         {/* Loading overlay */}
         {loading && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl" style={{ background: "rgba(9,9,11,0.85)", backdropFilter: "blur(4px)" }}>
-            <div className="empty-spinner mb-4" />
+            <div className="mb-4">
+              <Logo size="medium" animated={true} showText={false} />
+            </div>
             <p className="font-display font-medium text-white" style={{ fontSize: 14 }}>
               {stage || "Analyzing your business..."}
             </p>

@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import type { AuditResult } from "@/types";
 import { AuditResults } from "./AuditResults";
 import { ProgressIndicator } from "./ProgressIndicator";
+import { Logo } from "./brand/Logo";
 import Link from "next/link";
 
 // Progress messages shown at different elapsed times during polling
@@ -18,7 +19,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
   { after: 80,  message: "Analyzing your Google Business Profile…" },
   { after: 100, message: "Scoring your AI search visibility…" },
   { after: 120, message: "Building your local SEO strategy…" },
-  { after: 145, message: "Calculating your LocalRank Score…" },
+  { after: 145, message: "Calculating your LocalRankr Score…" },
   { after: 170, message: "Almost done — finalizing your report…" },
 ];
 
@@ -139,13 +140,7 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
           <header className="nav-blur border-b border-white/5 sticky top-0 z-50">
             <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <span className="text-lg font-bold text-white font-display">LocalRank</span>
+                <Logo size="medium" animated={false} />
               </Link>
 
               <div className="flex-1" />

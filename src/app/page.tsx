@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RevealObserver } from "@/components/RevealObserver";
+import { Logo } from "@/components/brand/Logo";
 
 // ── Star rating helper ──────────────────────────────────────────────
 function Stars() {
@@ -23,17 +24,6 @@ function Check() {
   );
 }
 
-// ── Logo icon ───────────────────────────────────────────────────────
-function LogoIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-    </svg>
-  );
-}
-
 export default function LandingPage() {
   const tickerItems = [
     "Bright Smile Dental", "Metro Law Group", "Summit Plumbing Co",
@@ -49,10 +39,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-surface-0/80 nav-blur">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-              <LogoIcon size={16} />
-            </div>
-            <span className="font-display font-bold text-lg tracking-tight">LocalRank</span>
+            <Logo size="medium" animated={false} />
           </Link>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
@@ -79,6 +66,11 @@ export default function LandingPage() {
         <div className="hero-glow hero-glow-3" />
 
         <div className="relative max-w-5xl mx-auto px-6 text-center py-24 md:py-32">
+          {/* Hero logo */}
+          <div className="reveal flex justify-center mb-8">
+            <Logo size="hero" animated={true} />
+          </div>
+
           {/* Badge */}
           <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-emerald-300 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot" />
@@ -120,7 +112,7 @@ export default function LandingPage() {
               {/* Details */}
               <div className="flex-1 w-full">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-xs text-zinc-500">localrank audit</span>
+                  <span className="font-mono text-xs text-zinc-500">localrankr audit</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider">Live</span>
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-3">Bright Smile Dental — Chicago, IL</h3>
@@ -283,14 +275,14 @@ export default function LandingPage() {
               {
                 delay: "reveal-delay-1",
                 gradient: "from-violet-400 to-pink-400",
-                quote: "I manage 40+ local business clients. LocalRank replaced 3 separate tools and saves me about 15 hours a month on audit reports alone.",
+                quote: "I manage 40+ local business clients. LocalRankr replaced 3 separate tools and saves me about 15 hours a month on audit reports alone.",
                 name: "Marcus Rodriguez",
                 biz: "Founder, Apex Digital Agency",
               },
               {
                 delay: "reveal-delay-2",
                 gradient: "from-amber-400 to-orange-400",
-                quote: "As a plumber, I know nothing about SEO. LocalRank told me exactly what to fix in plain English. My calls from Google went up 40% in two months.",
+                quote: "As a plumber, I know nothing about SEO. LocalRankr told me exactly what to fix in plain English. My calls from Google went up 40% in two months.",
                 name: "James Kowalski",
                 biz: "Summit Plumbing, Denver",
               },
@@ -370,7 +362,7 @@ export default function LandingPage() {
                 <span className="text-zinc-500 text-sm">/mo</span>
               </div>
               <p className="text-xs text-zinc-600 mb-6">For marketing agencies</p>
-              <a href="mailto:hello@localrank.ai" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-300 mb-6">
+              <a href="mailto:hello@localrankr.io" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-300 mb-6">
                 Contact Sales
               </a>
               <ul className="space-y-3 text-sm text-zinc-400">
@@ -406,18 +398,13 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-12 bg-surface-1/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                <LogoIcon size={12} />
-              </div>
-              <span className="font-display font-semibold text-sm">LocalRank</span>
-            </div>
+            <Logo size="medium" animated={false} />
             <div className="flex items-center gap-8 text-sm text-zinc-600">
-              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Privacy</a>
-              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Terms</a>
-              <a href="mailto:support@localrank.ai" className="hover:text-zinc-400 transition-colors">Support</a>
+              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Privacy</a>
+              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Terms</a>
+              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Support</a>
             </div>
-            <p className="text-xs text-zinc-700">&copy; 2026 LocalRank. All rights reserved.</p>
+            <p className="text-xs text-zinc-700">&copy; 2026 LocalRankr.io. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
+import { Logo } from "@/components/brand/Logo";
 
 // ── Score badge color helper ─────────────────────────────────────────
 
@@ -186,15 +187,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center gap-[10px] px-[18px] py-[18px] pb-[14px] border-b border-white/6 shrink-0">
-        <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0">
-          <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <span className="font-display font-bold text-[15px] tracking-tight text-white">LocalRank</span>
+      <div className="px-[18px] py-[18px] pb-[14px] border-b border-white/6 shrink-0">
+        <Logo size="sidebar" animated={false} />
       </div>
 
       {/* Nav */}

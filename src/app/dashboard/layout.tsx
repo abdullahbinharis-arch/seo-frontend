@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5-10-5z" />
                 </svg>
               </div>
-              <span className="text-sm font-bold text-white font-display">LocalRank</span>
+              <span className="text-sm font-bold text-white font-display">LocalRankr</span>
             </div>
           </header>
 

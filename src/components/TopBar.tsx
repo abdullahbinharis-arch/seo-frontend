@@ -33,7 +33,7 @@ export function TopBar() {
   const { data: session } = useSession();
 
   const pageTitle = PAGE_TITLES[pathname] ?? "Dashboard";
-  const businessName = lastAudit?.business_name || session?.user?.email || "LocalRank";
+  const businessName = lastAudit?.business_name || session?.user?.email || "LocalRankr";
 
   const handleExportPdf = async () => {
     if (!lastAudit?.audit_id) return;

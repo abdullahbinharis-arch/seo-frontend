@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import { Geist, Geist_Mono, Outfit, Tektur } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
@@ -19,9 +19,15 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
+const tektur = Tektur({
+  variable: "--font-tektur",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "LocalRank — AI-Powered Local SEO Platform",
-  description: "AI-powered local SEO audits for dentists, lawyers, plumbers, restaurants, and local businesses. Get your Local SEO Score in 60 seconds.",
+  title: "LocalRankr.io — AI-Powered Local SEO Platform",
+  description: "Rank higher in local search. AI-powered SEO audits, keyword research, and content tools for local businesses.",
 };
 
 export default function RootLayout({
@@ -32,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${tektur.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

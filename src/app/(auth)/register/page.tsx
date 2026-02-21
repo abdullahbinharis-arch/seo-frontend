@@ -73,7 +73,7 @@ export default function RegisterPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <span className="text-xl font-bold text-white font-display">LocalRank</span>
+          <span className="text-xl font-bold text-white font-display">LocalRankr</span>
         </Link>
 
         <div className="glass rounded-2xl p-8">
