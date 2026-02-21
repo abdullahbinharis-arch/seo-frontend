@@ -41,7 +41,7 @@ function ScoreRing({ score, large }: { score: number; large?: boolean }) {
   const color = scoreStroke(score);
 
   return (
-    <div style={{ position: "relative", width: dim, height: dim, flexShrink: 0 }}>
+    <div className="relative shrink-0" style={{ width: dim, height: dim }}>
       <svg
         width={dim}
         height={dim}
@@ -58,12 +58,8 @@ function ScoreRing({ score, large }: { score: number; large?: boolean }) {
         />
       </svg>
       <div
-        style={{
-          position: "absolute", inset: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: "'Outfit', var(--font-display, sans-serif)",
-          fontWeight: 700, fontSize: fs, color,
-        }}
+        className="absolute inset-0 flex items-center justify-center font-display font-bold"
+        style={{ fontSize: fs, color }}
       >
         {score}
       </div>
@@ -76,8 +72,9 @@ function ScoreRing({ score, large }: { score: number; large?: boolean }) {
 const PILLAR_CFG = {
   website_seo: {
     label: "Website SEO",
-    iconBg: "rgba(34,211,238,0.12)",
-    glow: "rgba(34,211,238,0.25)",
+    href: "/dashboard/on-page",
+    iconBg: "bg-cyan-400/12",
+    borderActive: "border-cyan-400/25",
     cardIcon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2">
         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
@@ -91,8 +88,9 @@ const PILLAR_CFG = {
   },
   backlinks: {
     label: "Backlinks",
-    iconBg: "rgba(244,63,94,0.1)",
-    glow: "rgba(244,63,94,0.2)",
+    href: "/dashboard/backlinks",
+    iconBg: "bg-rose-500/10",
+    borderActive: "border-rose-500/20",
     cardIcon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fb7185" strokeWidth="2">
         <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
@@ -108,8 +106,9 @@ const PILLAR_CFG = {
   },
   local_seo: {
     label: "Local SEO",
-    iconBg: "rgba(245,158,11,0.1)",
-    glow: "rgba(245,158,11,0.2)",
+    href: "/dashboard/gbp",
+    iconBg: "bg-amber-500/10",
+    borderActive: "border-amber-500/20",
     cardIcon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
@@ -125,8 +124,9 @@ const PILLAR_CFG = {
   },
   ai_seo: {
     label: "AI SEO",
-    iconBg: "rgba(139,92,246,0.1)",
-    glow: "rgba(139,92,246,0.2)",
+    href: "/dashboard/ai-seo",
+    iconBg: "bg-violet-500/10",
+    borderActive: "border-violet-500/20",
     cardIcon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2">
         <path d="M12 2a4 4 0 014 4c0 1.95-2 4-4 6-2-2-4-4.05-4-6a4 4 0 014-4z" />
@@ -176,12 +176,6 @@ function pillarTagLabel(pillar: string): string {
   }
 }
 
-function winNumStyle(rank: number): React.CSSProperties {
-  if (rank <= 3) return { background: "rgba(244,63,94,0.1)", color: "#fb7185" };
-  if (rank <= 6) return { background: "rgba(245,158,11,0.1)", color: "#fbbf24" };
-  return { background: "rgba(16,185,129,0.1)", color: "#6ee7b7" };
-}
-
 // ── Score strip ──────────────────────────────────────────────────────────
 
 function ScoreStrip({
@@ -193,45 +187,34 @@ function ScoreStrip({
   activeTab: TabKey;
   onTabChange: (t: TabKey) => void;
 }) {
-  const arrow: React.CSSProperties = {
-    position: "absolute", bottom: -7, left: "50%",
-    width: 14, height: 14,
-    background: "#09090b",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderTop: "none", borderLeft: "none",
-    transform: "translateX(-50%) rotate(45deg)",
-    zIndex: 2,
-  };
-
   return (
-    <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+    <div className="flex gap-3 mb-7 flex-wrap">
       {/* Overall card */}
       <div
         onClick={() => onTabChange("overall")}
-        style={{
-          flex: 1, minWidth: 170,
-          background: "linear-gradient(135deg, rgba(16,185,129,0.06), rgba(59,130,246,0.04))",
-          border: `1px solid ${activeTab === "overall" ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.06)"}`,
-          borderRadius: 16, padding: 18, cursor: "pointer",
-          transition: "all 0.3s", position: "relative", overflow: "hidden",
-        }}
+        className={`flex-1 min-w-[170px] rounded-2xl p-[18px] cursor-pointer transition-all relative
+          bg-gradient-to-br from-emerald-500/6 to-blue-500/4
+          hover:border-emerald-500/20 hover:-translate-y-0.5
+          ${activeTab === "overall" ? "border border-emerald-500/25" : "border border-white/6"}`}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Score</span>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">Overall Score</span>
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
               <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
             </svg>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div className="flex items-center gap-3.5">
           <ScoreRing score={scores.overall} large />
-          <div style={{ fontSize: 11.5, color: "#71717a", lineHeight: 1.45 }}>
+          <div className="text-[11.5px] text-zinc-500 leading-snug">
             {scoreLabel(scores.overall)}
-            <div style={{ fontSize: 10.5, marginTop: 2 }}>Weighted avg of 4 pillars</div>
+            <div className="text-[10.5px] mt-0.5">Weighted avg of 4 pillars</div>
           </div>
         </div>
-        {activeTab === "overall" && <div style={arrow} />}
+        {activeTab === "overall" && (
+          <div className="absolute -bottom-[7px] left-1/2 w-3.5 h-3.5 bg-[#09090b] border-r border-b border-white/6 -translate-x-1/2 rotate-45 z-[2]" />
+        )}
       </div>
 
       {/* Pillar cards */}
@@ -243,28 +226,26 @@ function ScoreStrip({
           <div
             key={key}
             onClick={() => onTabChange(key)}
-            style={{
-              flex: 1, minWidth: 160,
-              background: "#18181b",
-              border: `1px solid ${isActive ? cfg.glow : "rgba(255,255,255,0.06)"}`,
-              borderRadius: 16, padding: 18, cursor: "pointer",
-              transition: "all 0.3s", position: "relative", overflow: "hidden",
-            }}
+            className={`flex-1 min-w-[160px] bg-zinc-900 rounded-2xl p-[18px] cursor-pointer transition-all relative
+              hover:border-emerald-500/20 hover:-translate-y-0.5
+              ${isActive ? `border ${cfg.borderActive}` : "border border-white/6"}`}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cfg.label}</span>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">{cfg.label}</span>
+              <div className={`w-7 h-7 rounded-lg ${cfg.iconBg} flex items-center justify-center`}>
                 {cfg.cardIcon}
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div className="flex items-center gap-3.5">
               <ScoreRing score={score} />
-              <div style={{ fontSize: 11.5, color: "#71717a", lineHeight: 1.45 }}>
+              <div className="text-[11.5px] text-zinc-500 leading-snug">
                 <span style={{ color: scoreTextColor(score), fontWeight: 600 }}>{scoreLabel(score)}</span>
-                <div style={{ fontSize: 10.5, marginTop: 2 }}>{score} / 100</div>
+                <div className="text-[10.5px] mt-0.5">{score} / 100</div>
               </div>
             </div>
-            {isActive && <div style={arrow} />}
+            {isActive && (
+              <div className="absolute -bottom-[7px] left-1/2 w-3.5 h-3.5 bg-[#09090b] border-r border-b border-white/6 -translate-x-1/2 rotate-45 z-[2]" />
+            )}
           </div>
         );
       })}
@@ -276,61 +257,53 @@ function ScoreStrip({
 
 function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
   return (
-    <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
+    <div className="animate-fadeIn border border-white/6 rounded-2xl overflow-hidden">
       {/* Header */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 14, padding: "18px 22px",
-        background: "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.05))",
-      }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div className="flex items-center gap-3.5 px-[22px] py-[18px] bg-gradient-to-br from-emerald-500/8 to-blue-500/5">
+        <div className="w-[42px] h-[42px] rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </div>
         <div>
-          <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 17 }}>Top 10 Quick Wins</div>
-          <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>
+          <div className="font-display font-semibold text-[17px]">Top 10 Quick Wins</div>
+          <div className="text-xs text-zinc-500 mt-0.5">
             Highest-impact actions sorted by expected ranking improvement. Do these first.
           </div>
         </div>
       </div>
 
       {/* Win list */}
-      <div style={{ padding: 22, background: "#0f0f12" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <div className="p-[22px] bg-[#0f0f12]">
+        <div className="flex flex-col gap-1">
           {wins.map((win) => (
             <div
               key={win.rank}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                padding: "12px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 10,
-              }}
+              className="flex items-start gap-3 px-3.5 py-3 bg-white/4 border border-white/4 rounded-[10px]"
             >
-              <div style={{
-                width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "monospace", fontSize: 10, fontWeight: 600,
-                ...winNumStyle(win.rank),
-              }}>
+              <div className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center font-mono text-[10px] font-semibold bg-zinc-800 text-zinc-400">
                 {win.rank}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.45 }}>{win.title}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium leading-snug">{win.title}</div>
+                {win.description && (
+                  <div className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{win.description}</div>
+                )}
                 {win.impact && (
-                  <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>
+                  <div className="text-[11px] text-zinc-500 mt-1">
                     {win.impact}{win.time_estimate ? ` · ${win.time_estimate}` : ""}
                   </div>
                 )}
-                <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+                <div className="flex gap-1.5 mt-1.5 flex-wrap">
                   <span style={{
-                    fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
+                    fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
                     textTransform: "uppercase", letterSpacing: "0.04em",
                     ...priorityTagStyle(win.priority),
                   }}>
                     {priorityLabel(win.priority)}
                   </span>
                   <span style={{
-                    fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
+                    fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: 5,
                     textTransform: "uppercase", letterSpacing: "0.04em",
                     ...pillarTagStyle(win.pillar),
                   }}>
@@ -358,63 +331,68 @@ function PillarSection({
   const cfg = PILLAR_CFG[pillarKey];
 
   return (
-    <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
+    <div className="animate-fadeIn border border-white/6 rounded-2xl overflow-hidden">
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 22px", background: "#18181b" }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div className="flex items-center gap-3.5 px-[22px] py-[18px] bg-zinc-900">
+        <div className={`w-[42px] h-[42px] rounded-xl ${cfg.iconBg} flex items-center justify-center shrink-0`}>
           {cfg.pillarIcon}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 17 }}>{data.title}</div>
-          <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>{data.subtitle}</div>
+        <div className="flex-1">
+          <div className="font-display font-semibold text-[17px]">{data.title}</div>
+          <div className="text-xs text-zinc-500 mt-0.5">{data.subtitle}</div>
         </div>
-        <div style={{
-          fontFamily: "var(--font-display, 'Outfit', sans-serif)",
-          fontWeight: 700, fontSize: 34,
-          color: scoreTextColor(data.score),
-        }}>
-          {data.score}
+        <div className="font-display font-bold text-[34px]" style={{ color: scoreTextColor(data.score) }}>
+          {data.score}<span className="text-lg font-normal text-zinc-600">/100</span>
         </div>
       </div>
 
       {/* Steps */}
-      <div style={{ padding: 22, background: "#0f0f12", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 14, marginBottom: 14 }}>
-          Improvement Steps
+      <div className="p-[22px] bg-[#0f0f12] border-t border-white/6">
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="font-display font-semibold text-sm">
+            Improvement Steps
+          </div>
+          <Link
+            href={cfg.href}
+            className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-1"
+          >
+            View details
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
         </div>
         {data.steps.map((step, i) => (
           <div
             key={step.rank}
+            className="flex gap-3 py-3.5"
             style={{
-              display: "flex", gap: 12, padding: "14px 0",
-              borderBottom: i < data.steps.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none",
+              borderBottom: i < data.steps.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none",
             }}
           >
-            <div style={{
-              width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "monospace", fontSize: 11, fontWeight: 600,
-              background: "rgba(255,255,255,0.04)",
-              color: step.priority === "high" ? "#fb7185" : step.priority === "medium" ? "#fbbf24" : "#6ee7b7",
-            }}>
+            <div className="w-[26px] h-[26px] rounded-lg shrink-0 flex items-center justify-center font-mono text-[11px] font-semibold bg-white/4"
+              style={{
+                color: step.priority === "high" ? "#fb7185" : step.priority === "medium" ? "#fbbf24" : "#6ee7b7",
+              }}
+            >
               {step.rank}
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 500, lineHeight: 1.4, marginBottom: 4 }}>{step.title}</div>
-              <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.55 }}>{step.description}</div>
-              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+            <div className="flex-1">
+              <div className="text-[13.5px] font-medium leading-snug mb-1">{step.title}</div>
+              <div className="text-xs text-zinc-500 leading-relaxed">{step.description}</div>
+              <div className="flex gap-1.5 mt-1.5 flex-wrap">
                 {step.category && (
-                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, background: "rgba(255,255,255,0.04)", color: "#71717a", fontWeight: 500 }}>
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-500 font-medium">
                     {step.category}
                   </span>
                 )}
                 {step.priority && (
-                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, fontWeight: 600, ...priorityTagStyle(step.priority) }}>
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] font-semibold" style={priorityTagStyle(step.priority)}>
                     {step.priority === "high" ? "High Impact" : step.priority === "medium" ? "Medium Impact" : "Maintenance"}
                   </span>
                 )}
                 {step.time_estimate && (
-                  <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 5, background: "rgba(255,255,255,0.04)", color: "#71717a", fontWeight: 500 }}>
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-500 font-medium">
                     {step.time_estimate}
                   </span>
                 )}
@@ -436,22 +414,18 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
   const displayUrl = audit.target_url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 20, flexWrap: "wrap", gap: 12 }}>
+    <div className="flex items-center justify-between pb-5 flex-wrap gap-3">
       <div>
-        <h1 style={{ fontFamily: "var(--font-display, 'Outfit', sans-serif)", fontWeight: 600, fontSize: 20, marginBottom: 4 }}>
+        <h1 className="font-display font-semibold text-xl mb-1">
           {audit.business_name || displayUrl}
         </h1>
-        <p style={{ fontSize: 12, color: "#71717a" }}>
+        <p className="text-xs text-zinc-500">
           {displayUrl} · {audit.keyword} · {audit.location} · {date}
         </p>
       </div>
       <Link
         href="/dashboard/audit"
-        style={{
-          padding: "7px 16px", borderRadius: 8, fontSize: 12, fontWeight: 500,
-          background: "transparent", border: "1px solid rgba(255,255,255,0.10)",
-          color: "#a1a1aa", textDecoration: "none",
-        }}
+        className="px-4 py-[7px] rounded-lg text-xs font-medium border border-white/10 text-zinc-400 hover:border-emerald-500/20 hover:text-zinc-200 transition-all"
       >
         Re-run Audit
       </Link>
@@ -536,7 +510,7 @@ export default function OverviewPage() {
         quickWins.length > 0 ? (
           <QuickWinsSection wins={quickWins} />
         ) : (
-          <div style={{ padding: "60px 0", textAlign: "center", color: "#71717a", fontSize: 14 }}>
+          <div className="animate-fadeIn py-16 text-center text-zinc-500 text-sm">
             No quick wins available. Run a new audit to see your action plan.
           </div>
         )
@@ -569,7 +543,7 @@ export default function OverviewPage() {
 
 function NoData() {
   return (
-    <div style={{ padding: "60px 0", textAlign: "center", color: "#71717a", fontSize: 14 }}>
+    <div className="animate-fadeIn py-16 text-center text-zinc-500 text-sm">
       Run a new audit to see detailed improvement steps for this pillar.
     </div>
   );

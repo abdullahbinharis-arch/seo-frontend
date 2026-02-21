@@ -44,7 +44,7 @@ type Mode =
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 " +
-  "focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 " +
+  "focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 " +
   "disabled:opacity-50 transition-all text-sm";
 
 function formatRelative(iso?: string): string {

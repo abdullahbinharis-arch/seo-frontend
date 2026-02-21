@@ -46,12 +46,17 @@ export function ProgressIndicator({
 
       {/* Steps */}
       <div className="flex gap-1.5 pt-1">
-        {["Keyword Research", "On-Page SEO", "Local SEO"].map((step, i) => {
-          const stepProgress = [0, 35, 65];
-          const active = progress >= stepProgress[i];
+        {[
+          { label: "Research", at: 0 },
+          { label: "SEO Analysis", at: 20 },
+          { label: "Backlinks & Links", at: 40 },
+          { label: "Local & AI", at: 60 },
+          { label: "Finalizing", at: 80 },
+        ].map((step) => {
+          const active = progress >= step.at;
           return (
             <div
-              key={step}
+              key={step.label}
               className={`flex-1 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
                 active
                   ? "bg-emerald-500/10 text-[#6ee7b7] font-medium border border-emerald-500/20"
@@ -59,11 +64,11 @@ export function ProgressIndicator({
               }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   active ? "bg-emerald-400" : "bg-zinc-600"
                 }`}
               />
-              {step}
+              {step.label}
             </div>
           );
         })}

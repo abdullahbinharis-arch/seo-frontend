@@ -534,6 +534,46 @@ export interface AuditPillars {
   ai_seo: PillarData;
 }
 
+// ── Score Details (sub-scores per pillar) ────────────────────────────
+
+export interface ScoreDetails {
+  website_seo: {
+    page_speed: number;
+    on_page: number;
+    technical: number;
+    issues_count: number;
+  };
+  backlinks: {
+    estimated_da: number;
+    estimated_backlinks: number;
+    competitors_avg_da: number;
+  };
+  local_seo: {
+    gbp_status: string;
+    citations_found: number;
+    citations_needed: number;
+    review_count: number;
+  };
+  ai_seo: {
+    faq_schema: boolean;
+    eeat_signals: boolean;
+    content_depth: string;
+  };
+}
+
+// ── SEO Task (flat checklist item) ──────────────────────────────────
+
+export interface SeoTask {
+  id: string;
+  title: string;
+  pillar: "website_seo" | "backlinks" | "local_seo" | "ai_seo";
+  priority: "high" | "medium" | "low";
+  time_estimate: string;
+  impact: string;
+  status: "pending" | "completed";
+  completed_at?: string;
+}
+
 // ── Full Audit Result ─────────────────────────────────────────────────
 
 export interface AuditResult {
@@ -545,9 +585,12 @@ export interface AuditResult {
   domain?: string;
   location: string;
   scores?: AuditScores;
+  score_details?: ScoreDetails;
   local_seo_score?: number;  // backward compat
   quick_wins?: QuickWin[];   // new structured format
   pillars?: AuditPillars;
+  seo_tasks?: SeoTask[];
+  estimated_cost?: number;
   status: string;
   agents_executed: number;
   execution_time_seconds: number;

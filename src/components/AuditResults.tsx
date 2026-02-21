@@ -21,10 +21,12 @@ import type {
 export function AuditResults({ data }: { data: AuditResult }) {
   const [showJson, setShowJson] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [pdfError, setPdfError] = useState("");
   const { data: session } = useSession();
 
   async function handleDownloadPdf() {
     setDownloading(true);
+    setPdfError("");
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${apiUrl}/audits/${data.audit_id}/export`, {
@@ -44,7 +46,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      alert("PDF download failed. Please try again.");
+      setPdfError("PDF download failed. Please try again.");
     } finally {
       setDownloading(false);
     }
@@ -60,6 +62,22 @@ export function AuditResults({ data }: { data: AuditResult }) {
   const lbData   = data.agents?.link_building;
   const aiData   = data.agents?.ai_seo;
   const rwData   = data.agents?.content_rewriter;
+
+  // Build section nav entries from available data
+  const sections: Array<{ id: string; label: string }> = [];
+  if (typeof data.local_seo_score === "number") sections.push({ id: "sec-score", label: "Score" });
+  if (data.site_aggregate && data.site_aggregate.pages_crawled > 0) sections.push({ id: "sec-crawl", label: "Site Crawl" });
+  if (rankData) sections.push({ id: "sec-rankings", label: "Rankings" });
+  if (data.summary?.quick_wins?.length > 0) sections.push({ id: "sec-quickwins", label: "Quick Wins" });
+  if (kw) sections.push({ id: "sec-keywords", label: "Keywords" });
+  if (op) sections.push({ id: "sec-onpage", label: "On-Page" });
+  if (local) sections.push({ id: "sec-local", label: "Local SEO" });
+  if (gbpData) sections.push({ id: "sec-gbp", label: "GBP" });
+  if (citData) sections.push({ id: "sec-citations", label: "Citations" });
+  if (blData) sections.push({ id: "sec-backlinks", label: "Backlinks" });
+  if (lbData) sections.push({ id: "sec-linkbuilding", label: "Link Building" });
+  if (aiData) sections.push({ id: "sec-aiseo", label: "AI SEO" });
+  if (rwData) sections.push({ id: "sec-rewriter", label: "Content" });
 
   return (
     <div className="space-y-6">
@@ -100,90 +118,170 @@ export function AuditResults({ data }: { data: AuditResult }) {
         </div>
       </div>
 
+      {/* PDF error banner (replaces alert) */}
+      {pdfError && (
+        <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="flex-1">{pdfError}</span>
+          <button onClick={() => setPdfError("")} className="shrink-0 text-red-400 hover:text-red-300 transition-colors" aria-label="Dismiss">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Sticky section nav */}
+      {sections.length > 3 && (
+        <nav className="sticky top-0 z-40 bg-[#09090b]/90 backdrop-blur-md border-b border-white/5 -mx-6 px-6 py-2 overflow-x-auto scrollbar-none">
+          <div className="flex gap-2">
+            {sections.map((s) => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="shrink-0 text-xs font-medium text-zinc-500 hover:text-white px-3 py-1.5 rounded-full border border-white/6 hover:border-emerald-500/20 transition-all"
+              >
+                {s.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
+
       {/* Local SEO Score */}
       {typeof data.local_seo_score === "number" && (
-        <LocalSeoScoreCard
-          score={data.local_seo_score}
-          businessName={data.business_name}
-          businessType={data.business_type}
-        />
+        <div id="sec-score" className="scroll-mt-14">
+          <LocalSeoScoreCard
+            score={data.local_seo_score}
+            businessName={data.business_name}
+            businessType={data.business_type}
+          />
+        </div>
       )}
 
       {/* Site Crawl — only shown when domain mode was used */}
       {data.site_aggregate && data.site_aggregate.pages_crawled > 0 && (
-        <SiteCrawlSection
-          aggregate={data.site_aggregate}
-          pages={data.pages_crawled ?? []}
-        />
+        <div id="sec-crawl" className="scroll-mt-14">
+          <SiteCrawlSection
+            aggregate={data.site_aggregate}
+            pages={data.pages_crawled ?? []}
+          />
+        </div>
       )}
 
       {/* Rank Tracker */}
-      {rankData && <RankTrackerSection data={rankData} />}
+      {rankData && (
+        <div id="sec-rankings" className="scroll-mt-14">
+          <RankTrackerSection data={rankData} />
+        </div>
+      )}
 
       {/* Quick Wins */}
       {data.summary?.quick_wins?.length > 0 && (
-        <Card title="Quick Wins" icon="⚡" badgeColor="blue">
-          <ul className="space-y-2">
-            {data.summary.quick_wins.map((win, i) => (
-              <li key={i} className="flex gap-3 text-zinc-300 text-sm">
-                <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">→</span>
-                <span>{win}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <div id="sec-quickwins" className="scroll-mt-14">
+          <Card title="Quick Wins" icon="⚡" badgeColor="blue">
+            <ul className="space-y-2">
+              {data.summary.quick_wins.map((win, i) => (
+                <li key={i} className="flex gap-3 text-zinc-300 text-sm">
+                  <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">→</span>
+                  <span>{win}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       )}
 
       {/* Keyword Research */}
-      {kw && <KeywordSection data={kw} competitorsAnalyzed={data.agents.keyword_research.competitors_analyzed} />}
+      {kw && (
+        <div id="sec-keywords" className="scroll-mt-14">
+          <KeywordSection data={kw} competitorsAnalyzed={data.agents.keyword_research.competitors_analyzed} />
+        </div>
+      )}
 
       {/* On-Page SEO */}
-      {op && <OnPageSection data={op} pageScraped={data.agents.on_page_seo.page_scraped} />}
+      {op && (
+        <div id="sec-onpage" className="scroll-mt-14">
+          <OnPageSection data={op} pageScraped={data.agents.on_page_seo.page_scraped} />
+        </div>
+      )}
 
       {/* Local SEO */}
-      {local && <LocalSection data={local} />}
+      {local && (
+        <div id="sec-local" className="scroll-mt-14">
+          <LocalSection data={local} />
+        </div>
+      )}
 
       {/* GBP Audit */}
-      {gbpData && <GbpAuditSection data={gbpData} />}
+      {gbpData && (
+        <div id="sec-gbp" className="scroll-mt-14">
+          <GbpAuditSection data={gbpData} />
+        </div>
+      )}
 
       {/* Citation Builder */}
-      {citData && <CitationBuilderSection data={citData} />}
+      {citData && (
+        <div id="sec-citations" className="scroll-mt-14">
+          <CitationBuilderSection data={citData} />
+        </div>
+      )}
 
       {/* Backlink Analysis */}
-      {blData && <BacklinkSection data={blData} />}
+      {blData && (
+        <div id="sec-backlinks" className="scroll-mt-14">
+          <BacklinkSection data={blData} />
+        </div>
+      )}
 
       {/* Link Building */}
-      {lbData && <LinkBuildingSection data={lbData} />}
+      {lbData && (
+        <div id="sec-linkbuilding" className="scroll-mt-14">
+          <LinkBuildingSection data={lbData} />
+        </div>
+      )}
 
       {/* AI SEO */}
-      {aiData && <AiSeoSection data={aiData} />}
+      {aiData && (
+        <div id="sec-aiseo" className="scroll-mt-14">
+          <AiSeoSection data={aiData} />
+        </div>
+      )}
 
       {/* Content Rewriter */}
-      {rwData && <ContentRewriterSection data={rwData} />}
+      {rwData && (
+        <div id="sec-rewriter" className="scroll-mt-14">
+          <ContentRewriterSection data={rwData} />
+        </div>
+      )}
 
-      {/* Raw JSON */}
-      <div className="glass rounded-2xl overflow-hidden">
-        <button
-          onClick={() => setShowJson((v) => !v)}
-          className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors"
-        >
-          <span>View raw JSON</span>
-          <svg
-            className={`w-4 h-4 transition-transform ${showJson ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
+      {/* Raw JSON — dev only */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="glass rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setShowJson((v) => !v)}
+            className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {showJson && (
-          <pre className="bg-[#09090b] text-zinc-300 p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed border-t border-white/5">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        )}
-      </div>
+            <span>View raw JSON</span>
+            <svg
+              className={`w-4 h-4 transition-transform ${showJson ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {showJson && (
+            <pre className="bg-[#09090b] text-zinc-300 p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed border-t border-white/5">
+              {JSON.stringify(data, null, 2)}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   );
 }

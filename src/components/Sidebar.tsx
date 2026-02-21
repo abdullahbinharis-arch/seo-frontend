@@ -1,277 +1,241 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
 
-// ── Nav tree ─────────────────────────────────────────────────────────
+// ── Score badge color helper ─────────────────────────────────────────
 
-interface NavLeaf   { label: string; href: string }
-interface NavGroup  { label: string; icon: React.ReactNode; children: NavLeaf[] }
-interface NavSingle { label: string; href: string; icon: React.ReactNode }
-type NavItem = NavSingle | NavGroup;
-
-function isGroup(item: NavItem): item is NavGroup {
-  return "children" in item;
-}
-
-const NAV: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/dashboard/overview",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    ),
-  },
-  {
-    label: "Website SEO",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
-      </svg>
-    ),
-    children: [
-      { label: "Overall Audit",       href: "/dashboard/audit" },
-      { label: "Keyword Research",    href: "/dashboard/keywords" },
-      { label: "Keyword Gap",         href: "/dashboard/keyword-gap" },
-      { label: "On-Page Optimizer",   href: "/dashboard/on-page" },
-      { label: "Content Rewriter",    href: "/dashboard/content" },
-      { label: "Blog Writer",         href: "/dashboard/blog" },
-      { label: "Technical SEO",       href: "/dashboard/technical" },
-    ],
-  },
-  {
-    label: "Backlink & Links",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-      </svg>
-    ),
-    children: [
-      { label: "Backlink Profile",       href: "/dashboard/backlinks" },
-      { label: "Link Building Strategy", href: "/dashboard/link-building" },
-    ],
-  },
-  {
-    label: "Local SEO",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    children: [
-      { label: "GBP Audit",          href: "/dashboard/gbp" },
-      { label: "Citation Builder",   href: "/dashboard/citations" },
-      { label: "Local Rank Tracker", href: "/dashboard/rank-tracker" },
-    ],
-  },
-  {
-    label: "AI SEO",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    ),
-    children: [
-      { label: "AI Visibility Scan", href: "/dashboard/ai-seo" },
-    ],
-  },
-  {
-    label: "Reports",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    children: [
-      { label: "Audit History", href: "/dashboard/history" },
-      { label: "Export PDF",    href: "/dashboard/export" },
-    ],
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-];
-
-// ── Sidebar ───────────────────────────────────────────────────────────
-
-interface SidebarProps {
-  mobileOpen: boolean;
-  onClose: () => void;
-}
-
-// Score badge colors
 function scoreBadgeStyle(score: number): { bg: string; color: string } {
   if (score >= 70) return { bg: "rgba(16,185,129,0.12)", color: "#6ee7b7" };
   if (score >= 40) return { bg: "rgba(245,158,11,0.12)", color: "#fbbf24" };
   return { bg: "rgba(244,63,94,0.12)", color: "#fb7185" };
 }
 
-// Which pillar group maps to which score key
-const GROUP_SCORE_MAP: Record<string, keyof { overall: number; website_seo: number; backlinks: number; local_seo: number; ai_seo: number }> = {
-  "Website SEO":      "website_seo",
-  "Backlink & Links": "backlinks",
-  "Local SEO":        "local_seo",
-  "AI SEO":           "ai_seo",
-};
+// ── Nav items (flat list matching v3 reference) ──────────────────────
+
+interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  badge?: "score" | "count" | "ai";
+  dividerBefore?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    id: "audit",
+    label: "Audit Report",
+    href: "/dashboard/overview",
+    badge: "score",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1" />
+        <path d="M9 14l2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    id: "tasks",
+    label: "SEO Tasks",
+    href: "/dashboard/tasks",
+    badge: "count",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 20V10M18 20V4M6 20v-4" />
+      </svg>
+    ),
+  },
+  {
+    id: "gmb",
+    label: "GMB Optimization",
+    href: "/dashboard/gbp",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
+  },
+  {
+    id: "keywords",
+    label: "Keyword Research",
+    href: "/dashboard/keywords",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    ),
+  },
+  {
+    id: "backlinks",
+    label: "Backlink Builder",
+    href: "/dashboard/backlinks",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+      </svg>
+    ),
+  },
+  {
+    id: "posts",
+    label: "Post Creator",
+    href: "/dashboard/posts",
+    badge: "ai",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M3 9h18M9 21V9" />
+      </svg>
+    ),
+  },
+  {
+    id: "content",
+    label: "Content Writer",
+    href: "/dashboard/content",
+    badge: "ai",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    href: "/dashboard/history",
+    dividerBefore: true,
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M16 13H8M16 17H8" />
+      </svg>
+    ),
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06" />
+      </svg>
+    ),
+  },
+];
+
+// ── Sidebar ──────────────────────────────────────────────────────────
+
+interface SidebarProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
 
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { lastAudit } = useDashboard();
   const scores = lastAudit?.scores;
-
-  // Which groups are expanded — default all open
-  const groupDefaults = NAV.filter(isGroup).reduce<Record<string, boolean>>(
-    (acc, g) => { acc[g.label] = true; return acc; },
-    {}
-  );
-  const [open, setOpen] = useState<Record<string, boolean>>(groupDefaults);
-
-  function toggle(label: string) {
-    setOpen((prev) => ({ ...prev, [label]: !prev[label] }));
-  }
+  const taskCount = lastAudit?.seo_tasks?.length ?? 0;
 
   function isActive(href: string) {
     return pathname === href;
   }
 
-  function isGroupActive(children: NavLeaf[]) {
-    return children.some((c) => pathname === c.href);
+  function renderBadge(item: NavItem) {
+    if (!item.badge) return null;
+
+    if (item.badge === "score" && scores) {
+      const s = scoreBadgeStyle(scores.overall);
+      return (
+        <span
+          className="text-[10px] font-semibold px-[7px] py-[2px] rounded-lg font-mono"
+          style={{ background: s.bg, color: s.color }}
+        >
+          {scores.overall}
+        </span>
+      );
+    }
+
+    if (item.badge === "count" && taskCount > 0) {
+      return (
+        <span className="text-[10px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-rose-500/10 text-rose-400">
+          {taskCount}
+        </span>
+      );
+    }
+
+    if (item.badge === "ai") {
+      return (
+        <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg uppercase tracking-wider bg-emerald-500/10 text-emerald-400">
+          AI
+        </span>
+      );
+    }
+
+    return null;
   }
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 py-5 border-b border-white/5 shrink-0">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      <div className="flex items-center gap-[10px] px-[18px] py-[18px] pb-[14px] border-b border-white/6 shrink-0">
+        <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0">
+          <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
-        <span className="text-base font-bold text-white font-display">LocalRank</span>
+        <span className="font-display font-bold text-[15px] tracking-tight text-white">LocalRank</span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        {NAV.map((item) => {
-          if (isGroup(item)) {
-            const active = isGroupActive(item.children);
-            return (
-              <div key={item.label}>
-                {/* Group header */}
-                <button
-                  onClick={() => toggle(item.label)}
-                  className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors ${
-                    active ? "text-emerald-400" : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {scores && GROUP_SCORE_MAP[item.label] && (() => {
-                      const scoreVal = scores[GROUP_SCORE_MAP[item.label]];
-                      const style = scoreBadgeStyle(scoreVal);
-                      return (
-                        <span style={{
-                          fontSize: 10, fontWeight: 600,
-                          padding: "1px 6px", borderRadius: 8,
-                          background: style.bg, color: style.color,
-                          fontFamily: "monospace",
-                        }}>
-                          {scoreVal}
-                        </span>
-                      );
-                    })()}
-                    <svg
-                      className={`w-3 h-3 transition-transform shrink-0 ${open[item.label] ? "rotate-180" : ""}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </button>
-
-                {/* Children */}
-                {open[item.label] && (
-                  <div className="ml-3 pl-4 border-l border-white/5 mt-0.5 mb-1 space-y-0.5">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        onClick={onClose}
-                        className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                          isActive(child.href)
-                            ? "bg-emerald-500/10 text-emerald-400 font-medium"
-                            : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                        }`}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          // Single link
-          return (
+      <nav className="flex-1 overflow-y-auto py-[10px] px-[10px] scrollbar-none">
+        {NAV_ITEMS.map((item) => (
+          <div key={item.id}>
+            {item.dividerBefore && (
+              <div className="h-px bg-white/6 mx-3 my-2" />
+            )}
             <Link
-              key={item.href}
               href={item.href}
               onClick={onClose}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-[11px] px-3 py-[9px] rounded-[9px] text-[13px] mb-[2px] transition-all ${
                 isActive(item.href)
-                  ? "bg-emerald-500/10 text-emerald-400"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                  ? "bg-emerald-500/8 text-emerald-300"
+                  : "text-zinc-400 hover:bg-white/4 hover:text-white"
               }`}
             >
-              {item.icon}
+              <span className={`shrink-0 ${isActive(item.href) ? "opacity-100" : "opacity-50"}`}>
+                {item.icon}
+              </span>
               <span className="flex-1">{item.label}</span>
-              {item.label === "Dashboard" && scores && (() => {
-                const style = scoreBadgeStyle(scores.overall);
-                return (
-                  <span style={{
-                    fontSize: 10, fontWeight: 600,
-                    padding: "1px 6px", borderRadius: 8,
-                    background: style.bg, color: style.color,
-                    fontFamily: "monospace",
-                  }}>
-                    {scores.overall}
-                  </span>
-                );
-              })()}
+              {renderBadge(item)}
             </Link>
-          );
-        })}
+          </div>
+        ))}
       </nav>
 
       {/* User footer */}
-      {session?.user && (
-        <div className="shrink-0 border-t border-white/5 px-4 py-3 flex items-center gap-3">
-          <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-            <span className="text-xs font-bold text-emerald-400">
-              {session.user.email?.[0]?.toUpperCase() ?? "U"}
+      <div className="shrink-0 border-t border-white/6 px-[10px] py-3">
+        <div className="flex items-center gap-[10px] px-3 py-2 rounded-[9px] hover:bg-white/4 transition-all">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shrink-0">
+            <span className="text-[11px] font-bold text-white">
+              {session?.user?.email?.[0]?.toUpperCase() ?? "U"}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-zinc-300 truncate">{session.user.email}</p>
+            <div className="text-xs font-medium text-white truncate">
+              {lastAudit?.business_name || session?.user?.email || "User"}
+            </div>
+            <div className="text-[10px] font-semibold text-emerald-400">Free Plan</div>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
@@ -283,14 +247,14 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
             </svg>
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-[#0f0f12] border-r border-white/5 z-40">
+      <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-[#0f0f12] border-r border-white/6 z-40">
         {sidebarContent}
       </aside>
 
@@ -301,7 +265,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             onClick={onClose}
           />
-          <aside className="fixed left-0 top-0 bottom-0 w-72 bg-[#0f0f12] border-r border-white/5 z-50 md:hidden flex flex-col">
+          <aside className="fixed left-0 top-0 bottom-0 w-72 bg-[#0f0f12] border-r border-white/6 z-50 md:hidden flex flex-col">
             {sidebarContent}
           </aside>
         </>
@@ -310,7 +274,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   );
 }
 
-// ── Mobile hamburger button ───────────────────────────────────────────
+// ── Mobile hamburger button ──────────────────────────────────────────
 
 export function MobileMenuButton({ onClick }: { onClick: () => void }) {
   return (
