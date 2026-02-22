@@ -2,14 +2,14 @@
 
 import { useDashboard } from "@/components/DashboardContext";
 import { BacklinksToolView } from "@/components/BacklinksPage";
-import { ToolEmptyState } from "@/components/ToolEmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 export default function BacklinksPage() {
   const { lastAudit } = useDashboard();
 
   if (!lastAudit?.backlink_data) {
     return (
-      <ToolEmptyState
+      <EmptyState
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />

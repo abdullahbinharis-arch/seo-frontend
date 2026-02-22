@@ -2,14 +2,14 @@
 
 import { useDashboard } from "@/components/DashboardContext";
 import { GmbToolView } from "@/components/GmbPage";
-import { ToolEmptyState } from "@/components/ToolEmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 export default function GbpPage() {
   const { lastAudit } = useDashboard();
 
   if (!lastAudit?.gmb_data) {
     return (
-      <ToolEmptyState
+      <EmptyState
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />

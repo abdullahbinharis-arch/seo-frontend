@@ -2,14 +2,14 @@
 
 import { useDashboard } from "@/components/DashboardContext";
 import { KeywordsToolView } from "@/components/KeywordsPage";
-import { ToolEmptyState } from "@/components/ToolEmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 export default function KeywordsPage() {
   const { lastAudit } = useDashboard();
 
   if (!lastAudit?.keyword_data) {
     return (
-      <ToolEmptyState
+      <EmptyState
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <circle cx="11" cy="11" r="8" />

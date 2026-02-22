@@ -2,14 +2,14 @@
 
 import { useDashboard } from "@/components/DashboardContext";
 import { PostCreatorPage } from "@/components/PostCreatorPage";
-import { ToolEmptyState } from "@/components/ToolEmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 export default function PostsPage() {
   const { lastAudit } = useDashboard();
 
   if (!lastAudit) {
     return (
-      <ToolEmptyState
+      <EmptyState
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <rect x="3" y="3" width="18" height="18" rx="2" />

@@ -2,14 +2,14 @@
 
 import { useDashboard } from "@/components/DashboardContext";
 import { ContentWriterPage } from "@/components/ContentWriterPage";
-import { ToolEmptyState } from "@/components/ToolEmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 export default function ContentPage() {
   const { lastAudit } = useDashboard();
 
   if (!lastAudit) {
     return (
-      <ToolEmptyState
+      <EmptyState
         icon={
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
             <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
