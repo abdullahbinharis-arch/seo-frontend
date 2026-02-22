@@ -11,11 +11,7 @@ import {
   EmptyState,
   type Column,
 } from "@/components/tool-ui";
-import type {
-  GbpAuditAgent,
-  CitationBuilderAgent,
-  CitationRecommendation,
-} from "@/types";
+import type { GmbData } from "@/types";
 
 /* ── Helper: score color ─────────────────────────────────── */
 function scoreColor(score: number) {
@@ -25,36 +21,31 @@ function scoreColor(score: number) {
 }
 
 /* ── Main Component ──────────────────────────────────────── */
-export function GmbToolView({ data }: { data: GbpAuditAgent }) {
-  const { agentCache } = useDashboard();
-  const citationData = agentCache.citation_builder as CitationBuilderAgent | undefined;
+export function GmbToolView() {
+  const { lastAudit } = useDashboard();
+  const gmb = lastAudit?.gmb_data as GmbData | undefined;
 
-  const a = data.analysis;
+  if (!gmb) return null;
 
-  /* Stat values */
-  const gbpScore = a.gbp_score ?? 0;
+  const gbpScore = gmb.gbp_score ?? 0;
+  const reviewCount = gmb.review_count ?? 0;
+  const citationsFound = gmb.citations?.length ?? 0;
+  const photoStatus = gmb.photos_count > 0 ? "Added" : "Missing";
 
-  // Parse review count from current_visibility e.g. "12 reviews on Google"
-  const reviewMatch = a.review_strategy?.current_visibility?.match(/(\d+)/);
-  const reviewCount = reviewMatch ? reviewMatch[1] : "—";
-
-  // Citation count from citation builder
-  const tier1 = citationData?.plan?.summary?.tier_1_count ?? 0;
-  const tier2 = citationData?.plan?.summary?.tier_2_count ?? 0;
-  const tier3 = citationData?.plan?.summary?.tier_3_count ?? 0;
-  const citationsFound = citationData ? tier1 + tier2 + tier3 : null;
-  const citationsTotal = citationData?.plan?.summary?.total_recommended ?? 20;
-
-  // Photos from completeness audit
-  const photoItem = a.completeness_audit?.photos ?? a.completeness_audit?.Photos;
-  const photoStatus = photoItem?.status === "pass" ? "Added" : "Missing";
-
-  /* Completeness audit checklist */
-  const auditEntries = Object.entries(a.completeness_audit ?? {});
-  const passCount = auditEntries.filter(([, v]) => v.status === "pass").length;
+  const passCount = gmb.checklist?.filter((c) => c.done).length ?? 0;
+  const totalCount = gmb.checklist?.length ?? 0;
 
   /* Citation table rows */
-  const citationRows = buildCitationRows(citationData);
+  const citationRows = (gmb.citations ?? []).map((c) => ({
+    directory: <span className="text-zinc-300">{c.directory}</span>,
+    da: c.da,
+    status: (
+      <Tag variant={c.status === "found" || c.status === "listed" ? "found" : "missing"}>
+        {c.status === "found" || c.status === "listed" ? "Found" : "Missing"}
+      </Tag>
+    ),
+    tier: <Tag variant="info">{c.tier}</Tag>,
+  }));
 
   return (
     <div className="animate-fadeIn">
@@ -71,13 +62,13 @@ export function GmbToolView({ data }: { data: GbpAuditAgent }) {
         <StatBox
           label="Reviews"
           value={reviewCount}
-          note={a.review_strategy?.recommended_target ?? ""}
+          note={gmb.avg_rating ? `${gmb.avg_rating}★ avg` : ""}
         />
         <StatBox
           label="Citations Found"
-          value={citationsFound ?? "—"}
-          suffix={citationsFound !== null ? `/${citationsTotal}` : undefined}
-          progress={citationsFound !== null ? (citationsFound / citationsTotal) * 100 : undefined}
+          value={citationsFound}
+          suffix="/20"
+          progress={(citationsFound / 20) * 100}
           progressColor="#f59e0b"
         />
         <StatBox
@@ -92,48 +83,35 @@ export function GmbToolView({ data }: { data: GbpAuditAgent }) {
         {/* Left Column */}
         <div className="space-y-4">
           {/* NAP Consistency */}
-          <Card title="NAP Consistency" dotColor={a.nap_consistency?.consistent ? "#10b981" : "#f43f5e"}>
+          <Card title="NAP Consistency" dotColor="#10b981">
             <div className="bg-surface-1 border border-white/6 rounded-xl p-4 space-y-2.5">
-              <NapRow label="Name" value={a.nap_consistency?.name_on_website} />
-              <NapRow label="Address" value={a.nap_consistency?.address_on_website} />
-              <NapRow label="Phone" value={a.nap_consistency?.phone_on_website} />
-              <NapRow
-                label="Category"
-                value={
-                  a.completeness_audit?.primary_category?.note ??
-                  a.completeness_audit?.["Primary Category"]?.note ??
-                  "—"
-                }
-              />
+              <NapRow label="Name" value={gmb.nap?.name} />
+              <NapRow label="Address" value={gmb.nap?.address} />
+              <NapRow label="Phone" value={gmb.nap?.phone} />
+              <NapRow label="Website" value={gmb.nap?.website} />
+              <NapRow label="Category" value={gmb.nap?.category} />
+              {gmb.nap?.category_optimal && gmb.nap.category_optimal !== gmb.nap?.category && (
+                <NapRow label="Suggested" value={gmb.nap.category_optimal} />
+              )}
             </div>
-            {a.nap_consistency?.issues?.length > 0 && (
-              <div className="mt-3 space-y-1">
-                {a.nap_consistency.issues.map((issue: string, i: number) => (
-                  <p key={i} className="text-[11px] text-rose-400">• {issue}</p>
-                ))}
-              </div>
-            )}
           </Card>
 
           {/* Profile Completeness */}
           <Card
             title="Profile Completeness"
-            meta={`${passCount}/${auditEntries.length} complete`}
+            meta={`${passCount}/${totalCount} complete`}
           >
             <div>
-              {auditEntries.map(([key, item]) => (
+              {(gmb.checklist ?? []).map((item, i) => (
                 <CheckItem
-                  key={key}
-                  done={item.status === "pass"}
-                  label={formatKey(key)}
+                  key={i}
+                  done={item.done}
+                  label={item.item}
                   tag={
-                    item.status === "warn"
-                      ? { variant: "med", text: "Needs work" }
-                      : item.status === "fail"
+                    !item.done
                       ? { variant: "high", text: "Missing" }
                       : undefined
                   }
-                  muted={item.status === "unknown"}
                 />
               ))}
             </div>
@@ -146,7 +124,7 @@ export function GmbToolView({ data }: { data: GbpAuditAgent }) {
           <Card
             title="Citation Directories"
             dotColor="#3b82f6"
-            meta={citationsFound !== null ? `${citationsFound} found` : undefined}
+            meta={`${citationsFound} found`}
           >
             {citationRows.length > 0 ? (
               <DataTable
@@ -154,7 +132,7 @@ export function GmbToolView({ data }: { data: GbpAuditAgent }) {
                 rows={citationRows}
               />
             ) : (
-              <EmptyState message="Run Citation Builder for detailed directory data" />
+              <EmptyState message="No citation data available yet" />
             )}
           </Card>
         </div>
@@ -173,45 +151,10 @@ function NapRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-/* ── Citation table helpers ──────────────────────────────── */
+/* ── Citation table columns ──────────────────────────────── */
 const CITATION_COLUMNS: Column[] = [
   { key: "directory", label: "Directory" },
   { key: "da", label: "DA", mono: true, align: "center" },
   { key: "status", label: "Status", align: "center" },
   { key: "tier", label: "Tier" },
 ];
-
-function buildCitationRows(citationData?: CitationBuilderAgent) {
-  if (!citationData?.plan?.recommendations) return [];
-
-  const recs = citationData.plan.recommendations;
-  const rows: Record<string, React.ReactNode>[] = [];
-
-  const addTier = (items: CitationRecommendation[], tier: string) => {
-    for (const item of items ?? []) {
-      rows.push({
-        directory: <span className="text-zinc-300">{item.name}</span>,
-        da: item.da,
-        status: (
-          <Tag variant={item.status === "found" || item.status === "listed" ? "found" : "missing"}>
-            {item.status === "found" || item.status === "listed" ? "Found" : "Missing"}
-          </Tag>
-        ),
-        tier: <Tag variant="info">{tier}</Tag>,
-      });
-    }
-  };
-
-  addTier(recs.tier_1_critical, "Tier 1");
-  addTier(recs.tier_2_important, "Tier 2");
-  addTier(recs.tier_3_supplemental, "Tier 3");
-
-  return rows;
-}
-
-/* ── Utility ─────────────────────────────────────────────── */
-function formatKey(key: string): string {
-  return key
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}

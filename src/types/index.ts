@@ -582,6 +582,104 @@ export interface SeoTask {
   completed_at?: string;
 }
 
+// ── Tool-page flat data sections ─────────────────────────────────────
+
+export interface GmbData {
+  gbp_score: number;
+  review_count: number;
+  avg_rating: number;
+  response_rate: string;
+  photos_count: number;
+  photos_needed: number;
+  nap: {
+    name: string;
+    address: string;
+    phone: string;
+    website: string;
+    category: string;
+    category_optimal: string;
+  };
+  checklist: Array<{ item: string; done: boolean; note: string }>;
+  citations: Array<{
+    directory: string;
+    da: number;
+    status: string;
+    tier: string;
+    nap_match: boolean;
+  }>;
+}
+
+export interface KeywordItem {
+  keyword: string;
+  volume: number;
+  difficulty: number;
+  intent: string;
+  position: number | null;
+  action: string;
+  is_primary: boolean;
+}
+
+export interface KeywordGap {
+  keyword: string;
+  volume: number;
+  difficulty: number;
+  competitor: string;
+  competitor_position: number | null;
+  opportunity: string;
+}
+
+export interface KeywordData {
+  primary_keyword: string;
+  keywords: KeywordItem[];
+  keyword_gaps: KeywordGap[];
+}
+
+export interface BacklinkItem {
+  source: string;
+  da: number;
+  type: string;
+  anchor: string;
+}
+
+export interface BacklinkOpportunity {
+  name: string;
+  url: string;
+  expected_da: number;
+  type: string;
+  difficulty: string;
+  outreach_template?: { subject: string; body: string };
+}
+
+export interface BacklinkData {
+  domain_authority: number;
+  total_backlinks: number;
+  dofollow: number;
+  nofollow: number;
+  referring_domains: number;
+  competitor_avg_da: number;
+  current_backlinks: BacklinkItem[];
+  opportunities: BacklinkOpportunity[];
+}
+
+export interface ContentData {
+  homepage_words: number;
+  competitor_avg_words: number;
+  pages_to_rewrite: Array<{ title: string; issue: string; priority: string }>;
+  service_areas: Array<{ city: string; slug: string; title: string }>;
+  faq_suggestions: Array<{ question: string; source: string }>;
+  blog_topics: Array<{ title: string; keyword: string; intent: string }>;
+}
+
+export interface CalendarPost {
+  type: string;
+  title: string;
+}
+
+export interface CalendarWeek {
+  label: string;
+  posts: CalendarPost[];
+}
+
 // ── Full Audit Result ─────────────────────────────────────────────────
 
 export interface AuditResult {
@@ -600,6 +698,12 @@ export interface AuditResult {
   seo_tasks?: SeoTask[];
   estimated_cost?: number;
   auto_detected?: AutoDetected | null;
+  // Tool-page flat data sections
+  gmb_data?: GmbData;
+  keyword_data?: KeywordData;
+  backlink_data?: BacklinkData;
+  content_data?: ContentData;
+  post_calendar?: CalendarWeek[];
   status: string;
   agents_executed: number;
   execution_time_seconds: number;

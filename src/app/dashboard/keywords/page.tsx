@@ -3,13 +3,11 @@
 import { useDashboard } from "@/components/DashboardContext";
 import { KeywordsToolView } from "@/components/KeywordsPage";
 import { ToolEmptyState } from "@/components/ToolEmptyState";
-import type { KeywordResearchAgent } from "@/types";
 
 export default function KeywordsPage() {
-  const { agentCache } = useDashboard();
-  const data = agentCache.keyword_research as KeywordResearchAgent | undefined;
+  const { lastAudit } = useDashboard();
 
-  if (!data) {
+  if (!lastAudit?.keyword_data) {
     return (
       <ToolEmptyState
         icon={
@@ -32,7 +30,7 @@ export default function KeywordsPage() {
         <h1 className="text-2xl font-bold text-white font-display">Keyword Research</h1>
         <p className="text-sm text-zinc-400 mt-1">High-intent keywords, long-tail opportunities, competitor gaps, and keyword clusters.</p>
       </div>
-      <KeywordsToolView data={data} />
+      <KeywordsToolView />
     </div>
   );
 }

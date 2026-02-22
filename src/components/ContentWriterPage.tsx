@@ -14,24 +14,16 @@ import {
   BtnGhost,
   CopyBtn,
 } from "@/components/tool-ui";
-import type {
-  OnPageSeoAgent,
-  KeywordResearchAgent,
-  LocalSeoAgent,
-  AiSeoAgent,
-} from "@/types";
+import type { ContentData } from "@/types";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /* ── Main Component ──────────────────────────────────────── */
 export function ContentWriterPage() {
-  const { lastAudit, agentCache } = useDashboard();
+  const { lastAudit } = useDashboard();
   const { data: session } = useSession();
 
-  const onPageData = agentCache.on_page_seo as OnPageSeoAgent | undefined;
-  const keywordData = agentCache.keyword_research as KeywordResearchAgent | undefined;
-  const localData = agentCache.local_seo as LocalSeoAgent | undefined;
-  const aiSeoData = agentCache.ai_seo as AiSeoAgent | undefined;
+  const cd = lastAudit?.content_data as ContentData | undefined;
 
   /* Generation state */
   const [generated, setGenerated] = useState<Record<string, string>>({});
@@ -48,17 +40,12 @@ export function ContentWriterPage() {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (session?.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
 
-  /* ── Stat data ─────────────────────────────────────── */
-  const wordCount = onPageData?.recommendations?.current_analysis?.word_count ?? 0;
-  const areaPages = localData?.recommendations?.local_content_strategy?.service_area_pages ?? [];
-  const blogTopics = keywordData?.recommendations?.content_gap_opportunities ?? [];
-  const faqItems = aiSeoData?.analysis?.faq_content ?? [];
-
-  // Issues with thin content
-  const issues = onPageData?.recommendations?.current_analysis?.issues_found ?? [];
-  const thinIssues = issues.filter(
-    (iss) => iss.toLowerCase().includes("word count") || iss.toLowerCase().includes("thin")
-  );
+  /* ── Data from flat section ──────────────────────────── */
+  const wordCount = cd?.homepage_words ?? 0;
+  const rewrites = cd?.pages_to_rewrite ?? [];
+  const areaPages = cd?.service_areas ?? [];
+  const faqItems = cd?.faq_suggestions ?? [];
+  const blogTopics = cd?.blog_topics ?? [];
 
   /* ── Generate content ──────────────────────────────── */
   async function generateContent(key: string, pageType: string, context?: string) {
@@ -129,8 +116,8 @@ export function ContentWriterPage() {
         />
         <StatBox
           label="Pages to Rewrite"
-          value={thinIssues.length || "0"}
-          color={thinIssues.length > 0 ? "#f59e0b" : "#10b981"}
+          value={rewrites.length || "0"}
+          color={rewrites.length > 0 ? "#f59e0b" : "#10b981"}
         />
         <StatBox
           label="Area Pages Needed"
@@ -149,22 +136,22 @@ export function ContentWriterPage() {
         title="Page Rewrites Needed"
         subtitle="Pages identified with thin or underoptimised content"
       />
-      {thinIssues.length > 0 ? (
+      {rewrites.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {thinIssues.map((issue, i) => {
+          {rewrites.map((rewrite, i) => {
             const key = `rewrite-${i}`;
             const content = generated[key];
             return (
               <ContentCard
                 key={i}
-                title="Homepage Rewrite"
-                description={issue}
-                tag={<Tag variant="high">Priority</Tag>}
+                title={rewrite.title}
+                description={rewrite.issue}
+                tag={<Tag variant={rewrite.priority === "high" ? "high" : "med"}>{rewrite.priority}</Tag>}
                 meta={
                   !content ? (
                     <BtnPrimary
                       small
-                      onClick={() => generateContent(key, "page_rewrite", issue)}
+                      onClick={() => generateContent(key, "page_rewrite", rewrite.issue)}
                       disabled={loading === key}
                     >
                       {loading === key ? "Generating…" : "Generate Rewrite"}
@@ -203,14 +190,14 @@ export function ContentWriterPage() {
               return (
                 <ContentCard
                   key={i}
-                  title={area}
-                  description={`SEO-optimized service page for ${area}`}
+                  title={area.title}
+                  description={`SEO-optimized service page for ${area.city}`}
                   tag={<Tag variant="info">Area Page</Tag>}
                   meta={
                     !content ? (
                       <BtnPrimary
                         small
-                        onClick={() => generateContent(key, "service_area_page", area)}
+                        onClick={() => generateContent(key, "service_area_page", area.city)}
                         disabled={loading === key}
                       >
                         {loading === key ? "Generating…" : "Generate"}
@@ -261,8 +248,8 @@ export function ContentWriterPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-[12px] text-zinc-300 font-medium">{faq.question}</p>
-                      {faq.ai_intent && (
-                        <span className="text-[10px] text-zinc-600 mt-0.5 block">{faq.ai_intent}</span>
+                      {faq.source && (
+                        <span className="text-[10px] text-zinc-600 mt-0.5 block">{faq.source}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -306,14 +293,14 @@ export function ContentWriterPage() {
               return (
                 <ContentCard
                   key={i}
-                  title={topic}
-                  description={`Blog article targeting content gap for "${keyword}"`}
+                  title={topic.title}
+                  description={`Blog article targeting "${topic.keyword || keyword}"`}
                   tag={<Tag variant="med">Blog</Tag>}
                   meta={
                     !content ? (
                       <BtnPrimary
                         small
-                        onClick={() => generateContent(key, "blog_article", topic)}
+                        onClick={() => generateContent(key, "blog_article", topic.title)}
                         disabled={loading === key}
                       >
                         {loading === key ? "Generating…" : "Generate Article"}

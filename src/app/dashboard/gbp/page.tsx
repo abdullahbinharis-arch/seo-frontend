@@ -3,13 +3,11 @@
 import { useDashboard } from "@/components/DashboardContext";
 import { GmbToolView } from "@/components/GmbPage";
 import { ToolEmptyState } from "@/components/ToolEmptyState";
-import type { GbpAuditAgent } from "@/types";
 
 export default function GbpPage() {
-  const { agentCache } = useDashboard();
-  const data = agentCache.gbp_audit as GbpAuditAgent | undefined;
+  const { lastAudit } = useDashboard();
 
-  if (!data) {
+  if (!lastAudit?.gmb_data) {
     return (
       <ToolEmptyState
         icon={
@@ -32,7 +30,7 @@ export default function GbpPage() {
         <h1 className="text-2xl font-bold text-white font-display">GBP Audit &amp; Optimization</h1>
         <p className="text-sm text-zinc-400 mt-1">Google Business Profile completeness audit, map pack status, review strategy, and competitor insights.</p>
       </div>
-      <GmbToolView data={data} />
+      <GmbToolView />
     </div>
   );
 }

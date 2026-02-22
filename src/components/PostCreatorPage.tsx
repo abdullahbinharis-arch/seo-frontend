@@ -10,23 +10,13 @@ import {
   CopyBtn,
   ExpandableContent,
 } from "@/components/tool-ui";
-
-/* ── Types ───────────────────────────────────────────────── */
-interface CalendarPost {
-  type: string;
-  title: string;
-}
-
-interface CalendarWeek {
-  label: string;
-  posts: CalendarPost[];
-}
+import type { CalendarWeek, CalendarPost } from "@/types";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /* ── Main Component ──────────────────────────────────────── */
 export function PostCreatorPage() {
-  const { lastAudit, agentCache } = useDashboard();
+  const { lastAudit } = useDashboard();
   const { data: session } = useSession();
 
   const keyword = lastAudit?.keyword ?? "";
@@ -34,8 +24,11 @@ export function PostCreatorPage() {
   const businessType = lastAudit?.business_type ?? "";
   const location = lastAudit?.location ?? "";
 
-  /* Calendar state */
-  const [calendar, setCalendar] = useState<CalendarWeek[] | null>(null);
+  /* Calendar: pre-seed from audit data, allow regeneration */
+  const auditCalendar = lastAudit?.post_calendar as CalendarWeek[] | undefined;
+  const [calendar, setCalendar] = useState<CalendarWeek[] | null>(
+    auditCalendar && auditCalendar.length > 0 ? auditCalendar : null
+  );
   const [calLoading, setCalLoading] = useState(false);
 
   /* Per-post generated content */

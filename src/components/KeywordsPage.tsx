@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboard } from "@/components/DashboardContext";
 import {
   StatRow,
   StatBox,
@@ -8,28 +9,25 @@ import {
   Tag,
   type Column,
 } from "@/components/tool-ui";
-import type { KeywordResearchAgent, HighIntentKeyword } from "@/types";
+import type { KeywordData } from "@/types";
 
 /* ── Difficulty helpers ──────────────────────────────────── */
-function diffColor(d: string): string {
-  const dl = d.toLowerCase();
-  if (dl === "low") return "#10b981";
-  if (dl === "medium") return "#f59e0b";
+function diffColor(d: number): string {
+  if (d < 35) return "#10b981";
+  if (d < 60) return "#f59e0b";
   return "#f43f5e";
 }
 
-function diffVariant(d: string): "low" | "med" | "high" {
-  const dl = d.toLowerCase();
-  if (dl === "low") return "low";
-  if (dl === "medium") return "med";
+function diffVariant(d: number): "low" | "med" | "high" {
+  if (d < 35) return "low";
+  if (d < 60) return "med";
   return "high";
 }
 
-function diffToNumber(d: string): number {
-  const dl = d.toLowerCase();
-  if (dl === "low") return 25;
-  if (dl === "medium") return 50;
-  return 80;
+function diffLabel(d: number): string {
+  if (d < 35) return "Low";
+  if (d < 60) return "Medium";
+  return "High";
 }
 
 /* ── Intent tag variant ──────────────────────────────────── */
@@ -41,26 +39,26 @@ function intentVariant(intent: string): "high" | "med" | "low" | "info" {
 }
 
 /* ── Main Component ──────────────────────────────────────── */
-export function KeywordsToolView({ data }: { data: KeywordResearchAgent }) {
-  const recs = data.recommendations;
-  const keywords = recs.high_intent_keywords ?? [];
-  const gaps = recs.competitor_keywords_we_miss ?? [];
-  const clusters = recs.keyword_clusters ?? [];
-  const primaryKw = recs.primary_keyword ?? data.keyword ?? "—";
+export function KeywordsToolView() {
+  const { lastAudit } = useDashboard();
+  const kd = lastAudit?.keyword_data as KeywordData | undefined;
+
+  if (!kd) return null;
+
+  const keywords = kd.keywords ?? [];
+  const gaps = kd.keyword_gaps ?? [];
+  const primaryKw = kd.primary_keyword ?? "—";
 
   /* Avg difficulty */
   const avgDiff =
     keywords.length > 0
       ? Math.round(
-          keywords.reduce((sum, kw) => sum + diffToNumber(kw.difficulty), 0) /
-            keywords.length
+          keywords.reduce((sum, kw) => sum + kw.difficulty, 0) / keywords.length
         )
       : 0;
 
   /* Primary keyword row index for highlighting */
-  const primaryIdx = keywords.findIndex(
-    (kw) => kw.keyword.toLowerCase() === primaryKw.toLowerCase()
-  );
+  const primaryIdx = keywords.findIndex((kw) => kw.is_primary);
 
   return (
     <div className="animate-fadeIn">
@@ -73,9 +71,9 @@ export function KeywordsToolView({ data }: { data: KeywordResearchAgent }) {
           label="Avg Difficulty"
           value={avgDiff}
           suffix="/100"
-          color={diffColor(avgDiff >= 60 ? "high" : avgDiff >= 35 ? "medium" : "low")}
+          color={diffColor(avgDiff)}
           progress={avgDiff}
-          progressColor={diffColor(avgDiff >= 60 ? "high" : avgDiff >= 35 ? "medium" : "low")}
+          progressColor={diffColor(avgDiff)}
         />
       </StatRow>
 
@@ -88,57 +86,43 @@ export function KeywordsToolView({ data }: { data: KeywordResearchAgent }) {
             keyword: <span className="text-zinc-200 font-medium">{kw.keyword}</span>,
             volume: (
               <span className="font-mono text-[11px] text-zinc-400">
-                {kw.estimated_monthly_searches?.toLocaleString() ?? "—"}
+                {kw.volume?.toLocaleString() ?? "—"}
               </span>
             ),
             difficulty: (
-              <Tag variant={diffVariant(kw.difficulty)}>{kw.difficulty}</Tag>
+              <Tag variant={diffVariant(kw.difficulty)}>{diffLabel(kw.difficulty)}</Tag>
             ),
             intent: (
               <Tag variant={intentVariant(kw.intent)}>{kw.intent}</Tag>
+            ),
+            action: (
+              <span className="text-[10px] text-emerald-400">{kw.action}</span>
             ),
           }))}
         />
       </Card>
 
-      {/* ── Competitor Gap ──────────────────────────────── */}
+      {/* ── Keyword Gap ──────────────────────────────────── */}
       {gaps.length > 0 && (
         <div className="mt-4">
           <Card title="Competitor Keyword Gap" dotColor="#f59e0b" meta={`${gaps.length} gaps`}>
             <DataTable
               columns={GAP_COLUMNS}
-              rows={gaps.map((kw) => ({
-                keyword: <span className="text-zinc-300">{kw}</span>,
-                opportunity: <Tag variant="med">Gap</Tag>,
+              rows={gaps.map((g) => ({
+                keyword: <span className="text-zinc-300">{g.keyword}</span>,
+                volume: (
+                  <span className="font-mono text-[11px] text-zinc-400">
+                    {g.volume?.toLocaleString() ?? "—"}
+                  </span>
+                ),
+                difficulty: (
+                  <Tag variant={diffVariant(g.difficulty)}>{diffLabel(g.difficulty)}</Tag>
+                ),
+                opportunity: (
+                  <span className="text-[10px] text-amber-400">{g.opportunity}</span>
+                ),
               }))}
             />
-          </Card>
-        </div>
-      )}
-
-      {/* ── Keyword Clusters ────────────────────────────── */}
-      {clusters.length > 0 && (
-        <div className="mt-4">
-          <Card title="Keyword Clusters" dotColor="#8b5cf6">
-            <div className="space-y-4">
-              {clusters.map((cluster, i) => (
-                <div key={i}>
-                  <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    {cluster.theme}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {cluster.keywords.map((kw, j) => (
-                      <span
-                        key={j}
-                        className="text-[11px] px-2.5 py-1 rounded-lg bg-white/[0.04] text-zinc-400 border border-white/6"
-                      >
-                        {kw}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
           </Card>
         </div>
       )}
@@ -152,10 +136,13 @@ const KW_COLUMNS: Column[] = [
   { key: "volume", label: "Volume", align: "right" },
   { key: "difficulty", label: "Difficulty", align: "center" },
   { key: "intent", label: "Intent", align: "center" },
+  { key: "action", label: "Action", align: "center" },
 ];
 
 const GAP_COLUMNS: Column[] = [
   { key: "keyword", label: "Keyword" },
+  { key: "volume", label: "Volume", align: "right" },
+  { key: "difficulty", label: "Difficulty", align: "center" },
   { key: "opportunity", label: "Opportunity", align: "center" },
 ];
 

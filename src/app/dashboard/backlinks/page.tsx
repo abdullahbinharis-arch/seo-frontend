@@ -3,13 +3,11 @@
 import { useDashboard } from "@/components/DashboardContext";
 import { BacklinksToolView } from "@/components/BacklinksPage";
 import { ToolEmptyState } from "@/components/ToolEmptyState";
-import type { BacklinkAnalysisAgent } from "@/types";
 
 export default function BacklinksPage() {
-  const { agentCache } = useDashboard();
-  const data = agentCache.backlink_analysis as BacklinkAnalysisAgent | undefined;
+  const { lastAudit } = useDashboard();
 
-  if (!data) {
+  if (!lastAudit?.backlink_data) {
     return (
       <ToolEmptyState
         icon={
@@ -32,7 +30,7 @@ export default function BacklinksPage() {
         <h1 className="text-2xl font-bold text-white font-display">Backlink Profile</h1>
         <p className="text-sm text-zinc-400 mt-1">Domain authority, page authority, linking domains, spam score, and competitor backlink comparison.</p>
       </div>
-      <BacklinksToolView data={data} />
+      <BacklinksToolView />
     </div>
   );
 }
