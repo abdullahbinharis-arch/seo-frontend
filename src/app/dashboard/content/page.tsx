@@ -1,8 +1,28 @@
 "use client";
 
+import { useDashboard } from "@/components/DashboardContext";
 import { ContentWriterPage } from "@/components/ContentWriterPage";
+import { ToolEmptyState } from "@/components/ToolEmptyState";
 
 export default function ContentPage() {
+  const { lastAudit } = useDashboard();
+
+  if (!lastAudit) {
+    return (
+      <ToolEmptyState
+        icon={
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        }
+        title="No Content Analysis Yet"
+        description="Run your first audit to get <strong>page rewrite recommendations</strong>, service area page suggestions, FAQ generators, and blog topics — all optimized for your target keywords."
+        previewLabels={["Pages", "Area Pages", "Blog Ideas"]}
+        note="Generates SEO-optimized content in seconds"
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>

@@ -21,7 +21,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  badge?: "score" | "count" | "ai";
+  badge?: "score" | "count" | "ai" | "locked";
   dividerBefore?: boolean;
 }
 
@@ -54,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
     id: "gmb",
     label: "GMB Optimization",
     href: "/dashboard/gbp",
+    badge: "locked",
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
@@ -65,6 +66,7 @@ const NAV_ITEMS: NavItem[] = [
     id: "keywords",
     label: "Keyword Research",
     href: "/dashboard/keywords",
+    badge: "locked",
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="11" cy="11" r="8" />
@@ -76,6 +78,7 @@ const NAV_ITEMS: NavItem[] = [
     id: "backlinks",
     label: "Backlink Builder",
     href: "/dashboard/backlinks",
+    badge: "locked",
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
@@ -174,11 +177,30 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     }
 
     if (item.badge === "ai") {
+      // Show "AI" always, but swap to "—" when no audit data
+      if (!lastAudit) {
+        return (
+          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-zinc-600">
+            —
+          </span>
+        );
+      }
       return (
         <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg uppercase tracking-wider bg-emerald-500/10 text-emerald-400">
           AI
         </span>
       );
+    }
+
+    if (item.badge === "locked") {
+      if (!lastAudit) {
+        return (
+          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-zinc-600">
+            —
+          </span>
+        );
+      }
+      return null; // No badge needed once data exists
     }
 
     return null;

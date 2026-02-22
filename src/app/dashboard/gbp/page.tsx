@@ -1,13 +1,30 @@
 "use client";
 
-import { AgentRunner } from "@/components/AgentRunner";
 import { useDashboard } from "@/components/DashboardContext";
 import { GmbToolView } from "@/components/GmbPage";
+import { ToolEmptyState } from "@/components/ToolEmptyState";
 import type { GbpAuditAgent } from "@/types";
 
 export default function GbpPage() {
-  const { agentCache, setAgentResult } = useDashboard();
-  const cached = agentCache.gbp_audit as GbpAuditAgent | undefined;
+  const { agentCache } = useDashboard();
+  const data = agentCache.gbp_audit as GbpAuditAgent | undefined;
+
+  if (!data) {
+    return (
+      <ToolEmptyState
+        icon={
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        }
+        title="No GBP Data Yet"
+        description="Run your first audit to see your <strong>Google Business Profile score</strong>, NAP consistency, citation status, review insights, and a complete optimization checklist."
+        previewLabels={["GBP Score", "Reviews", "Citations"]}
+        note="Takes ~60 seconds · No credit card required"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -15,15 +32,7 @@ export default function GbpPage() {
         <h1 className="text-2xl font-bold text-white font-display">GBP Audit &amp; Optimization</h1>
         <p className="text-sm text-zinc-400 mt-1">Google Business Profile completeness audit, map pack status, review strategy, and competitor insights.</p>
       </div>
-      <AgentRunner<GbpAuditAgent>
-        endpoint="/agents/gbp-audit"
-        fields={["keyword", "url", "location", "businessName", "businessType"]}
-        runLabel="Audit GBP"
-        progressMessage="Checking map pack rankings and auditing your GBP profile…"
-        cachedResult={cached}
-        onResult={(data) => setAgentResult("gbp_audit", data)}
-        renderResult={(data) => <GmbToolView data={data} />}
-      />
+      <GmbToolView data={data} />
     </div>
   );
 }

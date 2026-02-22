@@ -13,7 +13,6 @@ import {
   BtnPrimary,
   BtnGhost,
   CopyBtn,
-  EmptyState,
 } from "@/components/tool-ui";
 import type {
   OnPageSeoAgent,
@@ -117,11 +116,6 @@ export function ContentWriterPage() {
     } finally {
       setFaqLoading(null);
     }
-  }
-
-  /* ── No audit ──────────────────────────────────────── */
-  if (!lastAudit) {
-    return <EmptyState message="Run a full audit first to unlock the Content Writer" />;
   }
 
   return (

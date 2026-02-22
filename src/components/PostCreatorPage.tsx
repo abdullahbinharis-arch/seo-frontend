@@ -9,7 +9,6 @@ import {
   BtnGhost,
   CopyBtn,
   ExpandableContent,
-  EmptyState,
 } from "@/components/tool-ui";
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -125,11 +124,6 @@ export function PostCreatorPage() {
     } finally {
       setReviewLoading(false);
     }
-  }
-
-  /* ── No audit? ─────────────────────────────────────── */
-  if (!lastAudit) {
-    return <EmptyState message="Run a full audit first to unlock the Post Creator" />;
   }
 
   return (
