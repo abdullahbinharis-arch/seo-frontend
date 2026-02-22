@@ -40,19 +40,21 @@ export default function LandingPage() {
       <LandingNav />
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 grid-bg">
+      <section className="relative min-h-[80vh] sm:min-h-screen flex items-center justify-center overflow-hidden pt-20 grid-bg">
         <div className="hero-glow hero-glow-1" />
-        <div className="hero-glow hero-glow-2" />
-        <div className="hero-glow hero-glow-3" />
+        <div className="hero-glow hero-glow-2 hidden sm:block" />
+        <div className="hero-glow hero-glow-3 hidden sm:block" />
 
-        <div className="relative max-w-5xl mx-auto px-6 text-center py-24 md:py-32">
+        <div className="relative max-w-5xl mx-auto px-5 sm:px-6 text-center py-14 sm:py-24 md:py-32">
           {/* Hero logo */}
-          <div className="reveal flex justify-center mb-8">
-            <Logo size="hero" animated={true} />
+          <div className="reveal flex justify-center mb-5 sm:mb-8">
+            <div className="scale-[0.65] sm:scale-100 origin-center">
+              <Logo size="hero" animated={true} />
+            </div>
           </div>
 
           {/* Badge */}
-          <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-emerald-300 mb-8">
+          <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-emerald-300 mb-5 sm:mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot" />
             AI-Powered Local SEO Intelligence
           </div>
@@ -64,7 +66,7 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="reveal reveal-delay-2 text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
+          <p className="reveal reveal-delay-2 text-base sm:text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10">
             The AI engine that audits, optimizes, and monitors your local SEO — so your business shows up first when customers search nearby.
           </p>
 
@@ -85,7 +87,7 @@ export default function LandingPage() {
               <div className="flex-shrink-0 mx-auto md:mx-0">
                 <div className="score-ring" style={{ "--score": 78 } as React.CSSProperties}>
                   <div className="score-ring-inner">
-                    <span className="font-display font-bold text-3xl text-emerald-400">78</span>
+                    <span className="font-display font-bold text-2xl sm:text-3xl text-emerald-400">78</span>
                   </div>
                 </div>
               </div>
@@ -140,7 +142,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" className="relative py-28 md:py-36">
+      <section id="features" className="relative py-16 sm:py-28 md:py-36">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="reveal text-xs uppercase tracking-widest text-emerald-400 font-semibold mb-3">Capabilities</p>
@@ -206,9 +208,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="relative py-28 md:py-36 border-t border-white/5">
+      <section id="how-it-works" className="relative py-16 sm:py-28 md:py-36 border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-20">
+          <div className="text-center mb-12 sm:mb-20">
             <p className="reveal text-xs uppercase tracking-widest text-emerald-400 font-semibold mb-3">How It Works</p>
             <h2 className="reveal reveal-delay-1 font-display font-bold text-3xl md:text-5xl tracking-tight">
               Three minutes to clarity
@@ -234,7 +236,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="relative py-28 md:py-36 border-t border-white/5 bg-surface-1/30">
+      <section className="relative py-16 sm:py-28 md:py-36 border-t border-white/5 bg-surface-1/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="reveal text-xs uppercase tracking-widest text-emerald-400 font-semibold mb-3">Results</p>
@@ -284,7 +286,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="relative py-28 md:py-36 border-t border-white/5">
+      <section id="pricing" className="relative py-16 sm:py-28 md:py-36 border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="reveal text-xs uppercase tracking-widest text-emerald-400 font-semibold mb-3">Pricing</p>
@@ -356,7 +358,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="relative py-28 md:py-36 border-t border-white/5 overflow-hidden">
+      <section className="relative py-16 sm:py-28 md:py-36 border-t border-white/5 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-emerald-500 opacity-[0.04] blur-[120px] pointer-events-none" />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
           <h2 className="reveal font-display font-bold text-3xl md:text-5xl lg:text-6xl tracking-tight mb-6">

@@ -439,4 +439,16 @@ body {
   .empty-card {
     margin: 0 8px;
   }
+  .score-ring {
+    width: 88px;
+    height: 88px;
+  }
+  .score-ring-inner {
+    width: 72px;
+    height: 72px;
+  }
+  .hero-glow {
+    width: 400px;
+    height: 400px;
+  }
 }
