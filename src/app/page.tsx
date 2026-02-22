@@ -72,10 +72,10 @@ export default function LandingPage() {
 
           {/* CTA row */}
           <div id="hero-cta" className="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-16">
-            <Link href="/dashboard/audit" className="btn-primary text-white font-semibold px-8 py-3.5 rounded-xl text-base w-full sm:w-auto text-center">
+            <Link href="/dashboard/audit" className="btn-primary text-white font-semibold px-8 py-3.5 rounded-xl text-base w-full max-w-[280px] sm:w-auto sm:max-w-none text-center">
               Run Free Audit →
             </Link>
-            <a href="#how-it-works" className="btn-secondary rounded-xl px-8 py-3.5 text-base text-zinc-300 w-full sm:w-auto text-center">
+            <a href="#how-it-works" className="btn-secondary rounded-xl px-8 py-3.5 text-base text-zinc-300 w-full max-w-[280px] sm:w-auto sm:max-w-none text-center">
               See How It Works
             </a>
           </div>
