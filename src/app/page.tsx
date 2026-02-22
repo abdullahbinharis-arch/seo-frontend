@@ -40,12 +40,12 @@ export default function LandingPage() {
       <LandingNav />
 
       {/* ── HERO ── */}
-      <section className="relative min-h-[80vh] sm:min-h-screen flex items-center justify-center overflow-hidden pt-20 grid-bg">
+      <section className="relative min-h-[80vh] sm:min-h-screen flex items-center sm:items-start justify-center overflow-hidden pt-20 grid-bg">
         <div className="hero-glow hero-glow-1" />
         <div className="hero-glow hero-glow-2 hidden sm:block" />
         <div className="hero-glow hero-glow-3 hidden sm:block" />
 
-        <div className="relative max-w-5xl mx-auto px-5 sm:px-6 text-center py-14 sm:py-24 md:py-32">
+        <div className="relative max-w-5xl mx-auto px-5 sm:px-6 text-center py-14 sm:pt-10 sm:pb-20 md:pt-12 md:pb-24">
           {/* Hero logo */}
           <div className="reveal flex justify-center mb-5 sm:mb-8">
             <div className="scale-[0.65] sm:scale-100 origin-center">
