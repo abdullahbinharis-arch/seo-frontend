@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RevealObserver } from "@/components/RevealObserver";
 import { Logo } from "@/components/brand/Logo";
+import { LandingNav } from "@/components/LandingNav";
 
 // ── Star rating helper ──────────────────────────────────────────────
 function Stars() {
@@ -36,28 +37,7 @@ export default function LandingPage() {
       <div className="noise-overlay" aria-hidden="true" />
 
       {/* ── NAV ── */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-surface-0/80 nav-blur">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Logo size="medium" animated={false} />
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
-            <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
-            <a href="#how-it-works" className="hover:text-white transition-colors duration-200">How It Works</a>
-            <a href="#pricing" className="hover:text-white transition-colors duration-200">Pricing</a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden sm:inline-flex text-sm text-zinc-400 hover:text-white transition-colors px-4 py-2">
-              Log in
-            </Link>
-            <Link href="/register" className="btn-primary text-white font-semibold px-4 py-2 rounded-lg text-sm">
-              Get Started Free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <LandingNav />
 
       {/* ── HERO ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 grid-bg">
@@ -78,7 +58,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="reveal reveal-delay-1 font-display font-extrabold text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95] mb-6">
+          <h1 className="reveal reveal-delay-1 font-display font-extrabold text-4xl sm:text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95] mb-6">
             Dominate<br />
             <span className="text-gradient">Local Search</span>
           </h1>
@@ -89,7 +69,7 @@ export default function LandingPage() {
           </p>
 
           {/* CTA row */}
-          <div id="hero-cta" className="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <div id="hero-cta" className="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-16">
             <Link href="/dashboard/audit" className="btn-primary text-white font-semibold px-8 py-3.5 rounded-xl text-base w-full sm:w-auto text-center">
               Run Free Audit →
             </Link>

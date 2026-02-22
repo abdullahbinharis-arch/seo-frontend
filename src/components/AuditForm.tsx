@@ -161,7 +161,7 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
         </>
       )}
 
-      <main className={embedded ? "" : "max-w-5xl mx-auto px-6 py-10 space-y-8"}>
+      <main className={embedded ? "" : "max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8"}>
         {/* Form card — collapsible after completion */}
         {formCollapsed ? (
           <div className="glass rounded-2xl px-8 py-5 flex items-center justify-between">
@@ -188,7 +188,7 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
             </button>
           </div>
         ) : (
-          <div className="glass rounded-2xl p-8">
+          <div className="glass rounded-2xl p-5 sm:p-8">
             <h2 className="text-xl font-bold text-white font-display mb-1">
               Audit your local search presence
             </h2>

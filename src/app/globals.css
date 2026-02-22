@@ -434,13 +434,9 @@ body {
   animation: spin-loader 0.8s linear infinite;
 }
 
-/* Responsive: single column on mobile */
+/* Responsive: mobile spacing */
 @media (max-width: 639px) {
   .empty-card {
-    padding: 28px 20px 24px !important;
     margin: 0 8px;
-  }
-  .empty-card .grid {
-    grid-template-columns: 1fr !important;
   }
 }

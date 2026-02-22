@@ -190,11 +190,11 @@ function ScoreStrip({
   onTabChange: (t: TabKey) => void;
 }) {
   return (
-    <div className="flex gap-3 mb-7 flex-wrap">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-7">
       {/* Overall card */}
       <div
         onClick={() => onTabChange("overall")}
-        className={`flex-1 min-w-[170px] rounded-2xl p-[18px] cursor-pointer transition-all relative
+        className={`col-span-2 md:col-span-1 rounded-2xl p-[18px] cursor-pointer transition-all relative
           bg-gradient-to-br from-emerald-500/6 to-blue-500/4
           hover:border-emerald-500/20 hover:-translate-y-0.5
           ${activeTab === "overall" ? "border border-emerald-500/25" : "border border-white/6"}`}
@@ -228,7 +228,7 @@ function ScoreStrip({
           <div
             key={key}
             onClick={() => onTabChange(key)}
-            className={`flex-1 min-w-[160px] bg-zinc-900 rounded-2xl p-[18px] cursor-pointer transition-all relative
+            className={`bg-zinc-900 rounded-2xl p-[18px] cursor-pointer transition-all relative
               hover:border-emerald-500/20 hover:-translate-y-0.5
               ${isActive ? `border ${cfg.borderActive}` : "border border-white/6"}`}
           >
@@ -562,7 +562,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
       {/* ── Ambient orbs ── */}
       <div className="empty-orb" style={{ width: 500, height: 500, background: "#6ee7b7", top: "-10%", left: "-5%" }} />
       <div className="empty-orb" style={{ width: 450, height: 450, background: "#3b82f6", bottom: "-8%", right: "-3%", animationDelay: "-7s" }} />
-      <div className="empty-orb" style={{ width: 350, height: 350, background: "#8b5cf6", top: "30%", right: "10%", animationDelay: "-13s" }} />
+      <div className="empty-orb hidden sm:block" style={{ width: 350, height: 350, background: "#8b5cf6", top: "30%", right: "10%", animationDelay: "-13s" }} />
 
       {/* ── Grid background ── */}
       <div className="absolute inset-0 empty-grid-bg" />
@@ -571,7 +571,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
       {particles.map((p, i) => (
         <div
           key={i}
-          className="empty-particle"
+          className={`empty-particle ${i >= 10 ? "hidden sm:block" : ""}`}
           style={{
             left: `${p.left}%`,
             bottom: `${p.bottom}%`,
@@ -586,8 +586,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
       {/* ── Form card ── */}
       <div
-        className="empty-card relative z-10 w-full"
-        style={{ maxWidth: 780, padding: "40px 48px 36px" }}
+        className="empty-card relative z-10 w-full max-w-[780px] px-5 py-7 sm:px-12 sm:pt-10 sm:pb-9"
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-7">
@@ -605,8 +604,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           <div
-            className="grid gap-[14px]"
-            style={{ gridTemplateColumns: "1fr 1fr" }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]"
           >
             {/* Business Name */}
             <FieldGroup

@@ -54,7 +54,7 @@ export default function LoginPage() {
           <Logo size="medium" animated={false} />
         </Link>
 
-        <div className="glass rounded-2xl p-8">
+        <div className="glass rounded-2xl p-5 sm:p-8">
           <h1 className="text-2xl font-bold text-white font-display mb-2">Sign in</h1>
           <p className="text-zinc-400 text-sm mb-6">
             Don&apos;t have an account?{" "}
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 </label>
                 <a
                   href="mailto:support@localrankr.io?subject=Password%20Reset%20Request"
-                  className="text-xs text-zinc-500 hover:text-[#6ee7b7] transition-colors"
+                  className="text-xs text-zinc-500 hover:text-[#6ee7b7] transition-colors py-2 -my-2 px-1"
                 >
                   Forgot password?
                 </a>

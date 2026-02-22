@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useDashboard } from "@/components/DashboardContext";
 import { useSession } from "next-auth/react";
 
-const PAGE_TITLES: Record<string, string> = {
+export const PAGE_TITLES: Record<string, string> = {
   "/dashboard/overview": "Audit Report",
   "/dashboard/tasks": "SEO Tasks",
   "/dashboard/gbp": "GMB Optimization",

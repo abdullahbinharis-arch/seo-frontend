@@ -71,7 +71,7 @@ export default function RegisterPage() {
           <Logo size="medium" animated={false} />
         </Link>
 
-        <div className="glass rounded-2xl p-8">
+        <div className="glass rounded-2xl p-5 sm:p-8">
           <h1 className="text-2xl font-bold text-white font-display mb-2">Create an account</h1>
           <p className="text-zinc-400 text-sm mb-6">
             Already have one?{" "}
