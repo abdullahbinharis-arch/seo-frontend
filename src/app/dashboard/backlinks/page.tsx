@@ -2,7 +2,7 @@
 
 import { AgentRunner } from "@/components/AgentRunner";
 import { useDashboard } from "@/components/DashboardContext";
-import { BacklinkSection } from "@/components/AuditResults";
+import { BacklinksToolView } from "@/components/BacklinksPage";
 import type { BacklinkAnalysisAgent } from "@/types";
 
 export default function BacklinksPage() {
@@ -22,7 +22,7 @@ export default function BacklinksPage() {
         progressMessage="Fetching domain authority and backlink profile…"
         cachedResult={cached}
         onResult={(data) => setAgentResult("backlink_analysis", data)}
-        renderResult={(data) => <BacklinkSection data={data} />}
+        renderResult={(data) => <BacklinksToolView data={data} />}
       />
     </div>
   );

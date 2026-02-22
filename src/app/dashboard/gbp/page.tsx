@@ -2,7 +2,7 @@
 
 import { AgentRunner } from "@/components/AgentRunner";
 import { useDashboard } from "@/components/DashboardContext";
-import { GbpAuditSection } from "@/components/AuditResults";
+import { GmbToolView } from "@/components/GmbPage";
 import type { GbpAuditAgent } from "@/types";
 
 export default function GbpPage() {
@@ -22,7 +22,7 @@ export default function GbpPage() {
         progressMessage="Checking map pack rankings and auditing your GBP profile…"
         cachedResult={cached}
         onResult={(data) => setAgentResult("gbp_audit", data)}
-        renderResult={(data) => <GbpAuditSection data={data} />}
+        renderResult={(data) => <GmbToolView data={data} />}
       />
     </div>
   );

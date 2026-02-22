@@ -2,7 +2,7 @@
 
 import { AgentRunner } from "@/components/AgentRunner";
 import { useDashboard } from "@/components/DashboardContext";
-import { KeywordSection } from "@/components/AuditResults";
+import { KeywordsToolView } from "@/components/KeywordsPage";
 import type { KeywordResearchAgent } from "@/types";
 
 export default function KeywordsPage() {
@@ -22,12 +22,7 @@ export default function KeywordsPage() {
         progressMessage="Analysing competitors and mapping keyword intent…"
         cachedResult={cached}
         onResult={(data) => setAgentResult("keyword_research", data)}
-        renderResult={(data) => (
-          <KeywordSection
-            data={data.recommendations}
-            competitorsAnalyzed={data.competitors_analyzed ?? 0}
-          />
-        )}
+        renderResult={(data) => <KeywordsToolView data={data} />}
       />
     </div>
   );
