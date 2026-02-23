@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
-import type { AuditResult, Profile } from "@/types";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import type { AuditResult, AuditVersionMeta, Profile } from "@/types";
 
 // ── Agent key registry ─────────────────────────────────────────────────
 
@@ -106,6 +107,16 @@ interface DashboardContextValue {
   fetchProfiles: (accessToken: string) => Promise<void>;
   /** Whether profiles are currently loading. */
   profilesLoading: boolean;
+  /** Audit versions for the active profile. */
+  auditVersions: AuditVersionMeta[];
+  /** Whether audit versions are loading. */
+  versionsLoading: boolean;
+  /** Load audit versions for a profile. */
+  loadProfileAudits: (profileId: string, accessToken: string) => Promise<void>;
+  /** Load a specific audit by ID and set it as lastAudit. */
+  loadAuditById: (profileId: string, auditId: string, accessToken: string) => Promise<void>;
+  /** Switch active profile: sets profile, loads latest audit + version list. */
+  switchProfile: (profileId: string, accessToken: string) => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextValue>({
@@ -121,11 +132,18 @@ const DashboardContext = createContext<DashboardContextValue>({
   profiles: [],
   fetchProfiles: async () => {},
   profilesLoading: false,
+  auditVersions: [],
+  versionsLoading: false,
+  loadProfileAudits: async () => {},
+  loadAuditById: async () => {},
+  switchProfile: async () => {},
 });
 
 // ── Provider ──────────────────────────────────────────────────────────
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+
   const [lastAudit,     setLastAuditState]   = useState<AuditResult | null>(loadLastAudit);
   const [agentCache,    setAgentCacheState]   = useState<Partial<Record<AgentKey, unknown>>>(() => {
     const stored = loadLastAudit();
@@ -150,13 +168,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(loadActiveProfileId);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(false);
+  const [auditVersions, setAuditVersions] = useState<AuditVersionMeta[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
-  /** Full audit completion: cache every agent result + extract form values. */
-  const setLastAudit = useCallback((audit: AuditResult) => {
-    setLastAuditState(audit);
-    persistLastAudit(audit);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-    // Populate cache from every agent in the full audit
+  /** Populate agent cache from a full audit result. */
+  const populateAgentCache = useCallback((audit: AuditResult) => {
     const a = audit.agents as Record<string, unknown>;
     setAgentCacheState({
       keyword_research:  a.keyword_research,
@@ -172,6 +190,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       ai_seo:            a.ai_seo,
       blog_writer:       a.blog_writer,
     });
+  }, []);
+
+  /** Full audit completion: cache every agent result + extract form values. */
+  const setLastAudit = useCallback((audit: AuditResult) => {
+    setLastAuditState(audit);
+    persistLastAudit(audit);
+    populateAgentCache(audit);
 
     // Save form values so all agent forms pre-fill
     const vals: LastFormValues = {
@@ -193,7 +218,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       setActiveProfileIdState(audit.profile_id);
       persistActiveProfileId(audit.profile_id);
     }
-  }, []);
+  }, [populateAgentCache]);
 
   /** Standalone agent result — updates only that one cache slot. */
   const setAgentResult = useCallback((key: AgentKey, result: unknown) => {
@@ -228,7 +253,6 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const fetchProfiles = useCallback(async (accessToken: string) => {
     setProfilesLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${apiUrl}/profiles`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -238,7 +262,67 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       }
     } catch { /* ignore */ }
     setProfilesLoading(false);
-  }, []);
+  }, [apiUrl]);
+
+  /** Load audit versions for a profile. */
+  const loadProfileAudits = useCallback(async (profileId: string, accessToken: string) => {
+    setVersionsLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/profiles/${profileId}/audits`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        const data: AuditVersionMeta[] = await res.json();
+        setAuditVersions(data);
+      }
+    } catch { /* ignore */ }
+    setVersionsLoading(false);
+  }, [apiUrl]);
+
+  /** Load a specific audit by ID and set it as lastAudit. */
+  const loadAuditById = useCallback(async (profileId: string, auditId: string, accessToken: string) => {
+    try {
+      const res = await fetch(`${apiUrl}/profiles/${profileId}/audits/${auditId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        const audit: AuditResult = await res.json();
+        setLastAuditState(audit);
+        persistLastAudit(audit);
+        populateAgentCache(audit);
+      }
+    } catch { /* ignore */ }
+  }, [apiUrl, populateAgentCache]);
+
+  /** Switch active profile: sets profile, loads latest audit + version list. */
+  const switchProfile = useCallback(async (profileId: string, accessToken: string) => {
+    setActiveProfileIdState(profileId);
+    persistActiveProfileId(profileId);
+
+    // Load latest audit for this profile
+    try {
+      const res = await fetch(`${apiUrl}/profiles/${profileId}/audits/latest`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        const audit: AuditResult = await res.json();
+        setLastAuditState(audit);
+        persistLastAudit(audit);
+        populateAgentCache(audit);
+      }
+    } catch { /* ignore */ }
+
+    // Load version list
+    await loadProfileAudits(profileId, accessToken);
+  }, [apiUrl, populateAgentCache, loadProfileAudits]);
+
+  /** Auto-fetch profiles on session availability. */
+  useEffect(() => {
+    const token = session?.accessToken as string | undefined;
+    if (token && profiles.length === 0) {
+      fetchProfiles(token);
+    }
+  }, [session?.accessToken, profiles.length, fetchProfiles]);
 
   return (
     <DashboardContext.Provider value={{
@@ -247,6 +331,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       lastFormValues, setLastFormValues,
       activeProfileId, setActiveProfileId,
       profiles, fetchProfiles, profilesLoading,
+      auditVersions, versionsLoading,
+      loadProfileAudits, loadAuditById, switchProfile,
     }}>
       {children}
     </DashboardContext.Provider>

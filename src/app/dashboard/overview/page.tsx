@@ -7,6 +7,7 @@ import { useDashboard } from "@/components/DashboardContext";
 import { Logo } from "@/components/brand/Logo";
 import { CategorySelect } from "@/components/dashboard/CategorySelect";
 import { ServiceTagInput } from "@/components/dashboard/ServiceTagInput";
+import { VersionSelector } from "@/components/dashboard/VersionSelector";
 import { COUNTRY_CITIES } from "@/data/countryCities";
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
@@ -425,14 +426,18 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
         </h1>
         <p className="text-xs text-zinc-500">
           {displayUrl} · {audit.keyword} · {audit.location} · {date}
+          {audit.version && <span> · v{audit.version}</span>}
         </p>
       </div>
-      <Link
-        href="/dashboard/audit"
-        className="px-4 py-[7px] rounded-lg text-xs font-medium border border-white/10 text-zinc-400 hover:border-emerald-500/20 hover:text-zinc-200 transition-all"
-      >
-        Re-run Audit
-      </Link>
+      <div className="flex items-center gap-2">
+        <VersionSelector />
+        <Link
+          href="/dashboard/audit"
+          className="px-4 py-[7px] rounded-lg text-xs font-medium border border-white/10 text-zinc-400 hover:border-emerald-500/20 hover:text-zinc-200 transition-all"
+        >
+          Re-run Audit
+        </Link>
+      </div>
     </div>
   );
 }
@@ -886,8 +891,17 @@ function FieldGroup({
 // ── Main page ────────────────────────────────────────────────────────────
 
 export default function OverviewPage() {
-  const { lastAudit, setLastAudit } = useDashboard();
+  const { data: session } = useSession();
+  const { lastAudit, setLastAudit, activeProfileId, loadProfileAudits } = useDashboard();
   const [activeTab, setActiveTab] = useState<TabKey>("overall");
+
+  // Load audit versions when profile is active
+  useEffect(() => {
+    const token = session?.accessToken as string | undefined;
+    if (token && activeProfileId) {
+      loadProfileAudits(activeProfileId, token);
+    }
+  }, [session?.accessToken, activeProfileId, loadProfileAudits]);
 
   if (!lastAudit) {
     return <EmptyState onComplete={setLastAudit} />;

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
 import { Logo } from "@/components/brand/Logo";
+import { ProfileSwitcher } from "@/components/dashboard/ProfileSwitcher";
 
 // ── Score badge color helper ─────────────────────────────────────────
 
@@ -119,6 +120,17 @@ const NAV_ITEMS: NavItem[] = [
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <path d="M16 13H8M16 17H8" />
+      </svg>
+    ),
+  },
+  {
+    id: "profiles",
+    label: "Profile Manager",
+    href: "/dashboard/profiles",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
       </svg>
     ),
   },
@@ -239,31 +251,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
         ))}
       </nav>
 
-      {/* User footer */}
-      <div className="shrink-0 border-t border-white/6 px-[10px] py-3">
-        <div className="flex items-center gap-[10px] px-3 py-2 rounded-[9px] hover:bg-white/4 transition-all">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shrink-0">
-            <span className="text-[11px] font-bold text-white">
-              {session?.user?.email?.[0]?.toUpperCase() ?? "U"}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-white truncate">
-              {lastAudit?.business_name || session?.user?.email || "User"}
-            </div>
-            <div className="text-[10px] font-semibold text-emerald-400">Free Plan</div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            title="Sign out"
-            className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      {/* Profile switcher + sign out */}
+      <ProfileSwitcher />
     </div>
   );
 

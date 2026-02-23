@@ -704,6 +704,18 @@ export interface CalendarWeek {
   posts: CalendarPost[];
 }
 
+// ── Audit Version Meta (from GET /profiles/{id}/audits) ─────────────
+
+export interface AuditVersionMeta {
+  id: string;
+  version: number;
+  keyword: string;
+  status: string;
+  pages_crawled: number | null;
+  execution_time: number | null;
+  created_at: string;
+}
+
 // ── Full Audit Result ─────────────────────────────────────────────────
 
 export interface AuditResult {

@@ -25,6 +25,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/dashboard/export": "Export PDF",
   "/dashboard/blog": "Blog Writer",
   "/dashboard/keyword-gap": "Keyword Gap",
+  "/dashboard/profiles": "Profile Manager",
 };
 
 export function TopBar() {
