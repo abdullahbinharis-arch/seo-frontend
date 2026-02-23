@@ -51,12 +51,14 @@ export function TopBar() {
       </div>
 
       <div className="flex gap-2">
-        <Link
-          href="/dashboard/audit"
-          className="px-[14px] py-[7px] rounded-lg text-xs font-medium border border-white/6 text-zinc-400 hover:border-white/12 hover:text-white transition-all"
-        >
-          Re-run Audit
-        </Link>
+        {pathname === "/dashboard/overview" && (
+          <Link
+            href="/dashboard/audit"
+            className="px-[14px] py-[7px] rounded-lg text-xs font-medium border border-white/6 text-zinc-400 hover:border-white/12 hover:text-white transition-all"
+          >
+            Re-run Audit
+          </Link>
+        )}
         {lastAudit && (
           <button
             onClick={handleExportPdf}
