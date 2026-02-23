@@ -313,7 +313,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="flex flex-col" style={{ gap: 16 }}>
+              <div className="flex flex-col" style={{ gap: 12 }}>
                 {/* ROW 1: Business Name | Website URL */}
                 <div className="grid grid-cols-1 md:grid-cols-2 items-start" style={{ gap: 16 }}>
                   <Field label="Business Name" htmlFor="businessName" error={fieldErrors.businessName}>
