@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
 import { Logo } from "@/components/brand/Logo";
-import { COUNTRIES } from "@/data/countries";
+import { CategorySelect } from "@/components/dashboard/CategorySelect";
+import { ServiceTagInput } from "@/components/dashboard/ServiceTagInput";
+import { COUNTRY_CITIES } from "@/data/countryCities";
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -478,20 +480,55 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
 
 function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
   const { data: session } = useSession();
+  const { setActiveProfileId } = useDashboard();
+
+  // Form state — 6 fields
   const [businessName, setBusinessName] = useState("");
   const [url, setUrl]                   = useState("");
-  const [country, setCountry]           = useState("Canada");
+  const [category, setCategory]         = useState("");
+  const [services, setServices]         = useState<string[]>([]);
+  const [country, setCountry]           = useState("");
   const [city, setCity]                 = useState("");
+  const [customCity, setCustomCity]     = useState("");
+  const [cityIsOther, setCityIsOther]   = useState(false);
+
+  // UI state
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState("");
   const [stage, setStage]               = useState("");
 
   const particles = useMemo(() => makeParticles(30), []);
 
+  const availableCities = useMemo(() => {
+    const entry = COUNTRY_CITIES.find((c) => c.name === country);
+    return entry?.cities ?? [];
+  }, [country]);
+
+  function handleCountryChange(value: string) {
+    setCountry(value);
+    setCity("");
+    setCustomCity("");
+    setCityIsOther(false);
+  }
+
+  function handleCityChange(value: string) {
+    if (value === "__other__") {
+      setCityIsOther(true);
+      setCity("__other__");
+      setCustomCity("");
+    } else {
+      setCityIsOther(false);
+      setCity(value);
+      setCustomCity("");
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!businessName.trim() || !url.trim() || !country || !city.trim()) {
-      setError("Please fill in all fields");
+
+    const finalCity = cityIsOther ? customCity.trim() : city;
+    if (!businessName.trim() || !url.trim() || !category.trim() || services.length === 0 || !country || !finalCity) {
+      setError("Please fill in all fields (including at least 1 service)");
       return;
     }
 
@@ -501,7 +538,32 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const location = `${city.trim()}, ${country}`;
+      const location = `${finalCity}, ${country}`;
+      let profileIdToUse: string | null = null;
+
+      // Create profile if authenticated
+      if (session?.accessToken) {
+        const profileRes = await fetch(`${apiUrl}/profiles`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            business_name: businessName.trim(),
+            website_url: url.trim(),
+            business_category: category.trim(),
+            services,
+            country,
+            city: finalCity,
+          }),
+        });
+
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          profileIdToUse = profile.id;
+        }
+      }
 
       const kickoffRes = await fetch(`${apiUrl}/workflow/seo-audit`, {
         method: "POST",
@@ -515,6 +577,8 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
           target_url: url.trim(),
           location,
           business_name: businessName.trim(),
+          business_type: category.trim(),
+          ...(profileIdToUse ? { profile_id: profileIdToUse } : {}),
         }),
       });
 
@@ -543,6 +607,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
         const data = await pollRes.json();
         if (data.status === "failed") throw new Error("Audit failed — please try again");
         if (data.status !== "processing") {
+          if (profileIdToUse) setActiveProfileId(profileIdToUse);
           onComplete(data as AuditResult);
           return;
         }
@@ -603,9 +668,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
             {/* Business Name */}
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
@@ -636,6 +699,33 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
               />
             </FieldGroup>
 
+            {/* Category */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>}
+              label="Business Category"
+            >
+              <CategorySelect
+                value={category}
+                onChange={setCategory}
+                disabled={loading}
+                className="empty-field"
+              />
+            </FieldGroup>
+
+            {/* Services */}
+            <FieldGroup
+              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" /></svg>}
+              label="Services"
+            >
+              <ServiceTagInput
+                tags={services}
+                onChange={setServices}
+                disabled={loading}
+                placeholder="Type a service + Enter"
+                className="empty-field"
+              />
+            </FieldGroup>
+
             {/* Country */}
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
@@ -644,13 +734,13 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
               <div className="relative">
                 <select
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
+                  onChange={(e) => handleCountryChange(e.target.value)}
                   disabled={loading}
                   className="empty-field empty-select"
                 >
                   <option value="">Select country</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c} value={c} style={{ background: "#18181b" }}>{c}</option>
+                  {COUNTRY_CITIES.map((c) => (
+                    <option key={c.code} value={c.name} style={{ background: "#18181b" }}>{c.name}</option>
                   ))}
                 </select>
                 <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -664,14 +754,44 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>}
               label="City"
             >
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Toronto"
-                disabled={loading}
-                className="empty-field"
-              />
+              {cityIsOther ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    placeholder="Enter city name"
+                    disabled={loading}
+                    className="empty-field flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setCityIsOther(false); setCity(""); setCustomCity(""); }}
+                    disabled={loading}
+                    className="shrink-0 px-3 py-2 rounded-xl border border-white/10 text-xs text-zinc-400 hover:text-zinc-200 hover:border-white/20 transition-all disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={city}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                    disabled={loading || !country}
+                    className="empty-field empty-select"
+                  >
+                    <option value="">{country ? "Select city" : "Select country first"}</option>
+                    {availableCities.map((c) => (
+                      <option key={c} value={c} style={{ background: "#18181b" }}>{c}</option>
+                    ))}
+                    {country && <option value="__other__" style={{ background: "#18181b" }}>Other...</option>}
+                  </select>
+                  <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              )}
             </FieldGroup>
 
             {/* Submit button — full width */}

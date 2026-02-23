@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback } from "react";
-import type { AuditResult } from "@/types";
+import type { AuditResult, Profile } from "@/types";
 
 // ── Agent key registry ─────────────────────────────────────────────────
 
@@ -22,11 +22,15 @@ export type AgentKey =
 // ── Form values (persisted to localStorage) ───────────────────────────
 
 export interface LastFormValues {
-  keyword:      string;
-  url:          string;
-  location:     string;
-  businessName: string;
-  businessType: string;
+  keyword:          string;
+  url:              string;
+  location:         string;
+  businessName:     string;
+  businessType:     string;
+  businessCategory: string;
+  services:         string[];
+  country:          string;
+  city:             string;
 }
 
 const FORM_LS_KEY    = "lr_form_v1";
@@ -36,9 +40,9 @@ const PROFILE_LS_KEY = "lr_active_profile_v1";
 function loadFormValues(): LastFormValues {
   try {
     const raw = typeof window !== "undefined" && localStorage.getItem(FORM_LS_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) return { businessCategory: "", services: [], country: "", city: "", ...JSON.parse(raw) };
   } catch { /* ignore */ }
-  return { keyword: "", url: "", location: "Toronto, Canada", businessName: "", businessType: "" };
+  return { keyword: "", url: "", location: "Toronto, Canada", businessName: "", businessType: "", businessCategory: "", services: [], country: "", city: "" };
 }
 
 function persistFormValues(v: LastFormValues) {
@@ -96,6 +100,12 @@ interface DashboardContextValue {
   activeProfileId: string | null;
   /** Set the active profile (persists to localStorage). */
   setActiveProfileId: (id: string | null) => void;
+  /** User's profiles — server-authoritative. */
+  profiles: Profile[];
+  /** Fetch profiles from backend. */
+  fetchProfiles: (accessToken: string) => Promise<void>;
+  /** Whether profiles are currently loading. */
+  profilesLoading: boolean;
 }
 
 const DashboardContext = createContext<DashboardContextValue>({
@@ -104,10 +114,13 @@ const DashboardContext = createContext<DashboardContextValue>({
   agentCache: {},
   setAgentResult: () => {},
   clearAgentResult: () => {},
-  lastFormValues: { keyword: "", url: "", location: "Toronto, Canada", businessName: "", businessType: "" },
+  lastFormValues: { keyword: "", url: "", location: "Toronto, Canada", businessName: "", businessType: "", businessCategory: "", services: [], country: "", city: "" },
   setLastFormValues: () => {},
   activeProfileId: null,
   setActiveProfileId: () => {},
+  profiles: [],
+  fetchProfiles: async () => {},
+  profilesLoading: false,
 });
 
 // ── Provider ──────────────────────────────────────────────────────────
@@ -135,6 +148,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   });
   const [lastFormValues, setFormValuesState]  = useState<LastFormValues>(loadFormValues);
   const [activeProfileId, setActiveProfileIdState] = useState<string | null>(loadActiveProfileId);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profilesLoading, setProfilesLoading] = useState(false);
 
   /** Full audit completion: cache every agent result + extract form values. */
   const setLastAudit = useCallback((audit: AuditResult) => {
@@ -160,11 +175,15 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
     // Save form values so all agent forms pre-fill
     const vals: LastFormValues = {
-      keyword:      audit.keyword       ?? "",
-      url:          audit.target_url    ?? "",
-      location:     audit.location      ?? "Toronto, Canada",
-      businessName: audit.business_name ?? "",
-      businessType: audit.business_type ?? "",
+      keyword:          audit.keyword       ?? "",
+      url:              audit.target_url    ?? "",
+      location:         audit.location      ?? "Toronto, Canada",
+      businessName:     audit.business_name ?? "",
+      businessType:     audit.business_type ?? "",
+      businessCategory: "",
+      services:         [],
+      country:          "",
+      city:             "",
     };
     setFormValuesState(vals);
     persistFormValues(vals);
@@ -205,12 +224,29 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     persistActiveProfileId(id);
   }, []);
 
+  /** Fetch user profiles from backend. */
+  const fetchProfiles = useCallback(async (accessToken: string) => {
+    setProfilesLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/profiles`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfiles(data);
+      }
+    } catch { /* ignore */ }
+    setProfilesLoading(false);
+  }, []);
+
   return (
     <DashboardContext.Provider value={{
       lastAudit, setLastAudit,
       agentCache, setAgentResult, clearAgentResult,
       lastFormValues, setLastFormValues,
       activeProfileId, setActiveProfileId,
+      profiles, fetchProfiles, profilesLoading,
     }}>
       {children}
     </DashboardContext.Provider>
