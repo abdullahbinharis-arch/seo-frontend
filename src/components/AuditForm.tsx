@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import type { AuditResult } from "@/types";
 import { AuditResults } from "./AuditResults";
@@ -9,29 +9,25 @@ import { Logo } from "./brand/Logo";
 import { useDashboard } from "./DashboardContext";
 import { CategorySelect } from "./dashboard/CategorySelect";
 import { ServiceTagInput } from "./dashboard/ServiceTagInput";
-import { COUNTRY_CITIES } from "@/data/countryCities";
 import Link from "next/link";
 
 // Progress messages shown at different elapsed times during polling
 const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
-  { after: 0,   message: "Analyzing your website…" },
-  { after: 8,   message: "Detecting your business type and best keyword…" },
-  { after: 20,  message: "Finding local competitors on Google…" },
-  { after: 35,  message: "Analyzing keyword opportunities for your area…" },
-  { after: 50,  message: "Auditing your website for on-page SEO signals…" },
-  { after: 65,  message: "Checking backlink profile and domain authority…" },
-  { after: 80,  message: "Analyzing your Google Business Profile…" },
-  { after: 100, message: "Scoring your AI search visibility…" },
-  { after: 120, message: "Building your local SEO strategy…" },
-  { after: 145, message: "Calculating your LocalRankr Score…" },
-  { after: 170, message: "Almost done — finalizing your report…" },
+  { after: 0,   message: "Analyzing your website\u2026" },
+  { after: 8,   message: "Detecting your business type and best keyword\u2026" },
+  { after: 20,  message: "Finding local competitors on Google\u2026" },
+  { after: 35,  message: "Analyzing keyword opportunities for your area\u2026" },
+  { after: 50,  message: "Auditing your website for on-page SEO signals\u2026" },
+  { after: 65,  message: "Checking backlink profile and domain authority\u2026" },
+  { after: 80,  message: "Analyzing your Google Business Profile\u2026" },
+  { after: 100, message: "Scoring your AI search visibility\u2026" },
+  { after: 120, message: "Building your local SEO strategy\u2026" },
+  { after: 145, message: "Calculating your LocalRankr Score\u2026" },
+  { after: 170, message: "Almost done \u2014 finalizing your report\u2026" },
 ];
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm";
-
-const selectClass =
-  "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm appearance-none cursor-pointer";
 
 export function AuditForm({ onComplete, embedded = false, profileId }: { onComplete?: (result: AuditResult) => void; embedded?: boolean; profileId?: string | null } = {}) {
   const { data: session } = useSession();
@@ -42,10 +38,10 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
   const [url, setUrl]                   = useState("");
   const [category, setCategory]         = useState("");
   const [services, setServices]         = useState<string[]>([]);
-  const [country, setCountry]           = useState("");
-  const [city, setCity]                 = useState("");
-  const [customCity, setCustomCity]     = useState("");
-  const [cityIsOther, setCityIsOther]   = useState(false);
+  const [location, setLocation]         = useState("");
+
+  // ── Inline validation ─────────────────────────────────────────────
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // ── Profile selection ───────────────────────────────────────────────
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(profileId ?? null);
@@ -59,12 +55,6 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
   const [formCollapsed, setFormCollapsed] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  // Derive available cities from selected country
-  const availableCities = useMemo(() => {
-    const entry = COUNTRY_CITIES.find((c) => c.name === country);
-    return entry?.cities ?? [];
-  }, [country]);
 
   // Fetch profiles on mount
   useEffect(() => {
@@ -86,25 +76,11 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
     setUrl(p.website_url);
     setCategory(p.business_category ?? "");
     setServices(p.services ?? []);
-
-    const countryName = p.country ?? "";
-    setCountry(countryName);
-
-    const cityName = p.city ?? "";
-    const entry = COUNTRY_CITIES.find((c) => c.name === countryName);
-    if (entry && entry.cities.includes(cityName)) {
-      setCity(cityName);
-      setCityIsOther(false);
-      setCustomCity("");
-    } else if (cityName) {
-      setCityIsOther(true);
-      setCustomCity(cityName);
-      setCity("__other__");
-    } else {
-      setCity("");
-      setCityIsOther(false);
-      setCustomCity("");
-    }
+    // Build location from profile's country/city
+    const city = p.city ?? "";
+    const country = p.country ?? "";
+    setLocation(city && country ? `${city}, ${country}` : city || country);
+    setFieldErrors({});
   }
 
   function handleNewProfile() {
@@ -113,31 +89,25 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
     setUrl("");
     setCategory("");
     setServices([]);
-    setCountry("");
-    setCity("");
-    setCustomCity("");
-    setCityIsOther(false);
+    setLocation("");
+    setFieldErrors({});
   }
 
-  // ── Country/city change handlers ────────────────────────────────────
+  // ── Validation ────────────────────────────────────────────────────
 
-  function handleCountryChange(value: string) {
-    setCountry(value);
-    setCity("");
-    setCustomCity("");
-    setCityIsOther(false);
-  }
-
-  function handleCityChange(value: string) {
-    if (value === "__other__") {
-      setCityIsOther(true);
-      setCity("__other__");
-      setCustomCity("");
-    } else {
-      setCityIsOther(false);
-      setCity(value);
-      setCustomCity("");
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    if (!businessName.trim()) errors.businessName = "Business name is required";
+    if (!url.trim()) {
+      errors.url = "Website URL is required";
+    } else if (!/^https?:\/\//i.test(url.trim())) {
+      errors.url = "URL must start with http:// or https://";
     }
+    if (!category.trim()) errors.category = "Business category is required";
+    if (!location.trim()) errors.location = "Location is required";
+    if (services.length === 0) errors.services = "Add at least 1 service";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   // ── Submit ──────────────────────────────────────────────────────────
@@ -145,11 +115,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const finalCity = cityIsOther ? customCity.trim() : city;
-    if (!businessName.trim() || !url.trim() || !category.trim() || services.length === 0 || !country || !finalCity) {
-      setError("Please fill in all fields (including at least 1 service)");
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
     setError("");
@@ -158,9 +124,13 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
     setFormCollapsed(false);
     setStage(STAGE_MESSAGES[0].message);
 
+    // Parse city/country from location
+    const parts = location.split(",").map((s) => s.trim());
+    const city = parts[0] || "";
+    const country = parts[1] || "";
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const location = `${finalCity}, ${country}`;
       let profileIdToUse = selectedProfileId;
 
       // Step 1 — Create profile if needed (authenticated + new profile)
@@ -177,7 +147,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
             business_category: category.trim(),
             services,
             country,
-            city: finalCity,
+            city,
           }),
         });
 
@@ -200,7 +170,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
         },
         body: JSON.stringify({
           target_url: url.trim(),
-          location,
+          location: location.trim(),
           business_name: businessName.trim(),
           business_type: category.trim(),
           ...(profileIdToUse ? { profile_id: profileIdToUse } : {}),
@@ -236,7 +206,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
         const data = await pollRes.json();
 
         if (data.status === "failed") {
-          throw new Error("Audit failed — please try again");
+          throw new Error("Audit failed \u2014 please try again");
         }
 
         if (data.status !== "processing") {
@@ -253,7 +223,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
         }
       }
 
-      throw new Error("Audit timed out — please try again");
+      throw new Error("Audit timed out \u2014 please try again");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -312,7 +282,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
               Audit your local search presence
             </h2>
             <p className="text-sm text-zinc-400 mb-6">
-              Takes 60–90 seconds. We analyze your competitors and build a personalized strategy.
+              Takes 60\u201390 seconds. We analyze your competitors and build a personalized strategy.
             </p>
 
             {/* Profile selector strip */}
@@ -348,137 +318,81 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* ROW 1: Business Name | Website URL */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <Field label="Business Name" htmlFor="businessName">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] items-start">
+                <Field label="Business Name" htmlFor="businessName" error={fieldErrors.businessName}>
                   <input
                     id="businessName"
                     type="text"
                     value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
+                    onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
                     placeholder="Smith Family Dental"
-                    required
                     disabled={loading}
                     className={inputClass}
                   />
                 </Field>
 
-                <Field label="Website URL" htmlFor="url">
+                <Field label="Website URL" htmlFor="url" error={fieldErrors.url}>
                   <input
                     id="url"
                     type="url"
                     value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
                     placeholder="https://example.com"
-                    required
                     disabled={loading}
                     className={inputClass}
                   />
                 </Field>
               </div>
 
-              {/* ROW 2: Category | Services */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <Field label="Business Category" htmlFor="category">
+              {/* ROW 2: Category | Location */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] items-start">
+                <Field label="Business Category" htmlFor="category" error={fieldErrors.category}>
                   <CategorySelect
                     value={category}
-                    onChange={setCategory}
+                    onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
                     disabled={loading}
                   />
                 </Field>
 
-                <Field label="Services" htmlFor="services">
+                <Field label="Location" htmlFor="location" error={fieldErrors.location}>
+                  <input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => { setLocation(e.target.value); setFieldErrors((p) => ({ ...p, location: "" })); }}
+                    placeholder="e.g. Toronto, Canada"
+                    disabled={loading}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+
+              {/* ROW 3: Services — full width */}
+              <div>
+                <Field label="Services" htmlFor="services" error={fieldErrors.services}>
                   <ServiceTagInput
                     tags={services}
-                    onChange={setServices}
+                    onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
                     disabled={loading}
                     placeholder="Type a service + Enter"
+                    category={category}
                   />
                 </Field>
               </div>
 
-              {/* ROW 3: Country | City */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <Field label="Country" htmlFor="country">
-                  <div className="relative">
-                    <select
-                      id="country"
-                      value={country}
-                      onChange={(e) => handleCountryChange(e.target.value)}
-                      disabled={loading}
-                      className={selectClass}
-                    >
-                      <option value="">Select country</option>
-                      {COUNTRY_CITIES.map((c) => (
-                        <option key={c.code} value={c.name} style={{ background: "#18181b" }}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </div>
-                </Field>
-
-                <Field label="City" htmlFor="city">
-                  {cityIsOther ? (
-                    <div className="flex gap-2">
-                      <input
-                        id="city"
-                        type="text"
-                        value={customCity}
-                        onChange={(e) => setCustomCity(e.target.value)}
-                        placeholder="Enter city name"
-                        disabled={loading}
-                        className={inputClass}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => { setCityIsOther(false); setCity(""); setCustomCity(""); }}
-                        disabled={loading}
-                        className="shrink-0 px-3 py-2 rounded-xl border border-white/10 text-xs text-zinc-400 hover:text-zinc-200 hover:border-white/20 transition-all disabled:opacity-50"
-                      >
-                        Back
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <select
-                        id="city"
-                        value={city}
-                        onChange={(e) => handleCityChange(e.target.value)}
-                        disabled={loading || !country}
-                        className={selectClass}
-                      >
-                        <option value="">{country ? "Select city" : "Select country first"}</option>
-                        {availableCities.map((c) => (
-                          <option key={c} value={c} style={{ background: "#18181b" }}>
-                            {c}
-                          </option>
-                        ))}
-                        {country && <option value="__other__" style={{ background: "#18181b" }}>Other...</option>}
-                      </select>
-                      <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </div>
-                  )}
-                </Field>
-              </div>
-
-              {/* ROW 4: Submit */}
-              <div className="flex items-center gap-4">
+              {/* ROW 4: Submit — full width */}
+              <div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-primary text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
+                  className="btn-primary text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed w-full"
                 >
-                  {loading ? "Running audit…" : "Run Full-Site Audit"}
+                  {loading ? "Running audit\u2026" : "Run Full-Site Audit"}
                 </button>
                 {!loading && (
-                  <p className="text-sm text-zinc-500 hidden sm:block">Takes 60–90 seconds</p>
+                  <p className="text-sm text-zinc-500 text-center mt-2">Takes 60\u201390 seconds</p>
                 )}
               </div>
             </form>
@@ -523,18 +437,23 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
 function Field({
   label,
   htmlFor,
+  error,
   children,
 }: {
   label: string;
   htmlFor: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-300">
+    <div className="flex flex-col" style={{ gap: 6 }}>
+      <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-300" style={{ fontSize: 11, lineHeight: "13px" }}>
         {label}
       </label>
       {children}
+      {error && (
+        <p className="text-[11px] text-rose-400 mt-0.5">{error}</p>
+      )}
     </div>
   );
 }

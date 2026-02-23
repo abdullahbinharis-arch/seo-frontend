@@ -16,7 +16,8 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
   const [isOther, setIsOther] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
@@ -30,6 +31,7 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
+        setQuery("");
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -40,6 +42,13 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
   useEffect(() => {
     setHighlightIdx(0);
   }, [filtered.length]);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (open && searchRef.current) {
+      setTimeout(() => searchRef.current?.focus(), 50);
+    }
+  }, [open]);
 
   // Scroll highlighted item into view
   useEffect(() => {
@@ -56,7 +65,7 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
       onChange("");
       setOpen(false);
       setQuery("");
-      setTimeout(() => inputRef.current?.focus(), 0);
+      setTimeout(() => triggerRef.current?.focus(), 0);
     } else {
       setIsOther(false);
       onChange(cat);
@@ -65,31 +74,24 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     }
   }
 
-  function handleInputFocus() {
-    if (isOther) return; // In free-text mode, don't open dropdown
-    setOpen(true);
+  function handleTriggerClick() {
+    if (disabled) return;
+    if (isOther) return;
+    setOpen((prev) => !prev);
     setQuery("");
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleTriggerChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (isOther) {
       onChange(e.target.value);
-    } else {
-      setQuery(e.target.value);
-      setOpen(true);
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (isOther) return;
-    if (!open) {
-      if (e.key === "ArrowDown" || e.key === "Enter") {
-        e.preventDefault();
-        setOpen(true);
-      }
-      return;
-    }
+  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+  }
 
+  function handleSearchKeyDown(e: React.KeyboardEvent) {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -106,7 +108,17 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
       case "Escape":
         e.preventDefault();
         setOpen(false);
+        setQuery("");
         break;
+    }
+  }
+
+  function handleTriggerKeyDown(e: React.KeyboardEvent) {
+    if (isOther) return;
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setOpen(true);
+      setQuery("");
     }
   }
 
@@ -115,26 +127,27 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     onChange("");
     setQuery("");
     setTimeout(() => {
-      inputRef.current?.focus();
       setOpen(true);
     }, 0);
   }
 
-  const displayValue = isOther ? value : (open ? query : value);
+  const isEmptyStyle = className?.includes("empty-field");
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
       <div className="relative">
         <input
-          ref={inputRef}
+          ref={triggerRef}
           type="text"
-          value={displayValue}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onKeyDown={handleKeyDown}
+          value={isOther ? value : value}
+          onChange={handleTriggerChange}
+          onClick={handleTriggerClick}
+          onKeyDown={handleTriggerKeyDown}
+          readOnly={!isOther}
           disabled={disabled}
-          placeholder={isOther ? "Type your business category" : "Search categories..."}
-          className={className?.includes("empty-field") ? "empty-field" : "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm pr-9"}
+          placeholder={isOther ? "Type your business category" : "e.g. Kitchen Remodeler"}
+          className={isEmptyStyle ? "empty-field cursor-pointer" : "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm pr-9 cursor-pointer"}
+          style={!isOther ? { caretColor: "transparent" } : undefined}
           autoComplete="off"
         />
         {isOther ? (
@@ -148,37 +161,81 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
           </button>
         ) : (
           <svg
-            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            className={`pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+            width="10" height="6" viewBox="0 0 10 6" fill="none"
           >
-            <polyline points="6 9 12 15 18 9" />
+            <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         )}
       </div>
 
       {open && !isOther && (
         <div
-          ref={listRef}
-          className="absolute z-50 mt-1 w-full max-h-[240px] overflow-y-auto rounded-xl bg-[#18181b] border border-white/10 py-1"
+          className="absolute z-50 mt-1 w-full rounded-[10px] border animate-[dropIn_0.15s_ease]"
+          style={{
+            background: "#151517",
+            borderColor: "rgba(255,255,255,0.08)",
+            boxShadow: "0 14px 44px rgba(0,0,0,0.55)",
+          }}
         >
-          {filtered.length === 0 ? (
-            <div className="px-4 py-2.5 text-sm text-zinc-500">No matches</div>
-          ) : (
-            filtered.map((cat, i) => (
-              <div
-                key={cat}
-                onClick={() => selectCategory(cat)}
-                onMouseEnter={() => setHighlightIdx(i)}
-                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
-                  i === highlightIdx
-                    ? "bg-emerald-500/10 text-emerald-300"
-                    : "text-zinc-300 hover:bg-white/[0.06]"
-                } ${cat === value && !open ? "text-emerald-400" : ""}`}
-              >
-                {cat}
-              </div>
-            ))
-          )}
+          {/* Sticky search input */}
+          <div
+            className="sticky top-0 z-10 p-1.5"
+            style={{
+              background: "#151517",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: "10px 10px 0 0",
+            }}
+          >
+            <input
+              ref={searchRef}
+              type="text"
+              value={query}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search categories..."
+              className="w-full outline-none"
+              style={{
+                padding: "7px 10px",
+                borderRadius: 7,
+                fontSize: 12,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                color: "#fafafa",
+                fontFamily: "inherit",
+              }}
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Category list */}
+          <div
+            ref={listRef}
+            className="max-h-[220px] overflow-y-auto"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}
+          >
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2.5 text-zinc-500" style={{ fontSize: 12.5 }}>No matches</div>
+            ) : (
+              filtered.map((cat, i) => (
+                <div
+                  key={cat}
+                  onClick={() => selectCategory(cat)}
+                  onMouseEnter={() => setHighlightIdx(i)}
+                  className="cursor-pointer transition-colors"
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 12.5,
+                    color: i === highlightIdx ? "#6ee7b7" : (cat === value ? "#6ee7b7" : "#a1a1aa"),
+                    background: i === highlightIdx ? "rgba(16,185,129,0.06)" : "transparent",
+                    fontWeight: cat === value ? 500 : 400,
+                  }}
+                >
+                  {cat}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>

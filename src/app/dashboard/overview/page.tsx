@@ -8,7 +8,7 @@ import { Logo } from "@/components/brand/Logo";
 import { CategorySelect } from "@/components/dashboard/CategorySelect";
 import { ServiceTagInput } from "@/components/dashboard/ServiceTagInput";
 import { VersionSelector } from "@/components/dashboard/VersionSelector";
-import { COUNTRY_CITIES } from "@/data/countryCities";
+// countryCities import removed — using plain Location text input
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -487,15 +487,15 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
   const { data: session } = useSession();
   const { setActiveProfileId } = useDashboard();
 
-  // Form state — 6 fields
+  // Form state — 5 fields (location replaces country/city)
   const [businessName, setBusinessName] = useState("");
   const [url, setUrl]                   = useState("");
   const [category, setCategory]         = useState("");
   const [services, setServices]         = useState<string[]>([]);
-  const [country, setCountry]           = useState("");
-  const [city, setCity]                 = useState("");
-  const [customCity, setCustomCity]     = useState("");
-  const [cityIsOther, setCityIsOther]   = useState(false);
+  const [location, setLocation]         = useState("");
+
+  // Inline validation
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // UI state
   const [loading, setLoading]           = useState(false);
@@ -504,46 +504,37 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
   const particles = useMemo(() => makeParticles(30), []);
 
-  const availableCities = useMemo(() => {
-    const entry = COUNTRY_CITIES.find((c) => c.name === country);
-    return entry?.cities ?? [];
-  }, [country]);
-
-  function handleCountryChange(value: string) {
-    setCountry(value);
-    setCity("");
-    setCustomCity("");
-    setCityIsOther(false);
-  }
-
-  function handleCityChange(value: string) {
-    if (value === "__other__") {
-      setCityIsOther(true);
-      setCity("__other__");
-      setCustomCity("");
-    } else {
-      setCityIsOther(false);
-      setCity(value);
-      setCustomCity("");
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    if (!businessName.trim()) errors.businessName = "Required";
+    if (!url.trim()) {
+      errors.url = "Required";
+    } else if (!/^https?:\/\//i.test(url.trim())) {
+      errors.url = "Must start with http:// or https://";
     }
+    if (!category.trim()) errors.category = "Required";
+    if (!location.trim()) errors.location = "Required";
+    if (services.length === 0) errors.services = "Add at least 1 service";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const finalCity = cityIsOther ? customCity.trim() : city;
-    if (!businessName.trim() || !url.trim() || !category.trim() || services.length === 0 || !country || !finalCity) {
-      setError("Please fill in all fields (including at least 1 service)");
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
     setError("");
     setStage(STAGE_MESSAGES[0].message);
 
+    // Parse city/country from location
+    const parts = location.split(",").map((s) => s.trim());
+    const city = parts[0] || "";
+    const country = parts[1] || "";
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      const location = `${finalCity}, ${country}`;
       let profileIdToUse: string | null = null;
 
       // Create profile if authenticated
@@ -560,7 +551,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             business_category: category.trim(),
             services,
             country,
-            city: finalCity,
+            city,
           }),
         });
 
@@ -580,7 +571,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
         },
         body: JSON.stringify({
           target_url: url.trim(),
-          location,
+          location: location.trim(),
           business_name: businessName.trim(),
           business_type: category.trim(),
           ...(profileIdToUse ? { profile_id: profileIdToUse } : {}),
@@ -678,11 +669,12 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
               label="Business Name"
+              error={fieldErrors.businessName}
             >
               <input
                 type="text"
                 value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
+                onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
                 placeholder="Arch Kitchen Cabinets"
                 disabled={loading}
                 className="empty-field"
@@ -693,11 +685,12 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
               label="Website URL"
+              error={fieldErrors.url}
             >
               <input
                 type="url"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
                 placeholder="https://yourbusiness.com"
                 disabled={loading}
                 className="empty-field"
@@ -708,95 +701,46 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>}
               label="Business Category"
+              error={fieldErrors.category}
             >
               <CategorySelect
                 value={category}
-                onChange={setCategory}
+                onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
                 disabled={loading}
                 className="empty-field"
               />
             </FieldGroup>
 
-            {/* Services */}
+            {/* Services — now spans full width since Location moved up */}
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" /></svg>}
               label="Services"
+              error={fieldErrors.services}
             >
               <ServiceTagInput
                 tags={services}
-                onChange={setServices}
+                onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
                 disabled={loading}
                 placeholder="Type a service + Enter"
                 className="empty-field"
+                category={category}
               />
             </FieldGroup>
 
-            {/* Country */}
-            <FieldGroup
-              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
-              label="Country"
-            >
-              <div className="relative">
-                <select
-                  value={country}
-                  onChange={(e) => handleCountryChange(e.target.value)}
-                  disabled={loading}
-                  className="empty-field empty-select"
-                >
-                  <option value="">Select country</option>
-                  {COUNTRY_CITIES.map((c) => (
-                    <option key={c.code} value={c.name} style={{ background: "#18181b" }}>{c.name}</option>
-                  ))}
-                </select>
-                <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </div>
-            </FieldGroup>
-
-            {/* City */}
+            {/* Location */}
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>}
-              label="City"
+              label="Location"
+              error={fieldErrors.location}
             >
-              {cityIsOther ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customCity}
-                    onChange={(e) => setCustomCity(e.target.value)}
-                    placeholder="Enter city name"
-                    disabled={loading}
-                    className="empty-field flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => { setCityIsOther(false); setCity(""); setCustomCity(""); }}
-                    disabled={loading}
-                    className="shrink-0 px-3 py-2 rounded-xl border border-white/10 text-xs text-zinc-400 hover:text-zinc-200 hover:border-white/20 transition-all disabled:opacity-50"
-                  >
-                    Back
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <select
-                    value={city}
-                    onChange={(e) => handleCityChange(e.target.value)}
-                    disabled={loading || !country}
-                    className="empty-field empty-select"
-                  >
-                    <option value="">{country ? "Select city" : "Select country first"}</option>
-                    {availableCities.map((c) => (
-                      <option key={c} value={c} style={{ background: "#18181b" }}>{c}</option>
-                    ))}
-                    {country && <option value="__other__" style={{ background: "#18181b" }}>Other...</option>}
-                  </select>
-                  <svg className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
-              )}
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => { setLocation(e.target.value); setFieldErrors((p) => ({ ...p, location: "" })); }}
+                placeholder="e.g. Toronto, Canada"
+                disabled={loading}
+                className="empty-field"
+              />
             </FieldGroup>
 
             {/* Submit button — full width */}
@@ -867,10 +811,12 @@ function FieldGroup({
   icon,
   label,
   children,
+  error,
 }: {
   icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
+  error?: string;
 }) {
   return (
     <div>
@@ -884,6 +830,11 @@ function FieldGroup({
         </span>
       </div>
       {children}
+      {error && (
+        <p className="mt-1 text-rose-400" style={{ fontSize: 11 }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
