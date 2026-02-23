@@ -652,10 +652,28 @@ export interface KeywordGap {
   opportunity: string;
 }
 
+export interface KeywordGroup {
+  service: string;
+  primary: string;
+  keywords: KeywordItem[];
+}
+
 export interface KeywordData {
   primary_keyword: string;
   keywords: KeywordItem[];
   keyword_gaps: KeywordGap[];
+  keyword_groups?: KeywordGroup[];
+}
+
+export interface ManualKeywordResult {
+  keyword: string;
+  volume_estimate: number;
+  difficulty_estimate: number;
+  intent: string;
+  related_keywords: string[];
+  serp_analysis: string;
+  recommendation: string;
+  content_type: string;
 }
 
 export interface BacklinkItem {
