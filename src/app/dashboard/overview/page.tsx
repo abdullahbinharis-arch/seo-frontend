@@ -588,7 +588,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
       const startedAt = Date.now();
       const POLL_INTERVAL = 3000;
-      const MAX_WAIT = 240000;
+      const MAX_WAIT = 360000;
 
       while (Date.now() - startedAt < MAX_WAIT) {
         await new Promise((r) => setTimeout(r, POLL_INTERVAL));
