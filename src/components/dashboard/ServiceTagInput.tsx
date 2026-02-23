@@ -155,7 +155,7 @@ export function ServiceTagInput({
         }}
       />
     </div>
-    <p style={{ fontSize: 11, color: "#71717a", marginTop: 5 }}>
+    <p style={{ fontSize: 10, color: "#71717a", marginTop: 3, lineHeight: 1, marginBottom: -2 }}>
       {tags.length > 0 ? "Press Enter to add more" : "Press Enter to add a service"}
     </p>
   </>
