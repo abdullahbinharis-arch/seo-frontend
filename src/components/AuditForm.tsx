@@ -26,7 +26,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm";
 
-export function AuditForm({ onComplete, embedded = false }: { onComplete?: (result: AuditResult) => void; embedded?: boolean } = {}) {
+export function AuditForm({ onComplete, embedded = false, profileId }: { onComplete?: (result: AuditResult) => void; embedded?: boolean; profileId?: string | null } = {}) {
   const { data: session } = useSession();
   const [businessName, setBusinessName] = useState("");
   const [url, setUrl]                   = useState("");
@@ -73,6 +73,7 @@ export function AuditForm({ onComplete, embedded = false }: { onComplete?: (resu
           target_url: url,
           location,
           business_name: businessName,
+          ...(profileId ? { profile_id: profileId } : {}),
         }),
       });
 

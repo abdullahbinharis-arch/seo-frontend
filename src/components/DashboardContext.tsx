@@ -29,8 +29,9 @@ export interface LastFormValues {
   businessType: string;
 }
 
-const FORM_LS_KEY  = "lr_form_v1";
-const AUDIT_LS_KEY = "lr_last_audit_v1";
+const FORM_LS_KEY    = "lr_form_v1";
+const AUDIT_LS_KEY   = "lr_last_audit_v1";
+const PROFILE_LS_KEY = "lr_active_profile_v1";
 
 function loadFormValues(): LastFormValues {
   try {
@@ -56,6 +57,24 @@ function persistLastAudit(audit: AuditResult) {
   try { localStorage.setItem(AUDIT_LS_KEY, JSON.stringify(audit)); } catch { /* ignore */ }
 }
 
+function loadActiveProfileId(): string | null {
+  try {
+    const raw = typeof window !== "undefined" && localStorage.getItem(PROFILE_LS_KEY);
+    return raw || null;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function persistActiveProfileId(id: string | null) {
+  try {
+    if (id) {
+      localStorage.setItem(PROFILE_LS_KEY, id);
+    } else {
+      localStorage.removeItem(PROFILE_LS_KEY);
+    }
+  } catch { /* ignore */ }
+}
+
 // ── Context value shape ───────────────────────────────────────────────
 
 interface DashboardContextValue {
@@ -73,6 +92,10 @@ interface DashboardContextValue {
   lastFormValues: LastFormValues;
   /** Merge partial updates; also persists to localStorage. */
   setLastFormValues: (v: Partial<LastFormValues>) => void;
+  /** Currently active profile ID (persisted to localStorage). */
+  activeProfileId: string | null;
+  /** Set the active profile (persists to localStorage). */
+  setActiveProfileId: (id: string | null) => void;
 }
 
 const DashboardContext = createContext<DashboardContextValue>({
@@ -83,6 +106,8 @@ const DashboardContext = createContext<DashboardContextValue>({
   clearAgentResult: () => {},
   lastFormValues: { keyword: "", url: "", location: "Toronto, Canada", businessName: "", businessType: "" },
   setLastFormValues: () => {},
+  activeProfileId: null,
+  setActiveProfileId: () => {},
 });
 
 // ── Provider ──────────────────────────────────────────────────────────
@@ -109,6 +134,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     };
   });
   const [lastFormValues, setFormValuesState]  = useState<LastFormValues>(loadFormValues);
+  const [activeProfileId, setActiveProfileIdState] = useState<string | null>(loadActiveProfileId);
 
   /** Full audit completion: cache every agent result + extract form values. */
   const setLastAudit = useCallback((audit: AuditResult) => {
@@ -142,6 +168,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     };
     setFormValuesState(vals);
     persistFormValues(vals);
+
+    // Auto-set active profile from audit result
+    if (audit.profile_id) {
+      setActiveProfileIdState(audit.profile_id);
+      persistActiveProfileId(audit.profile_id);
+    }
   }, []);
 
   /** Standalone agent result — updates only that one cache slot. */
@@ -167,11 +199,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  /** Set active profile + persist. */
+  const setActiveProfileId = useCallback((id: string | null) => {
+    setActiveProfileIdState(id);
+    persistActiveProfileId(id);
+  }, []);
+
   return (
     <DashboardContext.Provider value={{
       lastAudit, setLastAudit,
       agentCache, setAgentResult, clearAgentResult,
       lastFormValues, setLastFormValues,
+      activeProfileId, setActiveProfileId,
     }}>
       {children}
     </DashboardContext.Provider>

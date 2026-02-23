@@ -5,6 +5,30 @@ export interface AuditRequest {
   location: string;
   business_name?: string;
   business_type?: string;
+  profile_id?: string;
+}
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  business_name: string;
+  website_url: string;
+  business_category: string | null;
+  services: string[];
+  country: string | null;
+  city: string | null;
+  nap_data: { name?: string; address?: string; phone?: string } | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  audit_count?: number;
+  latest_audit?: {
+    id: string;
+    version: number;
+    keyword: string;
+    status: string;
+    created_at: string;
+  } | null;
 }
 
 export interface AutoDetected {
@@ -684,6 +708,8 @@ export interface CalendarWeek {
 
 export interface AuditResult {
   audit_id: string;
+  profile_id?: string | null;
+  version?: number | null;
   business_name?: string;
   business_type?: string;
   keyword: string;
