@@ -6,13 +6,10 @@ import { useDashboard } from "@/components/DashboardContext";
 import {
   StatRow,
   StatBox,
-  SectionHead,
   Card,
-  ContentCard,
   DataTable,
   Tag,
   BtnPrimary,
-  BtnGhost,
   CopyBtn,
   type Column,
 } from "@/components/tool-ui";
@@ -20,7 +17,6 @@ import type {
   ContentData,
   SchemaResult,
   SchemaItem,
-  OutrankResult,
   CrawledPage,
   SeoContentResult,
   SeoRuleScore,
@@ -37,6 +33,14 @@ const SCHEMA_TYPES = [
   "BreadcrumbList",
   "AggregateRating",
   "Organization",
+] as const;
+
+/* ── Content type options ─────────────────────────────── */
+const CONTENT_TYPES = [
+  { value: "homepage", label: "Homepage", icon: "H" },
+  { value: "service", label: "Service Page", icon: "S" },
+  { value: "area", label: "Area Page", icon: "A" },
+  { value: "outrank", label: "Competitor Outrank", icon: "O" },
 ] as const;
 
 /* ── Rule display names ──────────────────────────────── */
@@ -61,38 +65,43 @@ const RULE_LABELS: Record<string, string> = {
 /* ── Progress step type ──────────────────────────────── */
 type EngineStep = "competitors" | "generating" | "scoring" | "done" | "fixing";
 
-/* ── Main Component ──────────────────────────────────────── */
+/* ── Tabs ─────────────────────────────────────────────── */
+type Tab = "content" | "schema";
+
+
+/* ══════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ══════════════════════════════════════════════════════════ */
+
 export function ContentWriterPage() {
   const { lastAudit } = useDashboard();
   const { data: session } = useSession();
 
   const cd = lastAudit?.content_data as ContentData | undefined;
 
-  /* Content generation state (legacy) */
-  const [generated, setGenerated] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState<string | null>(null);
-  const [faqAnswers, setFaqAnswers] = useState<Record<number, string>>({});
-  const [faqLoading, setFaqLoading] = useState<number | null>(null);
+  /* ── Tab state ─────────────────────────────────────── */
+  const [activeTab, setActiveTab] = useState<Tab>("content");
 
-  /* Schema state */
-  const [schemaResults, setSchemaResults] = useState<Record<string, SchemaItem[]>>({});
-  const [schemaLoading, setSchemaLoading] = useState<string | null>(null);
+  /* ── Content Generator form state ──────────────────── */
+  const [contentType, setContentType] = useState<string>("homepage");
+  const [targetKeyword, setTargetKeyword] = useState("");
+  const [yourUrl, setYourUrl] = useState("");
+  const [competitorUrl, setCompetitorUrl] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [targetCity, setTargetCity] = useState("");
 
-  /* Outrank state */
-  const [outrankUrl, setOutrankUrl] = useState("");
-  const [outrankKeyword, setOutrankKeyword] = useState("");
-  const [outrankLoading, setOutrankLoading] = useState(false);
-  const [outrankError, setOutrankError] = useState("");
-  const [outrankResults, setOutrankResults] = useState<OutrankResult[]>([]);
-  const [outrankExpanded, setOutrankExpanded] = useState<Record<number, boolean>>({});
-
-  /* SEO Engine state */
+  /* ── SEO Engine state ──────────────────────────────── */
   const [seoResult, setSeoResult] = useState<SeoContentResult | null>(null);
-  const [seoLoading, setSeoLoading] = useState<string | null>(null);
+  const [seoLoading, setSeoLoading] = useState(false);
   const [engineStep, setEngineStep] = useState<EngineStep | null>(null);
   const [fixLoading, setFixLoading] = useState(false);
   const [expandedRules, setExpandedRules] = useState<Record<string, boolean>>({});
 
+  /* ── Schema state ──────────────────────────────────── */
+  const [schemaResults, setSchemaResults] = useState<Record<string, SchemaItem[]>>({});
+  const [schemaLoading, setSchemaLoading] = useState<string | null>(null);
+
+  /* ── Audit data ────────────────────────────────────── */
   const keyword = lastAudit?.keyword ?? "";
   const businessName = lastAudit?.business_name ?? "";
   const businessType = lastAudit?.business_type ?? "";
@@ -102,73 +111,140 @@ export function ContentWriterPage() {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (session?.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
 
-  /* ── Data from flat section ──────────────────────────── */
   const wordCount = cd?.homepage_words ?? 0;
   const rewrites = cd?.pages_to_rewrite ?? [];
   const areaPages = cd?.service_areas ?? [];
   const faqItems = cd?.faq_suggestions ?? [];
-  const blogTopics = cd?.blog_topics ?? [];
   const crawledPages = (lastAudit?.pages_crawled ?? []) as CrawledPage[];
 
-  /* Schema data from AI SEO agent */
   const schemaTemplates =
     lastAudit?.agents?.ai_seo?.analysis?.schema_templates ?? [];
 
-  /* ── SEO Engine: Generate content ────────────────────── */
-  async function generateSeoContent(
-    key: string,
-    contentType: string,
-    opts?: { serviceName?: string; targetCity?: string; targetKeyword?: string }
-  ) {
-    setSeoLoading(key);
+
+  /* ── Generate SEO Content ──────────────────────────── */
+  async function handleGenerate() {
+    const kw = targetKeyword.trim() || keyword;
+    const url = yourUrl.trim() || targetUrl;
+    if (!kw) return;
+
+    setSeoLoading(true);
     setSeoResult(null);
     setEngineStep("competitors");
+
     try {
-      // Simulate progress steps (the backend does it all in one call)
       const stepTimer = setTimeout(() => setEngineStep("generating"), 4000);
       const stepTimer2 = setTimeout(() => setEngineStep("scoring"), 12000);
 
-      const res = await fetch(`${API}/api/content/generate`, {
+      const body: Record<string, unknown> = {
+        content_type: contentType === "outrank" ? "custom" : contentType,
+        target_keyword: kw,
+        secondary_keywords: [],
+        business_name: businessName,
+        business_type: businessType,
+        location,
+        target_url: url,
+      };
+
+      if (contentType === "service" && serviceName.trim()) {
+        body.service_name = serviceName.trim();
+      }
+      if (contentType === "area" && targetCity.trim()) {
+        body.target_city = targetCity.trim();
+        body.service_name = serviceName.trim() || businessType;
+        body.target_keyword = `${serviceName.trim() || businessType} ${targetCity.trim()}`.toLowerCase();
+      }
+      if (contentType === "outrank" && competitorUrl.trim()) {
+        body.competitor_url = competitorUrl.trim();
+      }
+
+      const endpoint = contentType === "outrank"
+        ? `${API}/api/outrank-competitor`
+        : `${API}/api/content/generate`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          content_type: contentType,
-          target_keyword: opts?.targetKeyword || keyword,
-          secondary_keywords: [],
-          service_name: opts?.serviceName,
-          target_city: opts?.targetCity,
-          business_name: businessName,
-          business_type: businessType,
-          location,
-          target_url: targetUrl,
-        }),
+        body: JSON.stringify(
+          contentType === "outrank"
+            ? {
+                competitor_url: competitorUrl.trim(),
+                keyword: kw,
+                your_url: url,
+                business_name: businessName,
+                business_type: businessType,
+                location,
+              }
+            : body
+        ),
       });
 
       clearTimeout(stepTimer);
       clearTimeout(stepTimer2);
 
       if (!res.ok) throw new Error("Generation failed");
-      const data: SeoContentResult = await res.json();
-      setEngineStep("done");
-      setSeoResult(data);
 
-      // Auto-expand failed rules
-      const failed: Record<string, boolean> = {};
-      if (data.seo_score?.rules) {
-        for (const [rule, info] of Object.entries(data.seo_score.rules)) {
-          if (info.status === "fail") failed[rule] = true;
+      if (contentType === "outrank") {
+        // Outrank returns different shape — wrap into SeoContentResult-like structure
+        const data = await res.json();
+        setEngineStep("done");
+        setSeoResult({
+          content: {
+            meta_title: data.meta_title ?? "",
+            meta_description: data.meta_description ?? "",
+            url_slug: "",
+            content: data.generated_content ?? "",
+            word_count: data.word_count ?? 0,
+            primary_keyword_count: 0,
+            images: [],
+            internal_links: (data.internal_links ?? []).map((l: { anchor: string; target: string }) => ({
+              anchor: l.anchor,
+              url: l.target,
+            })),
+            external_links: [],
+            faqs: [],
+            semantic_keywords_used: [],
+          },
+          seo_score: {
+            total_score: 0,
+            max_score: 100,
+            percentage: 0,
+            grade: "—",
+            rules: {},
+          },
+          competitor_analysis: {
+            avg_words: data.competitor_analysis?.word_count ?? 0,
+            target_words: data.word_count ?? 0,
+            competitors_analyzed: 1,
+            gap_topics: data.competitor_analysis?.weaknesses ?? [],
+          },
+          meta: {
+            generation_time_seconds: 0,
+            model: "claude",
+            auto_fixed: false,
+          },
+        });
+      } else {
+        const data: SeoContentResult = await res.json();
+        setEngineStep("done");
+        setSeoResult(data);
+
+        const failed: Record<string, boolean> = {};
+        if (data.seo_score?.rules) {
+          for (const [rule, info] of Object.entries(data.seo_score.rules)) {
+            if (info.status === "fail") failed[rule] = true;
+          }
         }
+        setExpandedRules(failed);
       }
-      setExpandedRules(failed);
     } catch {
       setEngineStep(null);
       setSeoResult(null);
     } finally {
-      setSeoLoading(null);
+      setSeoLoading(false);
     }
   }
 
-  /* ── SEO Engine: Fix issues ──────────────────────────── */
+  /* ── Fix issues ────────────────────────────────────── */
   async function handleFixIssues() {
     if (!seoResult) return;
     setFixLoading(true);
@@ -179,12 +255,12 @@ export function ContentWriterPage() {
         headers,
         body: JSON.stringify({
           content_type: "custom",
-          target_keyword: keyword,
+          target_keyword: targetKeyword.trim() || keyword,
           secondary_keywords: [],
           business_name: businessName,
           business_type: businessType,
           location,
-          target_url: targetUrl,
+          target_url: yourUrl.trim() || targetUrl,
         }),
       });
       if (!res.ok) throw new Error("Fix failed");
@@ -202,64 +278,6 @@ export function ContentWriterPage() {
       setEngineStep("done");
     } finally {
       setFixLoading(false);
-    }
-  }
-
-  /* ── Legacy: Generate content ────────────────────────── */
-  async function generateContent(key: string, pageType: string, context?: string) {
-    setLoading(key);
-    try {
-      const res = await fetch(`${API}/api/generate-content`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          page_type: pageType,
-          keyword,
-          target_url: targetUrl,
-          business_name: businessName,
-          business_type: businessType,
-          location,
-          context,
-        }),
-      });
-      if (!res.ok) throw new Error("Generation failed");
-      const data = await res.json();
-      const content = data.content ?? "";
-      const meta = data.meta_title
-        ? `\n\n---\nMeta Title: ${data.meta_title}\nMeta Description: ${data.meta_description}\nWord Count: ${data.word_count}`
-        : "";
-      setGenerated((prev) => ({ ...prev, [key]: content + meta }));
-    } catch {
-      setGenerated((prev) => ({ ...prev, [key]: "Failed to generate. Try again." }));
-    } finally {
-      setLoading(null);
-    }
-  }
-
-  /* ── Generate FAQ answer ───────────────────────────── */
-  async function generateFaqAnswer(idx: number, question: string) {
-    setFaqLoading(idx);
-    try {
-      const res = await fetch(`${API}/api/generate-content`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          page_type: "faq_answer",
-          keyword,
-          target_url: targetUrl,
-          business_name: businessName,
-          business_type: businessType,
-          location,
-          context: question,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      const data = await res.json();
-      setFaqAnswers((prev) => ({ ...prev, [idx]: data.content ?? "" }));
-    } catch {
-      setFaqAnswers((prev) => ({ ...prev, [idx]: "Failed to generate answer." }));
-    } finally {
-      setFaqLoading(null);
     }
   }
 
@@ -289,525 +307,405 @@ export function ContentWriterPage() {
     }
   }
 
-  /* ── Outrank competitor ────────────────────────────── */
-  async function handleOutrank() {
-    const url = outrankUrl.trim();
-    const kw = outrankKeyword.trim() || keyword;
-    if (!url || !kw) return;
-    setOutrankLoading(true);
-    setOutrankError("");
-    try {
-      const res = await fetch(`${API}/api/outrank-competitor`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          competitor_url: url,
-          keyword: kw,
-          your_url: targetUrl,
-          business_name: businessName,
-          business_type: businessType,
-          location,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: `Request failed (${res.status})` }));
-        throw new Error(err.detail || `Request failed (${res.status})`);
-      }
-      const data: OutrankResult = await res.json();
-      setOutrankResults((prev) => [data, ...prev]);
-      setOutrankUrl("");
-      setOutrankKeyword("");
-    } catch (err) {
-      setOutrankError(err instanceof Error ? err.message : "Analysis failed");
-    } finally {
-      setOutrankLoading(false);
-    }
-  }
-
-  /* ── Helper: strip HTML tags for plain text copy ───── */
+  /* ── Helpers ───────────────────────────────────────── */
   function stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
   }
 
+  /* ═══ RENDER ═══════════════════════════════════════════ */
   return (
     <div className="animate-fadeIn space-y-2">
-      {/* ── Stat Row (audit data only) ─────────────────── */}
-      {cd && (
-        <StatRow>
-          <StatBox
-            label="Homepage Words"
-            value={wordCount.toLocaleString()}
-            color={wordCount >= 800 ? "#10b981" : wordCount >= 300 ? "#f59e0b" : "#f43f5e"}
-          />
-          <StatBox
-            label="Pages to Rewrite"
-            value={rewrites.length || "0"}
-            color={rewrites.length > 0 ? "#f59e0b" : "#10b981"}
-          />
-          <StatBox
-            label="Area Pages Needed"
-            value={areaPages.length}
-            color={areaPages.length > 0 ? "#3b82f6" : "#10b981"}
-          />
-          <StatBox
-            label="FAQ Suggestions"
-            value={faqItems.length}
-            color="#8b5cf6"
-          />
-        </StatRow>
-      )}
-
-      {/* ═══ 1. SEO CONTENT ENGINE ═════════════════════════ */}
-      <SectionHead
-        title="SEO Content Engine"
-        subtitle="15-rule AI content generation with competitor analysis and scoring"
-      />
-
-      {/* Engine controls */}
-      <Card title="Generate SEO Content" dotColor="#10b981" meta="15-Rule Engine">
-        <div className="flex flex-col sm:flex-row gap-2 mb-3">
-          <BtnPrimary
-            onClick={() => generateSeoContent("engine-homepage", "homepage")}
-            disabled={!!seoLoading}
+      {/* ── Tab Bar ────────────────────────────────────── */}
+      <div className="flex gap-1 p-1 bg-surface-2 border border-white/6 rounded-xl">
+        {(
+          [
+            { key: "content" as Tab, label: "Smart Content Generator", icon: contentIcon },
+            { key: "schema" as Tab, label: "Schema Generator", icon: schemaIcon },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13px] font-medium transition-all ${
+              activeTab === tab.key
+                ? "bg-white/[0.06] text-white shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
           >
-            {seoLoading === "engine-homepage" ? "Generating..." : "Homepage"}
-          </BtnPrimary>
-          {areaPages.slice(0, 3).map((area, i) => (
-            <BtnPrimary
-              key={i}
-              small
-              onClick={() =>
-                generateSeoContent(`engine-area-${i}`, "area", {
-                  targetCity: area.city,
-                  serviceName: businessType,
-                  targetKeyword: `${businessType} ${area.city}`.toLowerCase(),
-                })
-              }
-              disabled={!!seoLoading}
-            >
-              {seoLoading === `engine-area-${i}` ? "..." : area.city}
-            </BtnPrimary>
-          ))}
-        </div>
+            <span className="w-4 h-4" dangerouslySetInnerHTML={{ __html: tab.icon }} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Multi-step progress */}
-        {seoLoading && engineStep && (
-          <EngineProgress step={engineStep} />
-        )}
-      </Card>
-
-      {/* SEO Engine Result: Two-panel layout */}
-      {seoResult && (
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
-          {/* LEFT: Content Preview */}
-          <ContentPreview
-            result={seoResult}
-            onCopyHtml={() => {
-              navigator.clipboard.writeText(seoResult.content.content);
-            }}
-            onCopyText={() => {
-              navigator.clipboard.writeText(stripHtml(seoResult.content.content));
-            }}
-          />
-          {/* RIGHT: Score Card */}
-          <SeoScoreCardPanel
-            scoreCard={seoResult.seo_score}
-            competitorAnalysis={seoResult.competitor_analysis}
-            meta={seoResult.meta}
-            expandedRules={expandedRules}
-            onToggleRule={(rule) =>
-              setExpandedRules((prev) => ({ ...prev, [rule]: !prev[rule] }))
-            }
-            onFixIssues={handleFixIssues}
-            fixLoading={fixLoading}
-          />
-        </div>
-      )}
-
-      {/* ═══ 2. PAGE CONTENT GENERATOR ════════════════════ */}
-      {crawledPages.length > 0 && (
+      {/* ══════════════════════════════════════════════════
+          TAB 1: SMART CONTENT GENERATOR
+         ══════════════════════════════════════════════════ */}
+      {activeTab === "content" && (
         <>
-          <SectionHead
-            title="Page Content Generator"
-            subtitle={`${crawledPages.length} crawled pages — generate optimized rewrites`}
-          />
-          <Card
-            title="Crawled Pages"
-            dotColor="#10b981"
-            meta={`${crawledPages.length} pages`}
-            noPadding
-          >
-            <DataTable
-              columns={PAGE_COLUMNS}
-              rows={crawledPages.map((page, i) => {
-                const key = `page-${i}`;
-                const content = generated[key];
-                const issues = page.issues?.length ?? 0;
-                return {
-                  url: (
-                    <span className="text-zinc-300 text-[11px] truncate max-w-[200px] block">
-                      {page.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                    </span>
-                  ),
-                  title: (
-                    <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
-                      {page.title || "\u2014"}
-                    </span>
-                  ),
-                  words: (
-                    <span className="font-mono text-[11px] text-zinc-400">
-                      {page.word_count}
-                    </span>
-                  ),
-                  issues: issues > 0 ? (
-                    <Tag variant="high">{issues} issues</Tag>
-                  ) : (
-                    <Tag variant="low">OK</Tag>
-                  ),
-                  action: !content ? (
-                    <BtnPrimary
-                      small
-                      onClick={() =>
-                        generateContent(
-                          key,
-                          "page_rewrite",
-                          `Page: ${page.url}\nTitle: ${page.title}\nH1: ${page.h1}\nIssues: ${page.issues?.join(", ") ?? "none"}`
-                        )
-                      }
-                      disabled={loading === key}
-                    >
-                      {loading === key ? "..." : "Rewrite"}
-                    </BtnPrimary>
-                  ) : (
-                    <CopyBtn text={content} />
-                  ),
-                };
-              })}
-            />
-          </Card>
+          {/* Stat row from audit */}
+          {cd && (
+            <StatRow>
+              <StatBox
+                label="Homepage Words"
+                value={wordCount.toLocaleString()}
+                color={wordCount >= 800 ? "#10b981" : wordCount >= 300 ? "#f59e0b" : "#f43f5e"}
+              />
+              <StatBox
+                label="Pages to Rewrite"
+                value={rewrites.length || "0"}
+                color={rewrites.length > 0 ? "#f59e0b" : "#10b981"}
+              />
+              <StatBox
+                label="Area Pages Needed"
+                value={areaPages.length}
+                color={areaPages.length > 0 ? "#3b82f6" : "#10b981"}
+              />
+              <StatBox
+                label="FAQ Suggestions"
+                value={faqItems.length}
+                color="#8b5cf6"
+              />
+            </StatRow>
+          )}
 
-          {/* Show generated page content inline */}
-          {crawledPages.map((_, i) => {
-            const key = `page-${i}`;
-            const content = generated[key];
-            if (!content) return null;
-            return (
-              <Card key={key} title={`Rewrite: ${crawledPages[i].title || crawledPages[i].url}`} dotColor="#10b981">
-                <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
-                  {content}
-                </div>
-                <div className="mt-2 flex justify-end">
-                  <CopyBtn text={content} />
-                </div>
-              </Card>
-            );
-          })}
-        </>
-      )}
-
-      {/* ═══ PAGE REWRITES (from content_data) ═══════════ */}
-      {rewrites.length > 0 && crawledPages.length === 0 && (
-        <>
-          <SectionHead
-            title="Page Rewrites Needed"
-            subtitle="Pages identified with thin or underoptimised content"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {rewrites.map((rewrite, i) => {
-              const key = `rewrite-${i}`;
-              const content = generated[key];
-              return (
-                <ContentCard
-                  key={i}
-                  title={rewrite.title}
-                  description={rewrite.issue}
-                  tag={<Tag variant={rewrite.priority === "high" ? "high" : "med"}>{rewrite.priority}</Tag>}
-                  meta={
-                    !content ? (
-                      <BtnPrimary
-                        small
-                        onClick={() => generateContent(key, "page_rewrite", rewrite.issue)}
-                        disabled={loading === key}
-                      >
-                        {loading === key ? "Generating..." : "Generate Rewrite"}
-                      </BtnPrimary>
-                    ) : (
-                      <CopyBtn text={content} />
-                    )
-                  }
-                >
-                  {content && (
-                    <div className="mt-2 p-3 bg-surface-2 rounded-lg border border-white/[0.03] text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
-                      {content}
-                    </div>
-                  )}
-                </ContentCard>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ═══ 3. SERVICE PAGE GENERATOR ════════════════════ */}
-      {areaPages.length > 0 && (
-        <>
-          <SectionHead
-            title="Service Area Pages"
-            subtitle={`${areaPages.length} area pages recommended for local coverage`}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {areaPages.map((area, i) => {
-              const key = `area-${i}`;
-              const content = generated[key];
-              return (
-                <ContentCard
-                  key={i}
-                  title={area.title}
-                  description={`SEO-optimized service page for ${area.city}`}
-                  tag={<Tag variant="info">Area Page</Tag>}
-                  meta={
-                    !content ? (
-                      <BtnPrimary
-                        small
-                        onClick={() => generateContent(key, "service_area_page", area.city)}
-                        disabled={loading === key}
-                      >
-                        {loading === key ? "Generating..." : "Generate"}
-                      </BtnPrimary>
-                    ) : (
-                      <CopyBtn text={content} />
-                    )
-                  }
-                >
-                  {content && (
-                    <div className="mt-2 p-3 bg-surface-2 rounded-lg border border-white/[0.03] text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
-                      {content}
-                    </div>
-                  )}
-                </ContentCard>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ═══ 4. SCHEMA GENERATOR ═════════════════════════ */}
-      <SectionHead
-        title="Schema Generator"
-        subtitle="Generate JSON-LD structured data for your pages"
-      />
-
-      {/* Schema from audit (AI SEO agent templates) */}
-      {schemaTemplates.length > 0 ? (
-        <Card
-          title="Recommended Schemas"
-          dotColor="#f59e0b"
-          meta={`${schemaTemplates.length} recommended`}
-        >
-          <div className="space-y-3">
-            {schemaTemplates.map(
-              (
-                tpl: { type: string; priority: string; description: string; json_ld: string },
-                i: number
-              ) => (
-                <div
-                  key={i}
-                  className="bg-surface-1 border border-white/6 rounded-lg p-3"
-                >
-                  <div className="flex items-start justify-between mb-1">
-                    <div>
-                      <span className="text-[13px] font-semibold text-white font-display">
-                        {tpl.type}
-                      </span>
-                      <p className="text-[10px] text-zinc-500 mt-0.5">{tpl.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Tag variant={tpl.priority === "high" ? "high" : tpl.priority === "medium" ? "med" : "low"}>
-                        {tpl.priority}
-                      </Tag>
-                      {tpl.json_ld && <CopyBtn text={tpl.json_ld} />}
-                    </div>
-                  </div>
-                  {tpl.json_ld && (
-                    <pre className="mt-2 p-2 bg-black/30 rounded text-[10px] text-emerald-400 font-mono overflow-x-auto max-h-[120px] overflow-y-auto">
-                      {tpl.json_ld}
-                    </pre>
-                  )}
-                </div>
-              )
-            )}
-          </div>
-        </Card>
-      ) : (
-        <SchemaGeneratorCard
-          schemaResults={schemaResults}
-          schemaLoading={schemaLoading}
-          onGenerate={generateSchema}
-          targetUrl={targetUrl}
-        />
-      )}
-
-      {/* Always show manual schema generator */}
-      {schemaTemplates.length > 0 && (
-        <SchemaGeneratorCard
-          schemaResults={schemaResults}
-          schemaLoading={schemaLoading}
-          onGenerate={generateSchema}
-          targetUrl={targetUrl}
-        />
-      )}
-
-      {/* ═══ 5. COMPETITOR OUTRANK ═══════════════════════ */}
-      <SectionHead
-        title="Competitor Outrank"
-        subtitle="Analyse a competitor page and generate content to beat it"
-      />
-      <Card title="Outrank a Competitor" dotColor="#f43f5e" meta="AI-powered">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={outrankUrl}
-              onChange={(e) => setOutrankUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleOutrank()}
-              placeholder="Competitor URL to outrank (e.g. https://competitor.com/service)"
-              className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
-            />
-            <input
-              type="text"
-              value={outrankKeyword}
-              onChange={(e) => setOutrankKeyword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleOutrank()}
-              placeholder={keyword ? `Keyword (default: ${keyword})` : "Target keyword"}
-              className="sm:w-56 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
-            />
-          </div>
-          <div className="flex justify-end">
-            <BtnPrimary
-              onClick={handleOutrank}
-              disabled={outrankLoading || !outrankUrl.trim()}
-            >
-              {outrankLoading ? "Analysing..." : "Outrank"}
-            </BtnPrimary>
-          </div>
-        </div>
-        {outrankError && (
-          <p className="text-[11px] text-rose-400 mt-2">{outrankError}</p>
-        )}
-      </Card>
-
-      {/* Outrank results */}
-      {outrankResults.map((result, i) => (
-        <OutrankResultCard
-          key={i}
-          result={result}
-          expanded={!!outrankExpanded[i]}
-          onToggle={() =>
-            setOutrankExpanded((prev) => ({ ...prev, [i]: !prev[i] }))
-          }
-        />
-      ))}
-
-      {/* ═══ FAQ GENERATOR ══════════════════════════════ */}
-      {faqItems.length > 0 && (
-        <>
-          <SectionHead
-            title="FAQ Section Generator"
-            subtitle="Questions sourced from AI overviews and People Also Ask"
-            action={
-              <BtnGhost
-                small
-                onClick={async () => {
-                  for (let i = 0; i < faqItems.length; i++) {
-                    if (!faqAnswers[i]) {
-                      await generateFaqAnswer(i, faqItems[i].question);
-                    }
-                  }
-                }}
-                disabled={faqLoading !== null}
-              >
-                Generate All
-              </BtnGhost>
-            }
-          />
-          <Card title="FAQ Questions" dotColor="#22d3ee" noPadding>
-            <div>
-              {faqItems.map((faq, i) => (
-                <div key={i} className="px-4 py-3 border-b border-white/[0.03] last:border-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="text-[12px] text-zinc-300 font-medium">{faq.question}</p>
-                      {faq.source && (
-                        <span className="text-[10px] text-zinc-600 mt-0.5 block">{faq.source}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Tag variant="info">AI</Tag>
-                      {!faqAnswers[i] ? (
-                        <button
-                          onClick={() => generateFaqAnswer(i, faq.question)}
-                          disabled={faqLoading === i}
-                          className="text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
-                        >
-                          {faqLoading === i ? "..." : "Generate"}
-                        </button>
-                      ) : (
-                        <CopyBtn text={faqAnswers[i]} />
-                      )}
-                    </div>
-                  </div>
-                  {faqAnswers[i] && (
-                    <div className="mt-2 p-2.5 bg-surface-1 rounded-lg text-[11px] text-zinc-400 leading-relaxed">
-                      {faqAnswers[i]}
-                    </div>
-                  )}
-                </div>
-              ))}
+          {/* ── Input Form Card ──────────────────────────── */}
+          <div className="bg-surface-2 border border-white/6 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/6">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-[13px] font-semibold font-display text-white">
+                  Generate SEO Content
+                </span>
+              </div>
+              <span className="text-[10px] text-zinc-500">15-Rule Engine + Competitor Analysis</span>
             </div>
-          </Card>
+
+            <div className="p-5 space-y-4">
+              {/* Content type selector */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-2">
+                  Content Type
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {CONTENT_TYPES.map((ct) => (
+                    <button
+                      key={ct.value}
+                      onClick={() => setContentType(ct.value)}
+                      className={`relative flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border text-left transition-all ${
+                        contentType === ct.value
+                          ? "bg-emerald-500/[0.08] border-emerald-500/30 text-emerald-400"
+                          : "bg-white/[0.02] border-white/6 text-zinc-400 hover:border-white/12 hover:text-zinc-200"
+                      }`}
+                    >
+                      <span
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center text-[12px] font-bold font-display shrink-0 ${
+                          contentType === ct.value
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-white/5 text-zinc-500"
+                        }`}
+                      >
+                        {ct.icon}
+                      </span>
+                      <span className="text-[12px] font-medium">{ct.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Input fields — Row 1: Keyword + URL */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                    Target Keyword
+                  </label>
+                  <input
+                    type="text"
+                    value={targetKeyword}
+                    onChange={(e) => setTargetKeyword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                    placeholder={keyword || "e.g. kitchen remodeler toronto"}
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                    Your URL
+                  </label>
+                  <input
+                    type="text"
+                    value={yourUrl}
+                    onChange={(e) => setYourUrl(e.target.value)}
+                    placeholder={targetUrl || "https://yourbusiness.com"}
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Conditional fields based on content type */}
+              {contentType === "outrank" && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                    Competitor URL to Outrank
+                  </label>
+                  <input
+                    type="text"
+                    value={competitorUrl}
+                    onChange={(e) => setCompetitorUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                    placeholder="https://competitor.com/their-page"
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                  />
+                </div>
+              )}
+
+              {(contentType === "service" || contentType === "area") && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                      Service Name
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceName}
+                      onChange={(e) => setServiceName(e.target.value)}
+                      placeholder={businessType || "e.g. Kitchen Renovation"}
+                      className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                    />
+                  </div>
+                  {contentType === "area" && (
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                        Target City
+                      </label>
+                      <input
+                        type="text"
+                        value={targetCity}
+                        onChange={(e) => setTargetCity(e.target.value)}
+                        placeholder="e.g. North York"
+                        className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Quick-pick area pages from audit */}
+              {contentType === "area" && areaPages.length > 0 && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                    Suggested Areas
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {areaPages.map((area, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setTargetCity(area.city);
+                          setTargetKeyword(`${businessType} ${area.city}`.toLowerCase());
+                        }}
+                        className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                          targetCity === area.city
+                            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+                            : "bg-white/[0.02] border-white/8 text-zinc-500 hover:text-zinc-300 hover:border-white/12"
+                        }`}
+                      >
+                        {area.city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Generate button + progress */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex-1">
+                  {seoLoading && engineStep && <EngineProgress step={engineStep} />}
+                </div>
+                <BtnPrimary
+                  onClick={handleGenerate}
+                  disabled={seoLoading || (contentType === "outrank" && !competitorUrl.trim())}
+                >
+                  {seoLoading ? "Generating..." : "Generate Content"}
+                </BtnPrimary>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Two-Panel Result ──────────────────────────── */}
+          {seoResult && (
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
+              {/* LEFT: Content Preview */}
+              <ContentPreview
+                result={seoResult}
+                onCopyHtml={() => navigator.clipboard.writeText(seoResult.content.content)}
+                onCopyText={() => navigator.clipboard.writeText(stripHtml(seoResult.content.content))}
+              />
+              {/* RIGHT: Score Card */}
+              {seoResult.seo_score.percentage > 0 ? (
+                <SeoScoreCardPanel
+                  scoreCard={seoResult.seo_score}
+                  competitorAnalysis={seoResult.competitor_analysis}
+                  meta={seoResult.meta}
+                  expandedRules={expandedRules}
+                  onToggleRule={(rule) =>
+                    setExpandedRules((prev) => ({ ...prev, [rule]: !prev[rule] }))
+                  }
+                  onFixIssues={handleFixIssues}
+                  fixLoading={fixLoading}
+                />
+              ) : (
+                /* Outrank result — competitor analysis panel instead of score card */
+                <CompetitorAnalysisPanel analysis={seoResult.competitor_analysis} />
+              )}
+            </div>
+          )}
+
+          {/* ── Crawled Pages Table (from audit) ─────────── */}
+          {crawledPages.length > 0 && (
+            <CrawledPagesSection
+              crawledPages={crawledPages}
+              keyword={keyword}
+              targetUrl={targetUrl}
+              businessName={businessName}
+              businessType={businessType}
+              location={location}
+              headers={headers}
+            />
+          )}
         </>
       )}
 
-      {/* ═══ BLOG TOPIC SUGGESTIONS ════════════════════ */}
-      {blogTopics.length > 0 && (
+      {/* ══════════════════════════════════════════════════
+          TAB 2: SCHEMA GENERATOR
+         ══════════════════════════════════════════════════ */}
+      {activeTab === "schema" && (
         <>
-          <SectionHead
-            title="Blog Topic Suggestions"
-            subtitle="Content gaps identified from competitor and keyword analysis"
+          {/* Recommended schemas from audit */}
+          {schemaTemplates.length > 0 && (
+            <Card
+              title="Recommended Schemas"
+              dotColor="#f59e0b"
+              meta={`${schemaTemplates.length} from audit`}
+            >
+              <div className="space-y-3">
+                {schemaTemplates.map(
+                  (
+                    tpl: { type: string; priority: string; description: string; json_ld: string },
+                    i: number
+                  ) => (
+                    <div
+                      key={i}
+                      className="bg-surface-1 border border-white/6 rounded-lg p-3"
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <span className="text-[13px] font-semibold text-white font-display">
+                            {tpl.type}
+                          </span>
+                          <p className="text-[10px] text-zinc-500 mt-0.5">{tpl.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Tag variant={tpl.priority === "high" ? "high" : tpl.priority === "medium" ? "med" : "low"}>
+                            {tpl.priority}
+                          </Tag>
+                          {tpl.json_ld && <CopyBtn text={tpl.json_ld} />}
+                        </div>
+                      </div>
+                      {tpl.json_ld && (
+                        <pre className="mt-2 p-2 bg-black/30 rounded text-[10px] text-emerald-400 font-mono overflow-x-auto max-h-[120px] overflow-y-auto">
+                          {tpl.json_ld}
+                        </pre>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Manual schema generator */}
+          <SchemaGeneratorCard
+            schemaResults={schemaResults}
+            schemaLoading={schemaLoading}
+            onGenerate={generateSchema}
+            targetUrl={targetUrl}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {blogTopics.map((topic, i) => {
-              const key = `blog-${i}`;
-              const content = generated[key];
-              return (
-                <ContentCard
-                  key={i}
-                  title={topic.title}
-                  description={`Blog article targeting "${topic.keyword || keyword}"`}
-                  tag={<Tag variant="med">Blog</Tag>}
-                  meta={
-                    !content ? (
+
+          {/* Crawled pages with schema generation */}
+          {crawledPages.length > 0 && (
+            <Card
+              title="Generate Schema Per Page"
+              dotColor="#8b5cf6"
+              meta={`${crawledPages.length} pages`}
+              noPadding
+            >
+              <DataTable
+                columns={SCHEMA_PAGE_COLUMNS}
+                rows={crawledPages.slice(0, 15).map((page, i) => {
+                  const key = `schema-page-${i}`;
+                  const results = schemaResults[key];
+                  return {
+                    url: (
+                      <span className="text-zinc-300 text-[11px] truncate max-w-[200px] block">
+                        {page.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      </span>
+                    ),
+                    title: (
+                      <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
+                        {page.title || "\u2014"}
+                      </span>
+                    ),
+                    action: results ? (
+                      <div className="flex items-center gap-1.5">
+                        <Tag variant="low">{results.length} schemas</Tag>
+                        <CopyBtn
+                          text={results.map((s) => formatJsonLd(s.json_ld)).join("\n\n")}
+                        />
+                      </div>
+                    ) : (
                       <BtnPrimary
                         small
-                        onClick={() => generateContent(key, "blog_article", topic.title)}
-                        disabled={loading === key}
+                        onClick={() =>
+                          generateSchema(key, page.url, ["LocalBusiness", "FAQPage", "BreadcrumbList"])
+                        }
+                        disabled={schemaLoading === key}
                       >
-                        {loading === key ? "Generating..." : "Generate Article"}
+                        {schemaLoading === key ? "..." : "Generate"}
                       </BtnPrimary>
-                    ) : (
-                      <CopyBtn text={content} />
-                    )
-                  }
-                >
-                  {content && (
-                    <div className="mt-2 p-3 bg-surface-2 rounded-lg border border-white/[0.03] text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
-                      {content}
+                    ),
+                  };
+                })}
+              />
+
+              {/* Inline schema results */}
+              {crawledPages.slice(0, 15).map((page, i) => {
+                const key = `schema-page-${i}`;
+                const results = schemaResults[key];
+                if (!results || results.length === 0) return null;
+                return (
+                  <div key={key} className="px-4 pb-3">
+                    <p className="text-[11px] text-zinc-300 font-medium mb-2 mt-2">
+                      {page.url.replace(/^https?:\/\//, "")}
+                    </p>
+                    <div className="space-y-2">
+                      {results.map((schema, j) => (
+                        <div key={j} className="bg-surface-1 border border-white/6 rounded-lg p-2.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-semibold text-white font-display">{schema.type}</span>
+                            <CopyBtn text={schema.json_ld} />
+                          </div>
+                          <pre className="p-2 bg-black/30 rounded text-[10px] text-emerald-400 font-mono overflow-x-auto max-h-[100px] overflow-y-auto">
+                            {formatJsonLd(schema.json_ld)}
+                          </pre>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </ContentCard>
-              );
-            })}
-          </div>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
         </>
       )}
     </div>
@@ -815,9 +713,16 @@ export function ContentWriterPage() {
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
-/* ── Engine Progress Stepper ───────────────────────────── */
-/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   SUB-COMPONENTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Tab Icons (SVG strings) ──────────────────────────── */
+const contentIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 7h8M2 11h10M2 15h6"/></svg>`;
+const schemaIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1h10v4H3zM1 11h6v4H1zM9 11h6v4H9zM8 5v3M4 8v3M12 8v3"/></svg>`;
+
+
+/* ── Engine Progress Stepper ──────────────────────────── */
 
 const STEPS: { key: EngineStep; label: string }[] = [
   { key: "competitors", label: "Analyzing competitors..." },
@@ -832,7 +737,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
     : STEPS.findIndex((s) => s.key === step);
 
   return (
-    <div className="flex items-center gap-3 py-2">
+    <div className="flex items-center gap-3">
       {STEPS.map((s, i) => {
         const isDone = i < currentIdx || step === "done";
         const isActive = i === currentIdx && step !== "done";
@@ -850,7 +755,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
               {isDone ? "\u2713" : i + 1}
             </span>
             <span
-              className={`text-[11px] ${
+              className={`text-[11px] hidden sm:inline ${
                 isDone
                   ? "text-emerald-400"
                   : isActive
@@ -861,7 +766,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
               {step === "fixing" && i === currentIdx ? "Fixing issues..." : s.label}
             </span>
             {i < STEPS.length - 1 && (
-              <span className="w-4 h-px bg-white/10 mx-1" />
+              <span className="w-4 h-px bg-white/10 mx-1 hidden sm:inline-block" />
             )}
           </div>
         );
@@ -871,9 +776,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
 /* ── Content Preview Panel ─────────────────────────────── */
-/* ═══════════════════════════════════════════════════════ */
 
 function ContentPreview({
   result,
@@ -899,31 +802,41 @@ function ContentPreview({
       {/* Meta fields */}
       <div className="p-4 border-b border-white/6">
         <div className="space-y-2">
-          <div>
-            <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Title</label>
-            <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[12px] text-blue-400">
-              {c.meta_title}
+          {c.meta_title && (
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Title</label>
+              <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[12px] text-blue-400">
+                {c.meta_title}
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Description</label>
-            <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[11px] text-zinc-300">
-              {c.meta_description}
+          )}
+          {c.meta_description && (
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Description</label>
+              <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[11px] text-zinc-300">
+                {c.meta_description}
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex items-center gap-3">
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">URL Slug</label>
-              <span className="text-[11px] text-emerald-400 font-mono">{c.url_slug}</span>
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Words</label>
-              <span className="text-[11px] text-zinc-300 font-mono">{c.word_count}</span>
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Keywords</label>
-              <span className="text-[11px] text-zinc-300 font-mono">{c.primary_keyword_count}x</span>
-            </div>
+            {c.url_slug && (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">URL Slug</label>
+                <span className="text-[11px] text-emerald-400 font-mono">{c.url_slug}</span>
+              </div>
+            )}
+            {c.word_count > 0 && (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Words</label>
+                <span className="text-[11px] text-zinc-300 font-mono">{c.word_count}</span>
+              </div>
+            )}
+            {c.primary_keyword_count > 0 && (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Keywords</label>
+                <span className="text-[11px] text-zinc-300 font-mono">{c.primary_keyword_count}x</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1025,9 +938,7 @@ function ContentPreview({
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
 /* ── SEO Score Card Panel ──────────────────────────────── */
-/* ═══════════════════════════════════════════════════════ */
 
 function SeoScoreCardPanel({
   scoreCard,
@@ -1074,10 +985,7 @@ function SeoScoreCardPanel({
           </div>
         </div>
         <div className="mt-2 flex items-center gap-2">
-          <span
-            className="text-[18px] font-bold font-display"
-            style={{ color }}
-          >
+          <span className="text-[18px] font-bold font-display" style={{ color }}>
             {scoreCard.grade}
           </span>
           <span className="text-[11px] text-zinc-500">
@@ -1137,9 +1045,7 @@ function SeoScoreCardPanel({
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
 /* ── Rule Row ──────────────────────────────────────────── */
-/* ═══════════════════════════════════════════════════════ */
 
 function RuleRow({
   rule,
@@ -1181,7 +1087,6 @@ function RuleRow({
       {expanded && (
         <div className="px-4 pb-2 pl-8">
           <p className="text-[10px] text-zinc-500 leading-relaxed">{info.detail}</p>
-          {/* Keyword placement positions */}
           {info.positions && (
             <div className="mt-1.5 flex flex-wrap gap-1">
               {Object.entries(info.positions).map(([pos, ok]) => (
@@ -1205,9 +1110,187 @@ function RuleRow({
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
-/* ── Schema Generator Card (manual) ──────────────────── */
-/* ═══════════════════════════════════════════════════════ */
+/* ── Competitor Analysis Panel (for outrank mode) ──────── */
+
+function CompetitorAnalysisPanel({
+  analysis,
+}: {
+  analysis: SeoContentResult["competitor_analysis"];
+}) {
+  return (
+    <div className="bg-surface-2 border border-white/6 rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/6">
+        <span className="text-[13px] font-semibold font-display text-white">Competitor Analysis</span>
+      </div>
+      <div className="p-4 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-surface-1 border border-white/6 rounded-lg p-3">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1">
+              Competitor Words
+            </span>
+            <span className="text-[20px] font-bold font-display text-white">
+              {analysis.avg_words.toLocaleString()}
+            </span>
+          </div>
+          <div className="bg-surface-1 border border-white/6 rounded-lg p-3">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1">
+              Your Target
+            </span>
+            <span className="text-[20px] font-bold font-display text-emerald-400">
+              {analysis.target_words.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {analysis.gap_topics?.length > 0 && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">
+              Weaknesses to Exploit
+            </p>
+            <div className="space-y-1.5">
+              {analysis.gap_topics.map((topic, i) => (
+                <div key={i} className="flex items-start gap-2 text-[11px]">
+                  <span className="text-rose-400 shrink-0 mt-0.5">-</span>
+                  <span className="text-zinc-400">{topic}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+/* ── Crawled Pages Section ────────────────────────────── */
+
+function CrawledPagesSection({
+  crawledPages,
+  keyword,
+  targetUrl,
+  businessName,
+  businessType,
+  location,
+  headers,
+}: {
+  crawledPages: CrawledPage[];
+  keyword: string;
+  targetUrl: string;
+  businessName: string;
+  businessType: string;
+  location: string;
+  headers: Record<string, string>;
+}) {
+  const [generated, setGenerated] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function generateRewrite(key: string, context: string) {
+    setLoading(key);
+    try {
+      const res = await fetch(`${API}/api/generate-content`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          page_type: "page_rewrite",
+          keyword,
+          target_url: targetUrl,
+          business_name: businessName,
+          business_type: businessType,
+          location,
+          context,
+        }),
+      });
+      if (!res.ok) throw new Error("Generation failed");
+      const data = await res.json();
+      const content = data.content ?? "";
+      const meta = data.meta_title
+        ? `\n\n---\nMeta Title: ${data.meta_title}\nMeta Description: ${data.meta_description}\nWord Count: ${data.word_count}`
+        : "";
+      setGenerated((prev) => ({ ...prev, [key]: content + meta }));
+    } catch {
+      setGenerated((prev) => ({ ...prev, [key]: "Failed to generate. Try again." }));
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-end justify-between mb-3 mt-6">
+        <div>
+          <h3 className="text-[15px] font-semibold font-display text-white">Page Rewrites</h3>
+          <p className="text-[11px] text-zinc-500 mt-0.5">{crawledPages.length} crawled pages — generate optimized rewrites</p>
+        </div>
+      </div>
+      <Card title="Crawled Pages" dotColor="#10b981" meta={`${crawledPages.length} pages`} noPadding>
+        <DataTable
+          columns={PAGE_COLUMNS}
+          rows={crawledPages.map((page, i) => {
+            const key = `page-${i}`;
+            const content = generated[key];
+            const issues = page.issues?.length ?? 0;
+            return {
+              url: (
+                <span className="text-zinc-300 text-[11px] truncate max-w-[200px] block">
+                  {page.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                </span>
+              ),
+              title: (
+                <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
+                  {page.title || "\u2014"}
+                </span>
+              ),
+              words: (
+                <span className="font-mono text-[11px] text-zinc-400">{page.word_count}</span>
+              ),
+              issues: issues > 0 ? (
+                <Tag variant="high">{issues} issues</Tag>
+              ) : (
+                <Tag variant="low">OK</Tag>
+              ),
+              action: !content ? (
+                <BtnPrimary
+                  small
+                  onClick={() =>
+                    generateRewrite(
+                      key,
+                      `Page: ${page.url}\nTitle: ${page.title}\nH1: ${page.h1}\nIssues: ${page.issues?.join(", ") ?? "none"}`
+                    )
+                  }
+                  disabled={loading === key}
+                >
+                  {loading === key ? "..." : "Rewrite"}
+                </BtnPrimary>
+              ) : (
+                <CopyBtn text={content} />
+              ),
+            };
+          })}
+        />
+      </Card>
+
+      {crawledPages.map((_, i) => {
+        const key = `page-${i}`;
+        const content = generated[key];
+        if (!content) return null;
+        return (
+          <Card key={key} title={`Rewrite: ${crawledPages[i].title || crawledPages[i].url}`} dotColor="#10b981">
+            <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
+              {content}
+            </div>
+            <div className="mt-2 flex justify-end">
+              <CopyBtn text={content} />
+            </div>
+          </Card>
+        );
+      })}
+    </>
+  );
+}
+
+
+/* ── Schema Generator Card (manual) ───────────────────── */
 
 function SchemaGeneratorCard({
   schemaResults,
@@ -1233,14 +1316,14 @@ function SchemaGeneratorCard({
   const results = schemaResults[key];
 
   return (
-    <Card title="Generate Schema" dotColor="#8b5cf6" meta="Custom">
+    <Card title="Generate Custom Schema" dotColor="#8b5cf6" meta="JSON-LD">
       <div className="space-y-3">
         <input
           type="text"
           value={pageUrl}
           onChange={(e) => setPageUrl(e.target.value)}
           placeholder="Page URL (leave empty for homepage)"
-          className="w-full bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+          className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
         />
         <div className="flex flex-wrap gap-1.5">
           {SCHEMA_TYPES.map((t) => (
@@ -1250,7 +1333,7 @@ function SchemaGeneratorCard({
               className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
                 selectedTypes.includes(t)
                   ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                  : "bg-surface-1 border-white/8 text-zinc-500 hover:text-zinc-300"
+                  : "bg-white/[0.02] border-white/8 text-zinc-500 hover:text-zinc-300"
               }`}
             >
               {t}
@@ -1268,19 +1351,13 @@ function SchemaGeneratorCard({
         </div>
       </div>
 
-      {/* Schema output */}
       {results && results.length > 0 && (
         <div className="mt-4 space-y-3">
           {results.map((schema, i) => (
-            <div
-              key={i}
-              className="bg-surface-1 border border-white/6 rounded-lg p-3"
-            >
+            <div key={i} className="bg-surface-1 border border-white/6 rounded-lg p-3">
               <div className="flex items-start justify-between mb-1">
                 <div>
-                  <span className="text-[12px] font-semibold text-white font-display">
-                    {schema.type}
-                  </span>
+                  <span className="text-[12px] font-semibold text-white font-display">{schema.type}</span>
                   {schema.description && (
                     <p className="text-[10px] text-zinc-500 mt-0.5">{schema.description}</p>
                   )}
@@ -1303,151 +1380,8 @@ function SchemaGeneratorCard({
 }
 
 
-/* ═══════════════════════════════════════════════════════ */
-/* ── Outrank Result Card ─────────────────────────────── */
-/* ═══════════════════════════════════════════════════════ */
-
-function OutrankResultCard({
-  result,
-  expanded,
-  onToggle,
-}: {
-  result: OutrankResult;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const analysis = result.competitor_analysis;
-
-  return (
-    <div className="bg-surface-2 border border-white/6 rounded-xl overflow-hidden">
-      {/* Header — competitor analysis summary */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h4 className="text-[14px] font-semibold font-display text-white">
-            {analysis.title || "Competitor Analysis"}
-          </h4>
-          <Tag variant="high">
-            {analysis.word_count.toLocaleString()} words
-          </Tag>
-        </div>
-
-        {/* Strengths & weaknesses */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-          {analysis.strengths.length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Strengths</p>
-              <ul className="space-y-1">
-                {analysis.strengths.map((s, i) => (
-                  <li key={i} className="text-[11px] text-zinc-400 flex gap-1.5">
-                    <span className="text-emerald-400 shrink-0">+</span> {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {analysis.weaknesses.length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Weaknesses</p>
-              <ul className="space-y-1">
-                {analysis.weaknesses.map((w, i) => (
-                  <li key={i} className="text-[11px] text-zinc-400 flex gap-1.5">
-                    <span className="text-rose-400 shrink-0">-</span> {w}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Keywords targeted */}
-        {analysis.keywords_targeted.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {analysis.keywords_targeted.map((kw) => (
-              <span
-                key={kw}
-                className="text-[9px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded-md"
-              >
-                {kw}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Strategy */}
-        {result.outrank_strategy && (
-          <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
-            <span className="text-emerald-400 font-medium">Strategy: </span>
-            {result.outrank_strategy}
-          </p>
-        )}
-
-        {/* Meta tags */}
-        {result.meta_title && (
-          <div className="bg-surface-1 border border-white/6 rounded-lg p-2.5 mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] uppercase tracking-wider text-zinc-500">Meta Tags</span>
-              <CopyBtn text={`Title: ${result.meta_title}\nDescription: ${result.meta_description}`} />
-            </div>
-            <p className="text-[12px] text-blue-400 font-medium">{result.meta_title}</p>
-            <p className="text-[11px] text-zinc-400 mt-0.5">{result.meta_description}</p>
-          </div>
-        )}
-
-        {/* Schema + internal links row */}
-        <div className="flex flex-wrap gap-3 text-[11px] text-zinc-400">
-          {result.word_count > 0 && (
-            <span>Words: <span className="text-zinc-200 font-mono">{result.word_count.toLocaleString()}</span></span>
-          )}
-          {result.schema_recommendation && (
-            <span>Schema: <span className="text-zinc-200">{result.schema_recommendation}</span></span>
-          )}
-          {result.internal_links?.length > 0 && (
-            <span>Internal links: <span className="text-zinc-200 font-mono">{result.internal_links.length}</span></span>
-          )}
-        </div>
-
-        {/* Toggle content */}
-        {result.generated_content && (
-          <button
-            onClick={onToggle}
-            className="mt-3 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors"
-          >
-            {expanded ? "Hide generated content" : "View generated content"}
-          </button>
-        )}
-      </div>
-
-      {/* Expandable content */}
-      {expanded && result.generated_content && (
-        <div className="border-t border-white/6 p-4">
-          <div className="flex justify-end mb-2">
-            <CopyBtn text={result.generated_content} />
-          </div>
-          <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">
-            {result.generated_content}
-          </div>
-
-          {/* Internal links table */}
-          {result.internal_links?.length > 0 && (
-            <div className="mt-4">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">Suggested Internal Links</p>
-              <DataTable
-                columns={LINK_COLUMNS}
-                rows={result.internal_links.map((link) => ({
-                  anchor: <span className="text-emerald-400 text-[11px]">{link.anchor}</span>,
-                  target: <span className="text-zinc-300 text-[11px]">{link.target}</span>,
-                  reason: <span className="text-zinc-500 text-[11px]">{link.reason}</span>,
-                }))}
-              />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ── Column definitions ──────────────────────────────── */
+
 const PAGE_COLUMNS: Column[] = [
   { key: "url", label: "URL" },
   { key: "title", label: "Title" },
@@ -1456,10 +1390,10 @@ const PAGE_COLUMNS: Column[] = [
   { key: "action", label: "", align: "center" },
 ];
 
-const LINK_COLUMNS: Column[] = [
-  { key: "anchor", label: "Anchor Text" },
-  { key: "target", label: "Target Page" },
-  { key: "reason", label: "Reason" },
+const SCHEMA_PAGE_COLUMNS: Column[] = [
+  { key: "url", label: "URL" },
+  { key: "title", label: "Title" },
+  { key: "action", label: "", align: "right" },
 ];
 
 /* ── Utility ─────────────────────────────────────────── */
