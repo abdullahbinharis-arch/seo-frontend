@@ -60,6 +60,68 @@ export interface SiteAggregate {
   thin_content_count: number;
   thin_content_pages: string[];
   coverage_score: number;
+  page_types?: Record<string, number>;
+}
+
+// ── Site Crawl Summary (from audit response) ────────────────────────
+
+export interface SiteCrawlPage {
+  url: string;
+  title: string;
+  type: string;
+  score: number;
+  word_count: number;
+  issues_count: number;
+  top_issue: string | null;
+}
+
+export interface SiteCrawl {
+  pages_found: number;
+  pages_analyzed: number;
+  pages: SiteCrawlPage[];
+}
+
+// ── Per-Page Analysis (from analyze_pages_batch) ────────────────────
+
+export interface PageTitleAnalysis {
+  current: string;
+  length: number;
+  has_keyword: boolean;
+  has_location: boolean;
+  rating: "good" | "needs_improvement" | "poor";
+}
+
+export interface PageMetaAnalysis {
+  current: string;
+  length: number;
+  has_keyword: boolean;
+  has_cta: boolean;
+  rating: "good" | "needs_improvement" | "poor";
+}
+
+export interface PageAnalysis {
+  url: string;
+  page_type: string;
+  page_score: number;
+  title_analysis: PageTitleAnalysis;
+  meta_analysis: PageMetaAnalysis;
+  h1_tags: string[];
+  word_count: number;
+  issues: string[];
+  recommended_title: string;
+  recommended_meta: string;
+  recommended_keywords: string[];
+  content_recommendation: string;
+}
+
+// ── Service Keyword Targets (from build_service_keywords) ───────────
+
+export interface ServiceKeywordTarget {
+  primary: string;
+  related: string[];
+  current_page: string | null;
+  has_dedicated_page: boolean;
+  recommendation: string;
 }
 
 // ── Keyword Research ─────────────────────────────────────────────────
@@ -828,6 +890,10 @@ export interface AuditResult {
   timestamp: string;
   site_aggregate?: SiteAggregate;
   pages_crawled?: CrawledPage[];
+  site_crawl?: SiteCrawl;
+  per_page_analysis?: Record<string, PageAnalysis>;
+  service_keywords?: Record<string, ServiceKeywordTarget>;
+  schema_recommendations?: Record<string, string[]>;
   agents: {
     keyword_research: KeywordResearchAgent;
     on_page_seo: OnPageSeoAgent;
