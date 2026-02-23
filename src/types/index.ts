@@ -697,6 +697,38 @@ export interface CompetitorGapResult {
   summary: string;
 }
 
+// ── Schema Generator ──────────────────────────────────────────────────
+
+export interface SchemaItem {
+  type: string;
+  description: string;
+  json_ld: string;
+}
+
+export interface SchemaResult {
+  schemas: SchemaItem[];
+}
+
+// ── Competitor Outrank ────────────────────────────────────────────────
+
+export interface OutrankResult {
+  competitor_analysis: {
+    title: string;
+    word_count: number;
+    strengths: string[];
+    weaknesses: string[];
+    keywords_targeted: string[];
+  };
+  generated_content: string;
+  meta_title: string;
+  meta_description: string;
+  heading_structure: Array<{ tag: string; text: string }>;
+  word_count: number;
+  schema_recommendation: string;
+  internal_links: Array<{ anchor: string; target: string; reason: string }>;
+  outrank_strategy: string;
+}
+
 export interface BacklinkItem {
   source: string;
   da: number;
