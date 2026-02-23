@@ -666,6 +666,12 @@ export interface KeywordData {
   keyword_groups?: KeywordGroup[];
 }
 
+export interface CompetitorSnippet {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
 export interface ManualKeywordResult {
   keyword: string;
   volume_estimate: number;
@@ -675,6 +681,7 @@ export interface ManualKeywordResult {
   serp_analysis: string;
   recommendation: string;
   content_type: string;
+  competitor_snippets?: CompetitorSnippet[];
 }
 
 // ── Competitor Keyword Gap ──────────────────────────────────────────
