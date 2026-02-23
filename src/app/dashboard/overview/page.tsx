@@ -709,7 +709,6 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
                   value={category}
                   onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
                   disabled={loading}
-                  className="empty-field"
                 />
               </FieldGroup>
 
@@ -722,7 +721,6 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
                   tags={services}
                   onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
                   disabled={loading}
-                  className="empty-field"
                 />
               </FieldGroup>
             </div>
@@ -818,11 +816,11 @@ function FieldGroup({
 }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-zinc-500">{icon}</span>
+      <div className="flex items-center gap-1.5" style={{ marginBottom: 7 }}>
+        <span style={{ color: "#71717a" }}>{icon}</span>
         <span
-          className="text-zinc-500 font-semibold uppercase tracking-wider"
-          style={{ fontSize: 11 }}
+          className="font-semibold uppercase"
+          style={{ fontSize: 11, color: "#71717a", letterSpacing: "0.06em", lineHeight: 1 }}
         >
           {label}
         </span>

@@ -27,7 +27,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
 ];
 
 const inputClass =
-  "w-full px-[14px] py-[11px] rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.055)] text-white placeholder-[#52525b] focus:outline-none focus:border-[rgba(16,185,129,0.4)] focus:bg-[rgba(16,185,129,0.025)] focus:[box-shadow:0_0_0_3px_rgba(16,185,129,0.06)] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[13px] leading-[1.45]";
+  "w-full px-[14px] py-[11px] rounded-[10px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[#fafafa] placeholder-[rgba(255,255,255,0.16)] focus:outline-none focus:border-[rgba(16,185,129,0.4)] focus:bg-[rgba(16,185,129,0.03)] focus:[box-shadow:0_0_0_3px_rgba(16,185,129,0.06)] hover:border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.04)] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[13.5px] leading-[1.45]";
 
 export function AuditForm({ onComplete, embedded = false, profileId }: { onComplete?: (result: AuditResult) => void; embedded?: boolean; profileId?: string | null } = {}) {
   const { data: session } = useSession();
@@ -438,11 +438,11 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col" style={{ gap: 6 }}>
+    <div className="flex flex-col">
       <label
         htmlFor={htmlFor}
-        className="font-semibold uppercase tracking-wider text-[#52525b]"
-        style={{ fontSize: 11, lineHeight: "1", letterSpacing: "0.07em" }}
+        className="font-semibold uppercase text-[#71717a]"
+        style={{ fontSize: 11, lineHeight: "1", letterSpacing: "0.06em", marginBottom: 7 }}
       >
         {label}
       </label>

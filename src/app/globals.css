@@ -386,16 +386,18 @@ body {
   width: 100%;
   padding: 11px 14px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.055);
-  color: #fff;
-  font-size: 13px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fafafa;
+  font-size: 13.5px;
+  font-family: 'DM Sans', var(--font-geist-sans), sans-serif;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   line-height: 1.45;
 }
 .empty-field::placeholder {
-  color: #52525b;
+  color: rgba(255,255,255,0.16);
+  font-size: 13px;
 }
 .empty-field:hover:not(:disabled) {
   border-color: rgba(255,255,255,0.1);

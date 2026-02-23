@@ -11,16 +11,36 @@ interface ServiceTagInputProps {
   className?: string;
 }
 
+// Must match all other inputs exactly: 11px 14px padding, 10px radius, etc.
+const baseStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "11px 14px",
+  borderRadius: 10,
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  color: "#fafafa",
+  fontSize: 13.5,
+  fontFamily: "inherit",
+  lineHeight: "1.45",
+  outline: "none",
+  transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+  cursor: "text",
+  display: "flex",
+  flexWrap: "wrap" as const,
+  alignItems: "center",
+  gap: 6,
+};
+
 export function ServiceTagInput({
   tags,
   onChange,
   disabled,
   placeholder = "e.g. Kitchen Renovation",
   maxTags = 15,
-  className,
 }: ServiceTagInputProps) {
   const [input, setInput] = useState("");
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const atMax = tags.length >= maxTags;
@@ -55,34 +75,26 @@ export function ServiceTagInput({
     }
   }
 
-  const isEmptyStyle = className?.includes("empty-field");
-
-  // Build focus ring styles
-  const focusStyles = focused
-    ? "border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.025); box-shadow: 0 0 0 3px rgba(16,185,129,0.06);"
-    : "";
+  const computedStyle: React.CSSProperties = {
+    ...baseStyle,
+    ...(hovered && !focused && !disabled ? {
+      borderColor: "rgba(255,255,255,0.1)",
+      background: "rgba(255,255,255,0.04)",
+    } : {}),
+    ...(focused ? {
+      borderColor: "rgba(16,185,129,0.4)",
+      background: "rgba(16,185,129,0.03)",
+      boxShadow: "0 0 0 3px rgba(16,185,129,0.06)",
+    } : {}),
+    ...(disabled ? { opacity: 0.3, cursor: "not-allowed" } : {}),
+  };
 
   return (
     <div
-      className={isEmptyStyle ? "empty-field cursor-text" : `w-full rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.055)] text-white transition-all cursor-text ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "center",
-        gap: 6,
-        minHeight: tags.length > 0 ? undefined : undefined,
-        ...(focused && !isEmptyStyle ? {
-          borderColor: "rgba(16,185,129,0.4)",
-          background: "rgba(16,185,129,0.025)",
-          boxShadow: "0 0 0 3px rgba(16,185,129,0.06)",
-        } : {}),
-        ...(focused && isEmptyStyle ? {
-          borderColor: "rgba(16,185,129,0.4)",
-          background: "rgba(16,185,129,0.025)",
-          boxShadow: "0 0 0 3px rgba(16,185,129,0.06)",
-        } : {}),
-      }}
+      style={computedStyle}
       onClick={() => inputRef.current?.focus()}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {tags.map((tag, i) => (
         <span
@@ -128,8 +140,18 @@ export function ServiceTagInput({
         onBlur={() => setFocused(false)}
         disabled={disabled || atMax}
         placeholder={atMax ? `Max ${maxTags} services` : (tags.length === 0 ? placeholder : "Add another...")}
-        className="flex-1 min-w-[120px] bg-transparent outline-none text-[13px] text-white disabled:cursor-not-allowed"
-        style={{ padding: 0, border: "none", lineHeight: "1.45" }}
+        style={{
+          flex: 1,
+          minWidth: 120,
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          outline: "none",
+          color: "#fafafa",
+          fontSize: 13.5,
+          fontFamily: "inherit",
+          lineHeight: "1.45",
+        }}
       />
     </div>
   );

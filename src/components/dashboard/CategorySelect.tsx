@@ -3,6 +3,34 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { BUSINESS_CATEGORIES } from "@/data/categories";
 
+// Shared input style — must match all other form inputs exactly
+const triggerStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "11px 14px",
+  paddingRight: 34,
+  borderRadius: 10,
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  color: "#fafafa",
+  fontSize: 13.5,
+  fontFamily: "inherit",
+  lineHeight: "1.45",
+  outline: "none",
+  transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+  cursor: "pointer",
+};
+
+const triggerHoverStyle: Partial<React.CSSProperties> = {
+  borderColor: "rgba(255,255,255,0.1)",
+  background: "rgba(255,255,255,0.04)",
+};
+
+const triggerFocusStyle: Partial<React.CSSProperties> = {
+  borderColor: "rgba(16,185,129,0.4)",
+  background: "rgba(16,185,129,0.03)",
+  boxShadow: "0 0 0 3px rgba(16,185,129,0.06)",
+};
+
 interface CategorySelectProps {
   value: string;
   onChange: (value: string) => void;
@@ -10,11 +38,12 @@ interface CategorySelectProps {
   className?: string;
 }
 
-export function CategorySelect({ value, onChange, disabled, className }: CategorySelectProps) {
+export function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [isOther, setIsOther] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(0);
+  const [hovered, setHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -26,7 +55,6 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     return BUSINESS_CATEGORIES.filter((c) => c.toLowerCase().includes(q));
   }, [query]);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -38,19 +66,14 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Reset highlight when filtered list changes
-  useEffect(() => {
-    setHighlightIdx(0);
-  }, [filtered.length]);
+  useEffect(() => { setHighlightIdx(0); }, [filtered.length]);
 
-  // Focus search input when dropdown opens
   useEffect(() => {
     if (open && searchRef.current) {
       setTimeout(() => searchRef.current?.focus(), 50);
     }
   }, [open]);
 
-  // Scroll highlighted item into view
   useEffect(() => {
     if (!open || !listRef.current) return;
     const items = listRef.current.children;
@@ -82,13 +105,7 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
   }
 
   function handleTriggerChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (isOther) {
-      onChange(e.target.value);
-    }
-  }
-
-  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setQuery(e.target.value);
+    if (isOther) onChange(e.target.value);
   }
 
   function handleSearchKeyDown(e: React.KeyboardEvent) {
@@ -126,18 +143,20 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
     setIsOther(false);
     onChange("");
     setQuery("");
-    setTimeout(() => {
-      setOpen(true);
-    }, 0);
+    setTimeout(() => setOpen(true), 0);
   }
 
-  const isEmptyStyle = className?.includes("empty-field");
-  const baseClass = isEmptyStyle
-    ? "empty-field cursor-pointer"
-    : "w-full rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.055)] text-white placeholder-[#52525b] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[13px] cursor-pointer";
+  // Merge hover/focus styles
+  const computedStyle: React.CSSProperties = {
+    ...triggerStyle,
+    ...(hovered && !disabled ? triggerHoverStyle : {}),
+    ...(open ? triggerFocusStyle : {}),
+    ...(disabled ? { opacity: 0.3, cursor: "not-allowed" } : {}),
+    ...(!isOther ? { caretColor: "transparent" } : { cursor: "text" }),
+  };
 
   return (
-    <div ref={containerRef} className={`relative ${className ?? ""}`}>
+    <div ref={containerRef} className="relative">
       <div className="relative">
         <input
           ref={triggerRef}
@@ -146,15 +165,12 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
           onChange={handleTriggerChange}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           readOnly={!isOther}
           disabled={disabled}
           placeholder={isOther ? "Type your business category" : "e.g. Kitchen Remodeler"}
-          className={baseClass}
-          style={{
-            ...(isEmptyStyle ? {} : { padding: "11px 14px" }),
-            paddingRight: 34,
-            ...((!isOther) ? { caretColor: "transparent" } : {}),
-          }}
+          style={computedStyle}
           autoComplete="off"
         />
         {isOther ? (
@@ -185,7 +201,6 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
             boxShadow: "0 14px 44px rgba(0,0,0,0.55)",
           }}
         >
-          {/* Sticky search input */}
           <div
             className="sticky top-0 z-10 p-1.5"
             style={{
@@ -198,7 +213,7 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
               ref={searchRef}
               type="text"
               value={query}
-              onChange={handleSearchChange}
+              onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               placeholder="Search categories..."
               className="w-full outline-none"
@@ -215,7 +230,6 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
             />
           </div>
 
-          {/* Category list */}
           <div
             ref={listRef}
             className="max-h-[220px] overflow-y-auto"
