@@ -647,7 +647,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
       {/* ── Form card ── */}
       <div
-        className="empty-card relative z-10 w-full max-w-[780px] px-5 py-7 sm:px-12 sm:pt-10 sm:pb-9"
+        className="empty-card relative z-10 w-full max-w-[780px] px-5 py-7 sm:px-[44px] sm:py-10"
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-7">
@@ -664,70 +664,70 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
-            {/* Business Name */}
-            <FieldGroup
-              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
-              label="Business Name"
-              error={fieldErrors.businessName}
-            >
-              <input
-                type="text"
-                value={businessName}
-                onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
-                placeholder="Arch Kitchen Cabinets"
-                disabled={loading}
-                className="empty-field"
-              />
-            </FieldGroup>
+          <div className="flex flex-col" style={{ gap: 16 }}>
+            {/* ROW 1: Business Name | Website URL */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 items-start" style={{ gap: 16 }}>
+              <FieldGroup
+                icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
+                label="Business Name"
+                error={fieldErrors.businessName}
+              >
+                <input
+                  type="text"
+                  value={businessName}
+                  onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
+                  placeholder="Arch Kitchen Cabinets"
+                  disabled={loading}
+                  className="empty-field"
+                />
+              </FieldGroup>
 
-            {/* Website URL */}
-            <FieldGroup
-              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
-              label="Website URL"
-              error={fieldErrors.url}
-            >
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
-                placeholder="https://yourbusiness.com"
-                disabled={loading}
-                className="empty-field"
-              />
-            </FieldGroup>
+              <FieldGroup
+                icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>}
+                label="Website URL"
+                error={fieldErrors.url}
+              >
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
+                  placeholder="https://yourbusiness.com"
+                  disabled={loading}
+                  className="empty-field"
+                />
+              </FieldGroup>
+            </div>
 
-            {/* Category */}
-            <FieldGroup
-              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>}
-              label="Business Category"
-              error={fieldErrors.category}
-            >
-              <CategorySelect
-                value={category}
-                onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
-                disabled={loading}
-                className="empty-field"
-              />
-            </FieldGroup>
+            {/* ROW 2: Category | Services */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 items-start" style={{ gap: 16 }}>
+              <FieldGroup
+                icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>}
+                label="Business Category"
+                error={fieldErrors.category}
+              >
+                <CategorySelect
+                  value={category}
+                  onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
+                  disabled={loading}
+                  className="empty-field"
+                />
+              </FieldGroup>
 
-            {/* Services — now spans full width since Location moved up */}
-            <FieldGroup
-              icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" /></svg>}
-              label="Services"
-              error={fieldErrors.services}
-            >
-              <ServiceTagInput
-                tags={services}
-                onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
-                disabled={loading}
-                placeholder="Type a service + Enter"
-                className="empty-field"
-                category={category}
-              />
-            </FieldGroup>
+              <FieldGroup
+                icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" /></svg>}
+                label="Services"
+                error={fieldErrors.services}
+              >
+                <ServiceTagInput
+                  tags={services}
+                  onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
+                  disabled={loading}
+                  className="empty-field"
+                />
+              </FieldGroup>
+            </div>
 
-            {/* Location */}
+            {/* ROW 3: Location — full width */}
             <FieldGroup
               icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>}
               label="Location"
@@ -743,26 +743,24 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
               />
             </FieldGroup>
 
-            {/* Submit button — full width */}
-            <div style={{ gridColumn: "1 / -1" }}>
-              <button
-                type="submit"
-                disabled={loading}
-                className="empty-btn w-full flex items-center justify-center gap-2.5 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  padding: "14px 24px",
-                  borderRadius: 14,
-                  fontSize: 15,
-                  fontFamily: "'DM Sans', var(--font-geist-sans), sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                Run Free Audit
-              </button>
-            </div>
+            {/* ROW 4: Submit — full width */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="empty-btn w-full flex items-center justify-center gap-2.5 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                padding: "13px 24px",
+                borderRadius: 12,
+                fontSize: 14.5,
+                fontFamily: "'DM Sans', var(--font-geist-sans), sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              Run Free Audit
+            </button>
           </div>
         </form>
 

@@ -27,7 +27,7 @@ const STAGE_MESSAGES: Array<{ after: number; message: string }> = [
 ];
 
 const inputClass =
-  "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm";
+  "w-full px-[14px] py-[11px] rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.055)] text-white placeholder-[#52525b] focus:outline-none focus:border-[rgba(16,185,129,0.4)] focus:bg-[rgba(16,185,129,0.025)] focus:[box-shadow:0_0_0_3px_rgba(16,185,129,0.06)] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[13px] leading-[1.45]";
 
 export function AuditForm({ onComplete, embedded = false, profileId }: { onComplete?: (result: AuditResult) => void; embedded?: boolean; profileId?: string | null } = {}) {
   const { data: session } = useSession();
@@ -76,7 +76,6 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
     setUrl(p.website_url);
     setCategory(p.business_category ?? "");
     setServices(p.services ?? []);
-    // Build location from profile's country/city
     const city = p.city ?? "";
     const country = p.country ?? "";
     setLocation(city && country ? `${city}, ${country}` : city || country);
@@ -124,17 +123,13 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
     setFormCollapsed(false);
     setStage(STAGE_MESSAGES[0].message);
 
-    // Parse city/country from location
-    const parts = location.split(",").map((s) => s.trim());
-    const city = parts[0] || "";
-    const country = parts[1] || "";
-
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       let profileIdToUse = selectedProfileId;
 
       // Step 1 — Create profile if needed (authenticated + new profile)
       if (session?.accessToken && !profileIdToUse) {
+        const parts = location.split(",").map((s) => s.trim());
         const profileRes = await fetch(`${apiUrl}/profiles`, {
           method: "POST",
           headers: {
@@ -146,8 +141,8 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
             website_url: url.trim(),
             business_category: category.trim(),
             services,
-            country,
-            city,
+            country: parts[1] || "",
+            city: parts[0] || "",
           }),
         });
 
@@ -156,7 +151,6 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
           profileIdToUse = profile.id;
           setSelectedProfileId(profile.id);
         }
-        // If profile creation fails, continue without profile_id
       }
 
       // Step 2 — Kick off the audit
@@ -173,6 +167,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
           location: location.trim(),
           business_name: businessName.trim(),
           business_type: category.trim(),
+          services,
           ...(profileIdToUse ? { profile_id: profileIdToUse } : {}),
         }),
       });
@@ -217,7 +212,6 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
           if (profileIdToUse) setActiveProfileId(profileIdToUse);
           onComplete?.(data as AuditResult);
 
-          // Refresh profiles list
           if (session?.accessToken) fetchProfiles(session.accessToken);
           return;
         }
@@ -282,7 +276,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
               Audit your local search presence
             </h2>
             <p className="text-sm text-zinc-400 mb-6">
-              Takes 60\u201390 seconds. We analyze your competitors and build a personalized strategy.
+              Takes 60{"\u2013"}90 seconds. We analyze your competitors and build a personalized strategy.
             </p>
 
             {/* Profile selector strip */}
@@ -318,44 +312,55 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* ROW 1: Business Name | Website URL */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] items-start">
-                <Field label="Business Name" htmlFor="businessName" error={fieldErrors.businessName}>
-                  <input
-                    id="businessName"
-                    type="text"
-                    value={businessName}
-                    onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
-                    placeholder="Smith Family Dental"
-                    disabled={loading}
-                    className={inputClass}
-                  />
-                </Field>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col" style={{ gap: 16 }}>
+                {/* ROW 1: Business Name | Website URL */}
+                <div className="grid grid-cols-1 md:grid-cols-2 items-start" style={{ gap: 16 }}>
+                  <Field label="Business Name" htmlFor="businessName" error={fieldErrors.businessName}>
+                    <input
+                      id="businessName"
+                      type="text"
+                      value={businessName}
+                      onChange={(e) => { setBusinessName(e.target.value); setFieldErrors((p) => ({ ...p, businessName: "" })); }}
+                      placeholder="Arch Kitchen Cabinets"
+                      disabled={loading}
+                      className={inputClass}
+                    />
+                  </Field>
 
-                <Field label="Website URL" htmlFor="url" error={fieldErrors.url}>
-                  <input
-                    id="url"
-                    type="url"
-                    value={url}
-                    onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
-                    placeholder="https://example.com"
-                    disabled={loading}
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
+                  <Field label="Website URL" htmlFor="url" error={fieldErrors.url}>
+                    <input
+                      id="url"
+                      type="url"
+                      value={url}
+                      onChange={(e) => { setUrl(e.target.value); setFieldErrors((p) => ({ ...p, url: "" })); }}
+                      placeholder="https://yourbusiness.com"
+                      disabled={loading}
+                      className={inputClass}
+                    />
+                  </Field>
+                </div>
 
-              {/* ROW 2: Category | Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] items-start">
-                <Field label="Business Category" htmlFor="category" error={fieldErrors.category}>
-                  <CategorySelect
-                    value={category}
-                    onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
-                    disabled={loading}
-                  />
-                </Field>
+                {/* ROW 2: Category | Services */}
+                <div className="grid grid-cols-1 md:grid-cols-2 items-start" style={{ gap: 16 }}>
+                  <Field label="Business Category" htmlFor="category" error={fieldErrors.category}>
+                    <CategorySelect
+                      value={category}
+                      onChange={(v) => { setCategory(v); setFieldErrors((p) => ({ ...p, category: "" })); }}
+                      disabled={loading}
+                    />
+                  </Field>
 
+                  <Field label="Services" htmlFor="services" error={fieldErrors.services}>
+                    <ServiceTagInput
+                      tags={services}
+                      onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
+                      disabled={loading}
+                    />
+                  </Field>
+                </div>
+
+                {/* ROW 3: Location — full width */}
                 <Field label="Location" htmlFor="location" error={fieldErrors.location}>
                   <input
                     id="location"
@@ -367,33 +372,20 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                     className={inputClass}
                   />
                 </Field>
-              </div>
 
-              {/* ROW 3: Services — full width */}
-              <div>
-                <Field label="Services" htmlFor="services" error={fieldErrors.services}>
-                  <ServiceTagInput
-                    tags={services}
-                    onChange={(t) => { setServices(t); setFieldErrors((p) => ({ ...p, services: "" })); }}
+                {/* ROW 4: Submit — full width */}
+                <div>
+                  <button
+                    type="submit"
                     disabled={loading}
-                    placeholder="Type a service + Enter"
-                    category={category}
-                  />
-                </Field>
-              </div>
-
-              {/* ROW 4: Submit — full width */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed w-full"
-                >
-                  {loading ? "Running audit\u2026" : "Run Full-Site Audit"}
-                </button>
-                {!loading && (
-                  <p className="text-sm text-zinc-500 text-center mt-2">Takes 60\u201390 seconds</p>
-                )}
+                    className="btn-primary text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed w-full"
+                  >
+                    {loading ? "Running audit\u2026" : "\u26a1 Run Free Audit"}
+                  </button>
+                  {!loading && (
+                    <p className="text-sm text-zinc-500 text-center mt-2">Takes 60{"\u2013"}90 seconds</p>
+                  )}
+                </div>
               </div>
             </form>
 
@@ -447,12 +439,16 @@ function Field({
 }) {
   return (
     <div className="flex flex-col" style={{ gap: 6 }}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-300" style={{ fontSize: 11, lineHeight: "13px" }}>
+      <label
+        htmlFor={htmlFor}
+        className="font-semibold uppercase tracking-wider text-[#52525b]"
+        style={{ fontSize: 11, lineHeight: "1", letterSpacing: "0.07em" }}
+      >
         {label}
       </label>
       {children}
       {error && (
-        <p className="text-[11px] text-rose-400 mt-0.5">{error}</p>
+        <p className="text-[11px] text-rose-400">{error}</p>
       )}
     </div>
   );

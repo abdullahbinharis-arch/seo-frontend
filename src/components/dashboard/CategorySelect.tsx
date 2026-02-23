@@ -132,6 +132,9 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
   }
 
   const isEmptyStyle = className?.includes("empty-field");
+  const baseClass = isEmptyStyle
+    ? "empty-field cursor-pointer"
+    : "w-full rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.055)] text-white placeholder-[#52525b] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[13px] cursor-pointer";
 
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
@@ -139,15 +142,19 @@ export function CategorySelect({ value, onChange, disabled, className }: Categor
         <input
           ref={triggerRef}
           type="text"
-          value={isOther ? value : value}
+          value={value}
           onChange={handleTriggerChange}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
           readOnly={!isOther}
           disabled={disabled}
           placeholder={isOther ? "Type your business category" : "e.g. Kitchen Remodeler"}
-          className={isEmptyStyle ? "empty-field cursor-pointer" : "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm pr-9 cursor-pointer"}
-          style={!isOther ? { caretColor: "transparent" } : undefined}
+          className={baseClass}
+          style={{
+            ...(isEmptyStyle ? {} : { padding: "11px 14px" }),
+            paddingRight: 34,
+            ...((!isOther) ? { caretColor: "transparent" } : {}),
+          }}
           autoComplete="off"
         />
         {isOther ? (

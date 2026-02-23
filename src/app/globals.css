@@ -384,14 +384,15 @@ body {
 /* Form field styling */
 .empty-field {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.055);
   color: #fff;
   font-size: 13px;
   outline: none;
   transition: all 0.2s ease;
+  line-height: 1.45;
 }
 .empty-field::placeholder {
   color: #52525b;
