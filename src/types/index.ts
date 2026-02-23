@@ -676,6 +676,27 @@ export interface ManualKeywordResult {
   content_type: string;
 }
 
+// ── Competitor Keyword Gap ──────────────────────────────────────────
+
+export interface CompetitorGapKeyword {
+  keyword: string;
+  volume_estimate: number;
+  difficulty_estimate: number;
+  competitor_position: string;
+  opportunity: string;
+  intent: string;
+}
+
+export interface CompetitorGapResult {
+  competitor_url: string;
+  competitor_title: string;
+  estimated_da: number;
+  keywords_found: number;
+  gaps: CompetitorGapKeyword[];
+  overlap_keywords: string[];
+  summary: string;
+}
+
 export interface BacklinkItem {
   source: string;
   da: number;
