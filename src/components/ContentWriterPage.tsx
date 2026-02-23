@@ -16,7 +16,16 @@ import {
   CopyBtn,
   type Column,
 } from "@/components/tool-ui";
-import type { ContentData, SchemaResult, SchemaItem, OutrankResult, CrawledPage } from "@/types";
+import type {
+  ContentData,
+  SchemaResult,
+  SchemaItem,
+  OutrankResult,
+  CrawledPage,
+  SeoContentResult,
+  SeoRuleScore,
+  SeoScoreCard,
+} from "@/types";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -30,6 +39,28 @@ const SCHEMA_TYPES = [
   "Organization",
 ] as const;
 
+/* ── Rule display names ──────────────────────────────── */
+const RULE_LABELS: Record<string, string> = {
+  content_length: "Content Length",
+  keyword_placement: "Keyword Placement",
+  keyword_frequency: "Keyword Frequency",
+  heading_structure: "Heading Structure",
+  first_paragraph: "First Paragraph",
+  topical_completeness: "Topical Completeness",
+  readability: "Readability",
+  transition_words: "Transition Words",
+  internal_linking: "Internal Linking",
+  image_optimization: "Image Optimization",
+  eeat_signals: "E-E-A-T Signals",
+  faq_section: "FAQ Section",
+  cta_placement: "CTA Placement",
+  local_seo: "Local SEO Signals",
+  conversion: "Conversion Elements",
+};
+
+/* ── Progress step type ──────────────────────────────── */
+type EngineStep = "competitors" | "generating" | "scoring" | "done" | "fixing";
+
 /* ── Main Component ──────────────────────────────────────── */
 export function ContentWriterPage() {
   const { lastAudit } = useDashboard();
@@ -37,7 +68,7 @@ export function ContentWriterPage() {
 
   const cd = lastAudit?.content_data as ContentData | undefined;
 
-  /* Content generation state */
+  /* Content generation state (legacy) */
   const [generated, setGenerated] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<string | null>(null);
   const [faqAnswers, setFaqAnswers] = useState<Record<number, string>>({});
@@ -54,6 +85,13 @@ export function ContentWriterPage() {
   const [outrankError, setOutrankError] = useState("");
   const [outrankResults, setOutrankResults] = useState<OutrankResult[]>([]);
   const [outrankExpanded, setOutrankExpanded] = useState<Record<number, boolean>>({});
+
+  /* SEO Engine state */
+  const [seoResult, setSeoResult] = useState<SeoContentResult | null>(null);
+  const [seoLoading, setSeoLoading] = useState<string | null>(null);
+  const [engineStep, setEngineStep] = useState<EngineStep | null>(null);
+  const [fixLoading, setFixLoading] = useState(false);
+  const [expandedRules, setExpandedRules] = useState<Record<string, boolean>>({});
 
   const keyword = lastAudit?.keyword ?? "";
   const businessName = lastAudit?.business_name ?? "";
@@ -76,7 +114,98 @@ export function ContentWriterPage() {
   const schemaTemplates =
     lastAudit?.agents?.ai_seo?.analysis?.schema_templates ?? [];
 
-  /* ── Generate content ──────────────────────────────── */
+  /* ── SEO Engine: Generate content ────────────────────── */
+  async function generateSeoContent(
+    key: string,
+    contentType: string,
+    opts?: { serviceName?: string; targetCity?: string; targetKeyword?: string }
+  ) {
+    setSeoLoading(key);
+    setSeoResult(null);
+    setEngineStep("competitors");
+    try {
+      // Simulate progress steps (the backend does it all in one call)
+      const stepTimer = setTimeout(() => setEngineStep("generating"), 4000);
+      const stepTimer2 = setTimeout(() => setEngineStep("scoring"), 12000);
+
+      const res = await fetch(`${API}/api/content/generate`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          content_type: contentType,
+          target_keyword: opts?.targetKeyword || keyword,
+          secondary_keywords: [],
+          service_name: opts?.serviceName,
+          target_city: opts?.targetCity,
+          business_name: businessName,
+          business_type: businessType,
+          location,
+          target_url: targetUrl,
+        }),
+      });
+
+      clearTimeout(stepTimer);
+      clearTimeout(stepTimer2);
+
+      if (!res.ok) throw new Error("Generation failed");
+      const data: SeoContentResult = await res.json();
+      setEngineStep("done");
+      setSeoResult(data);
+
+      // Auto-expand failed rules
+      const failed: Record<string, boolean> = {};
+      if (data.seo_score?.rules) {
+        for (const [rule, info] of Object.entries(data.seo_score.rules)) {
+          if (info.status === "fail") failed[rule] = true;
+        }
+      }
+      setExpandedRules(failed);
+    } catch {
+      setEngineStep(null);
+      setSeoResult(null);
+    } finally {
+      setSeoLoading(null);
+    }
+  }
+
+  /* ── SEO Engine: Fix issues ──────────────────────────── */
+  async function handleFixIssues() {
+    if (!seoResult) return;
+    setFixLoading(true);
+    setEngineStep("fixing");
+    try {
+      const res = await fetch(`${API}/api/content/generate`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          content_type: "custom",
+          target_keyword: keyword,
+          secondary_keywords: [],
+          business_name: businessName,
+          business_type: businessType,
+          location,
+          target_url: targetUrl,
+        }),
+      });
+      if (!res.ok) throw new Error("Fix failed");
+      const data: SeoContentResult = await res.json();
+      setEngineStep("done");
+      setSeoResult(data);
+      const failed: Record<string, boolean> = {};
+      if (data.seo_score?.rules) {
+        for (const [rule, info] of Object.entries(data.seo_score.rules)) {
+          if (info.status === "fail") failed[rule] = true;
+        }
+      }
+      setExpandedRules(failed);
+    } catch {
+      setEngineStep("done");
+    } finally {
+      setFixLoading(false);
+    }
+  }
+
+  /* ── Legacy: Generate content ────────────────────────── */
   async function generateContent(key: string, pageType: string, context?: string) {
     setLoading(key);
     try {
@@ -195,6 +324,11 @@ export function ContentWriterPage() {
     }
   }
 
+  /* ── Helper: strip HTML tags for plain text copy ───── */
+  function stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  }
+
   return (
     <div className="animate-fadeIn space-y-2">
       {/* ── Stat Row (audit data only) ─────────────────── */}
@@ -223,7 +357,74 @@ export function ContentWriterPage() {
         </StatRow>
       )}
 
-      {/* ═══ 1. PAGE CONTENT GENERATOR ════════════════════ */}
+      {/* ═══ 1. SEO CONTENT ENGINE ═════════════════════════ */}
+      <SectionHead
+        title="SEO Content Engine"
+        subtitle="15-rule AI content generation with competitor analysis and scoring"
+      />
+
+      {/* Engine controls */}
+      <Card title="Generate SEO Content" dotColor="#10b981" meta="15-Rule Engine">
+        <div className="flex flex-col sm:flex-row gap-2 mb-3">
+          <BtnPrimary
+            onClick={() => generateSeoContent("engine-homepage", "homepage")}
+            disabled={!!seoLoading}
+          >
+            {seoLoading === "engine-homepage" ? "Generating..." : "Homepage"}
+          </BtnPrimary>
+          {areaPages.slice(0, 3).map((area, i) => (
+            <BtnPrimary
+              key={i}
+              small
+              onClick={() =>
+                generateSeoContent(`engine-area-${i}`, "area", {
+                  targetCity: area.city,
+                  serviceName: businessType,
+                  targetKeyword: `${businessType} ${area.city}`.toLowerCase(),
+                })
+              }
+              disabled={!!seoLoading}
+            >
+              {seoLoading === `engine-area-${i}` ? "..." : area.city}
+            </BtnPrimary>
+          ))}
+        </div>
+
+        {/* Multi-step progress */}
+        {seoLoading && engineStep && (
+          <EngineProgress step={engineStep} />
+        )}
+      </Card>
+
+      {/* SEO Engine Result: Two-panel layout */}
+      {seoResult && (
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
+          {/* LEFT: Content Preview */}
+          <ContentPreview
+            result={seoResult}
+            onCopyHtml={() => {
+              navigator.clipboard.writeText(seoResult.content.content);
+            }}
+            onCopyText={() => {
+              navigator.clipboard.writeText(stripHtml(seoResult.content.content));
+            }}
+          />
+          {/* RIGHT: Score Card */}
+          <SeoScoreCardPanel
+            scoreCard={seoResult.seo_score}
+            competitorAnalysis={seoResult.competitor_analysis}
+            meta={seoResult.meta}
+            expandedRules={expandedRules}
+            onToggleRule={(rule) =>
+              setExpandedRules((prev) => ({ ...prev, [rule]: !prev[rule] }))
+            }
+            onFixIssues={handleFixIssues}
+            fixLoading={fixLoading}
+          />
+        </div>
+      )}
+
+      {/* ═══ 2. PAGE CONTENT GENERATOR ════════════════════ */}
       {crawledPages.length > 0 && (
         <>
           <SectionHead
@@ -250,7 +451,7 @@ export function ContentWriterPage() {
                   ),
                   title: (
                     <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
-                      {page.title || "—"}
+                      {page.title || "\u2014"}
                     </span>
                   ),
                   words: (
@@ -347,7 +548,7 @@ export function ContentWriterPage() {
         </>
       )}
 
-      {/* ═══ 2. SERVICE PAGE GENERATOR ════════════════════ */}
+      {/* ═══ 3. SERVICE PAGE GENERATOR ════════════════════ */}
       {areaPages.length > 0 && (
         <>
           <SectionHead
@@ -390,7 +591,7 @@ export function ContentWriterPage() {
         </>
       )}
 
-      {/* ═══ 3. SCHEMA GENERATOR ═════════════════════════ */}
+      {/* ═══ 4. SCHEMA GENERATOR ═════════════════════════ */}
       <SectionHead
         title="Schema Generator"
         subtitle="Generate JSON-LD structured data for your pages"
@@ -456,7 +657,7 @@ export function ContentWriterPage() {
         />
       )}
 
-      {/* ═══ 4. COMPETITOR OUTRANK ═══════════════════════ */}
+      {/* ═══ 5. COMPETITOR OUTRANK ═══════════════════════ */}
       <SectionHead
         title="Competitor Outrank"
         subtitle="Analyse a competitor page and generate content to beat it"
@@ -613,6 +814,397 @@ export function ContentWriterPage() {
   );
 }
 
+
+/* ═══════════════════════════════════════════════════════ */
+/* ── Engine Progress Stepper ───────────────────────────── */
+/* ═══════════════════════════════════════════════════════ */
+
+const STEPS: { key: EngineStep; label: string }[] = [
+  { key: "competitors", label: "Analyzing competitors..." },
+  { key: "generating", label: "Generating content..." },
+  { key: "scoring", label: "Scoring SEO quality..." },
+  { key: "done", label: "Done!" },
+];
+
+function EngineProgress({ step }: { step: EngineStep }) {
+  const currentIdx = step === "fixing"
+    ? 2
+    : STEPS.findIndex((s) => s.key === step);
+
+  return (
+    <div className="flex items-center gap-3 py-2">
+      {STEPS.map((s, i) => {
+        const isDone = i < currentIdx || step === "done";
+        const isActive = i === currentIdx && step !== "done";
+        return (
+          <div key={s.key} className="flex items-center gap-1.5">
+            <span
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono ${
+                isDone
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : isActive
+                  ? "bg-amber-500/20 text-amber-400 animate-pulse"
+                  : "bg-white/5 text-zinc-600"
+              }`}
+            >
+              {isDone ? "\u2713" : i + 1}
+            </span>
+            <span
+              className={`text-[11px] ${
+                isDone
+                  ? "text-emerald-400"
+                  : isActive
+                  ? "text-amber-400"
+                  : "text-zinc-600"
+              }`}
+            >
+              {step === "fixing" && i === currentIdx ? "Fixing issues..." : s.label}
+            </span>
+            {i < STEPS.length - 1 && (
+              <span className="w-4 h-px bg-white/10 mx-1" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════ */
+/* ── Content Preview Panel ─────────────────────────────── */
+/* ═══════════════════════════════════════════════════════ */
+
+function ContentPreview({
+  result,
+  onCopyHtml,
+  onCopyText,
+}: {
+  result: SeoContentResult;
+  onCopyHtml: () => void;
+  onCopyText: () => void;
+}) {
+  const c = result.content;
+  const [copied, setCopied] = useState<"html" | "text" | null>(null);
+
+  function handleCopy(type: "html" | "text") {
+    if (type === "html") onCopyHtml();
+    else onCopyText();
+    setCopied(type);
+    setTimeout(() => setCopied(null), 1500);
+  }
+
+  return (
+    <div className="bg-surface-2 border border-white/6 rounded-xl overflow-hidden">
+      {/* Meta fields */}
+      <div className="p-4 border-b border-white/6">
+        <div className="space-y-2">
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Title</label>
+            <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[12px] text-blue-400">
+              {c.meta_title}
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Description</label>
+            <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[11px] text-zinc-300">
+              {c.meta_description}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">URL Slug</label>
+              <span className="text-[11px] text-emerald-400 font-mono">{c.url_slug}</span>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Words</label>
+              <span className="text-[11px] text-zinc-300 font-mono">{c.word_count}</span>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Keywords</label>
+              <span className="text-[11px] text-zinc-300 font-mono">{c.primary_keyword_count}x</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content body */}
+      <div className="p-4">
+        <div
+          className="prose prose-sm prose-invert max-w-none text-[12px] leading-relaxed max-h-[500px] overflow-y-auto
+            [&_h1]:text-[16px] [&_h1]:font-bold [&_h1]:font-display [&_h1]:text-white [&_h1]:mb-2 [&_h1]:mt-0
+            [&_h2]:text-[14px] [&_h2]:font-semibold [&_h2]:font-display [&_h2]:text-zinc-200 [&_h2]:mb-1.5 [&_h2]:mt-4
+            [&_h3]:text-[13px] [&_h3]:font-medium [&_h3]:text-zinc-300 [&_h3]:mb-1 [&_h3]:mt-3
+            [&_p]:text-zinc-400 [&_p]:mb-2
+            [&_ul]:text-zinc-400 [&_li]:mb-0.5
+            [&_strong]:text-zinc-200"
+          dangerouslySetInnerHTML={{ __html: c.content }}
+        />
+      </div>
+
+      {/* Images */}
+      {c.images?.length > 0 && (
+        <div className="px-4 pb-3">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Image Suggestions</p>
+          <div className="flex flex-wrap gap-1.5">
+            {c.images.map((img, i) => (
+              <span
+                key={i}
+                className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded-md"
+                title={`${img.filename} — ${img.placement}`}
+              >
+                {img.alt}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Internal links */}
+      {c.internal_links?.length > 0 && (
+        <div className="px-4 pb-3">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Internal Links</p>
+          <div className="space-y-1">
+            {c.internal_links.map((link, i) => (
+              <div key={i} className="flex items-center gap-2 text-[11px]">
+                <span className="text-emerald-400">{link.anchor}</span>
+                <span className="text-zinc-600">&rarr;</span>
+                <span className="text-zinc-500 font-mono">{link.url}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FAQs */}
+      {c.faqs?.length > 0 && (
+        <div className="px-4 pb-3">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">FAQs ({c.faqs.length})</p>
+          <div className="space-y-2">
+            {c.faqs.map((faq, i) => (
+              <div key={i} className="bg-surface-1 border border-white/6 rounded-lg p-2.5">
+                <p className="text-[11px] text-zinc-200 font-medium">{faq.question}</p>
+                <p className="text-[10px] text-zinc-400 mt-1 leading-relaxed">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Semantic keywords */}
+      {c.semantic_keywords_used?.length > 0 && (
+        <div className="px-4 pb-3">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Semantic Keywords Used</p>
+          <div className="flex flex-wrap gap-1">
+            {c.semantic_keywords_used.map((kw, i) => (
+              <span key={i} className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                {kw}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Copy buttons */}
+      <div className="px-4 pb-4 flex gap-2 justify-end">
+        <button
+          onClick={() => handleCopy("html")}
+          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-zinc-400 hover:text-white transition-colors"
+        >
+          {copied === "html" ? "Copied!" : "Copy HTML"}
+        </button>
+        <button
+          onClick={() => handleCopy("text")}
+          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-zinc-400 hover:text-white transition-colors"
+        >
+          {copied === "text" ? "Copied!" : "Copy Text"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════ */
+/* ── SEO Score Card Panel ──────────────────────────────── */
+/* ═══════════════════════════════════════════════════════ */
+
+function SeoScoreCardPanel({
+  scoreCard,
+  competitorAnalysis,
+  meta,
+  expandedRules,
+  onToggleRule,
+  onFixIssues,
+  fixLoading,
+}: {
+  scoreCard: SeoScoreCard;
+  competitorAnalysis: SeoContentResult["competitor_analysis"];
+  meta: SeoContentResult["meta"];
+  expandedRules: Record<string, boolean>;
+  onToggleRule: (rule: string) => void;
+  onFixIssues: () => void;
+  fixLoading: boolean;
+}) {
+  const pct = scoreCard.percentage;
+  const color = pct >= 80 ? "#10b981" : pct >= 60 ? "#f59e0b" : "#f43f5e";
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div className="bg-surface-2 border border-white/6 rounded-xl overflow-hidden">
+      {/* Score circle */}
+      <div className="p-5 flex flex-col items-center border-b border-white/6">
+        <div className="relative w-32 h-32">
+          <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="white" strokeOpacity="0.05" strokeWidth="8" />
+            <circle
+              cx="60" cy="60" r="54" fill="none"
+              stroke={color}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-[28px] font-bold font-display text-white">{pct}</span>
+            <span className="text-[10px] text-zinc-500">/ 100</span>
+          </div>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <span
+            className="text-[18px] font-bold font-display"
+            style={{ color }}
+          >
+            {scoreCard.grade}
+          </span>
+          <span className="text-[11px] text-zinc-500">
+            {scoreCard.total_score}/{scoreCard.max_score} points
+          </span>
+        </div>
+      </div>
+
+      {/* Competitor info */}
+      <div className="px-4 py-2 border-b border-white/6 flex gap-4 text-[10px] text-zinc-500">
+        <span>Competitors: <span className="text-zinc-300 font-mono">{competitorAnalysis.competitors_analyzed}</span></span>
+        <span>Avg words: <span className="text-zinc-300 font-mono">{competitorAnalysis.avg_words}</span></span>
+        <span>Target: <span className="text-zinc-300 font-mono">{competitorAnalysis.target_words}</span></span>
+      </div>
+
+      {/* Rules list */}
+      <div className="divide-y divide-white/[0.03]">
+        {Object.entries(scoreCard.rules).map(([rule, info]) => (
+          <RuleRow
+            key={rule}
+            rule={rule}
+            info={info}
+            expanded={!!expandedRules[rule]}
+            onToggle={() => onToggleRule(rule)}
+          />
+        ))}
+      </div>
+
+      {/* Meta + Fix button */}
+      <div className="p-4 border-t border-white/6">
+        <div className="flex items-center justify-between mb-2 text-[10px] text-zinc-500">
+          <span>{meta.generation_time_seconds}s generation time</span>
+          {meta.auto_fixed && <Tag variant="info">Auto-fixed</Tag>}
+        </div>
+        {pct < 80 && (
+          <BtnPrimary onClick={onFixIssues} disabled={fixLoading}>
+            {fixLoading ? "Fixing..." : "Fix Issues"}
+          </BtnPrimary>
+        )}
+      </div>
+
+      {/* Gap topics */}
+      {competitorAnalysis.gap_topics?.length > 0 && (
+        <div className="px-4 pb-4">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Competitor Gaps</p>
+          <div className="flex flex-wrap gap-1">
+            {competitorAnalysis.gap_topics.map((t, i) => (
+              <span key={i} className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════ */
+/* ── Rule Row ──────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════ */
+
+function RuleRow({
+  rule,
+  info,
+  expanded,
+  onToggle,
+}: {
+  rule: string;
+  info: SeoRuleScore;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const dotColor =
+    info.status === "pass" ? "#10b981" : info.status === "warn" ? "#f59e0b" : "#f43f5e";
+
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className="w-full px-4 py-2 flex items-center gap-2 hover:bg-white/[0.02] transition-colors text-left"
+      >
+        <span
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ backgroundColor: dotColor }}
+        />
+        <span className={`flex-1 text-[11px] ${info.status === "fail" ? "text-zinc-200 font-medium" : "text-zinc-400"}`}>
+          {RULE_LABELS[rule] || rule}
+        </span>
+        <span className="text-[11px] font-mono text-zinc-500">
+          {info.score}/{info.max}
+        </span>
+        <svg
+          className={`w-3 h-3 text-zinc-600 transition-transform ${expanded ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {expanded && (
+        <div className="px-4 pb-2 pl-8">
+          <p className="text-[10px] text-zinc-500 leading-relaxed">{info.detail}</p>
+          {/* Keyword placement positions */}
+          {info.positions && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {Object.entries(info.positions).map(([pos, ok]) => (
+                <span
+                  key={pos}
+                  className={`text-[9px] px-1.5 py-0.5 rounded ${
+                    ok
+                      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                      : "bg-rose-500/10 border border-rose-500/20 text-rose-400"
+                  }`}
+                >
+                  {pos.replace(/_/g, " ")}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 /* ═══════════════════════════════════════════════════════ */
 /* ── Schema Generator Card (manual) ──────────────────── */
 /* ═══════════════════════════════════════════════════════ */
@@ -709,6 +1301,7 @@ function SchemaGeneratorCard({
     </Card>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════ */
 /* ── Outrank Result Card ─────────────────────────────── */

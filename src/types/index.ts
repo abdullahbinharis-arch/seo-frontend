@@ -837,6 +837,52 @@ export interface ContentData {
   blog_topics: Array<{ title: string; keyword: string; intent: string }>;
 }
 
+// ── SEO Content Engine (15-Rule Score Card) ──────────────────────────────
+
+export interface SeoRuleScore {
+  score: number;
+  max: number;
+  status: "pass" | "warn" | "fail";
+  detail: string;
+  positions?: Record<string, boolean>;
+}
+
+export interface SeoScoreCard {
+  total_score: number;
+  max_score: number;
+  percentage: number;
+  grade: string;
+  rules: Record<string, SeoRuleScore>;
+}
+
+export interface SeoContentResult {
+  content: {
+    meta_title: string;
+    meta_description: string;
+    url_slug: string;
+    content: string;
+    word_count: number;
+    primary_keyword_count: number;
+    images: Array<{ alt: string; filename: string; placement: string }>;
+    internal_links: Array<{ anchor: string; url: string }>;
+    external_links: Array<{ anchor: string; url: string }>;
+    faqs: Array<{ question: string; answer: string }>;
+    semantic_keywords_used: string[];
+  };
+  seo_score: SeoScoreCard;
+  competitor_analysis: {
+    avg_words: number;
+    target_words: number;
+    competitors_analyzed: number;
+    gap_topics: string[];
+  };
+  meta: {
+    generation_time_seconds: number;
+    model: string;
+    auto_fixed: boolean;
+  };
+}
+
 export interface CalendarPost {
   type: string;
   title: string;
