@@ -8,7 +8,7 @@ import { useDashboard } from "@/components/DashboardContext";
 import { CategorySelect } from "@/components/dashboard/CategorySelect";
 import { ServiceTagInput } from "@/components/dashboard/ServiceTagInput";
 import { COUNTRY_CITIES } from "@/data/countryCities";
-import type { Profile, AuditVersionMeta } from "@/types";
+import type { Profile, AuditVersionMeta, AuditComparison, ScoreChange } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -18,24 +18,29 @@ function scoreColor(score: number): string {
   return "#fb7185";
 }
 
-function scoreBg(score: number): string {
-  if (score >= 70) return "rgba(16,185,129,0.12)";
-  if (score >= 40) return "rgba(245,158,11,0.12)";
-  return "rgba(244,63,94,0.12)";
+function changeColor(change: number): string {
+  if (change > 0) return "#6ee7b7";
+  if (change < 0) return "#fb7185";
+  return "#71717a";
 }
 
-function MiniScoreRing({ score }: { score: number }) {
+function changeArrow(change: number): string {
+  if (change > 0) return "+";
+  return "";
+}
+
+function MiniScoreRing({ score, size = 36 }: { score: number; size?: number }) {
   const r = 42;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - score / 100);
   const color = scoreColor(score);
   return (
-    <div className="relative shrink-0" style={{ width: 36, height: 36 }}>
-      <svg width={36} height={36} viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
         <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
         <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center font-display font-bold text-[11px]" style={{ color }}>
+      <div className="absolute inset-0 flex items-center justify-center font-display font-bold" style={{ color, fontSize: size < 40 ? 11 : 14 }}>
         {score}
       </div>
     </div>
@@ -48,6 +53,164 @@ function formatDate(iso: string): string {
 
 const inputClass = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-600 text-sm focus:outline-none focus:border-emerald-500/30 transition-colors";
 
+// ── Comparison View ──────────────────────────────────────────────────
+
+function ScoreCompareRow({ label, data }: { label: string; data: ScoreChange }) {
+  const color = changeColor(data.change);
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-white/[0.03] last:border-0">
+      <span className="text-[12px] text-zinc-400 capitalize">{label.replace(/_/g, " ")}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-[12px] text-zinc-500 font-mono">{data.v1}</span>
+        <svg className="w-3 h-3 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+        <span className="text-[12px] font-mono font-semibold" style={{ color: scoreColor(data.v2) }}>{data.v2}</span>
+        <span className="text-[11px] font-mono font-medium min-w-[40px] text-right" style={{ color }}>
+          {changeArrow(data.change)}{data.change}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ComparisonView({
+  comparison,
+  onClose,
+}: {
+  comparison: AuditComparison;
+  onClose: () => void;
+}) {
+  return (
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] font-display font-semibold text-white">Version Comparison</span>
+          <span className="text-[11px] text-zinc-500">
+            v{comparison.v1.version} vs v{comparison.v2.version}
+          </span>
+        </div>
+        <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="p-5 space-y-5">
+        {/* Overall score hero */}
+        <div className="flex items-center justify-center gap-8">
+          <div className="text-center">
+            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
+              v{comparison.v1.version} · {formatDate(comparison.v1.created_at)}
+            </div>
+            <MiniScoreRing score={comparison.score_changes.overall.v1} size={56} />
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+            <span
+              className="text-sm font-display font-bold"
+              style={{ color: changeColor(comparison.score_changes.overall.change) }}
+            >
+              {changeArrow(comparison.score_changes.overall.change)}{comparison.score_changes.overall.change}
+            </span>
+          </div>
+          <div className="text-center">
+            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
+              v{comparison.v2.version} · {formatDate(comparison.v2.created_at)}
+            </div>
+            <MiniScoreRing score={comparison.score_changes.overall.v2} size={56} />
+          </div>
+        </div>
+
+        {/* Score breakdown */}
+        <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+          <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">Score Breakdown</div>
+          {(["website_seo", "backlinks", "local_seo", "ai_seo"] as const).map((key) => (
+            <ScoreCompareRow key={key} label={key} data={comparison.score_changes[key]} />
+          ))}
+        </div>
+
+        {/* Issues */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {comparison.issues_fixed.length > 0 && (
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  Issues Fixed ({comparison.issues_fixed.length})
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {comparison.issues_fixed.map((issue, i) => (
+                  <span key={i} className="text-[11px] text-emerald-400/80 leading-relaxed">{issue}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {comparison.new_issues.length > 0 && (
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="w-2 h-2 rounded-full bg-rose-400" />
+                <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  New Issues ({comparison.new_issues.length})
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {comparison.new_issues.map((issue, i) => (
+                  <span key={i} className="text-[11px] text-rose-400/80 leading-relaxed">{issue}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Keywords */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {comparison.new_keywords.length > 0 && (
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+              <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                New Keywords ({comparison.new_keywords.length})
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {comparison.new_keywords.map((kw) => (
+                  <span key={kw} className="text-[10px] px-2 py-[3px] rounded-md bg-emerald-500/10 text-emerald-400 font-medium">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {comparison.lost_keywords.length > 0 && (
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+              <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                Lost Keywords ({comparison.lost_keywords.length})
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {comparison.lost_keywords.map((kw) => (
+                  <span key={kw} className="text-[10px] px-2 py-[3px] rounded-md bg-rose-500/10 text-rose-400 font-medium">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {comparison.issues_fixed.length === 0 && comparison.new_issues.length === 0 &&
+         comparison.new_keywords.length === 0 && comparison.lost_keywords.length === 0 && (
+          <div className="text-center py-4 text-[12px] text-zinc-500">
+            No changes in issues or keywords between these versions.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Profile Card ────────────────────────────────────────────────────
 
 function ProfileCard({
@@ -56,12 +219,14 @@ function ProfileCard({
   onSwitch,
   onDelete,
   onUpdate,
+  onCompare,
 }: {
   profile: Profile;
   isActive: boolean;
   onSwitch: () => void;
   onDelete: () => void;
   onUpdate: (data: Partial<Profile>) => Promise<void>;
+  onCompare: (profileId: string, versions: AuditVersionMeta[]) => void;
 }) {
   const { data: session } = useSession();
   const { loadAuditById } = useDashboard();
@@ -141,6 +306,8 @@ function ProfileCard({
     router.push("/dashboard/overview");
   }
 
+  const latestScore = profile.latest_audit?.overall_score;
+
   return (
     <div className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all ${
       isActive ? "border-emerald-500/20" : "border-white/[0.06]"
@@ -163,13 +330,18 @@ function ProfileCard({
             </div>
             <p className="text-xs text-zinc-500 truncate">{domain}</p>
           </div>
-          {profile.latest_audit && profile.audit_count != null && profile.audit_count > 0 && (
-            <div className="text-right shrink-0 ml-3">
-              <div className="text-[10px] text-zinc-600 mb-0.5">
-                {profile.audit_count} audit{profile.audit_count !== 1 ? "s" : ""}
+          <div className="flex items-center gap-3 shrink-0 ml-3">
+            {latestScore != null && latestScore > 0 && (
+              <MiniScoreRing score={latestScore} />
+            )}
+            {profile.audit_count != null && profile.audit_count > 0 && (
+              <div className="text-right">
+                <div className="text-[10px] text-zinc-600">
+                  {profile.audit_count} audit{profile.audit_count !== 1 ? "s" : ""}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Metadata */}
@@ -358,8 +530,18 @@ function ProfileCard({
       {/* Version history */}
       {showVersions && (
         <div className="border-t border-white/[0.06] bg-white/[0.02] p-5">
-          <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">
-            Audit History
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+              Audit History
+            </div>
+            {versionsLoaded && versions.length >= 2 && (
+              <button
+                onClick={() => onCompare(profile.id, versions)}
+                className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Compare Versions
+              </button>
+            )}
           </div>
           {!versionsLoaded ? (
             <div className="flex items-center gap-2 text-xs text-zinc-500 py-3">
@@ -373,7 +555,7 @@ function ProfileCard({
             <div className="text-xs text-zinc-500 py-3">No audits yet for this profile.</div>
           ) : (
             <div className="flex flex-col gap-1">
-              {versions.map((v) => (
+              {versions.map((v, i) => (
                 <button
                   key={v.id}
                   onClick={() => handleVersionClick(v.id)}
@@ -382,8 +564,19 @@ function ProfileCard({
                   <span className="text-xs font-mono font-semibold text-zinc-400 w-8 shrink-0">
                     v{v.version}
                   </span>
+                  {v.overall_score != null && v.overall_score > 0 ? (
+                    <span
+                      className="text-[11px] font-mono font-semibold w-8 shrink-0"
+                      style={{ color: scoreColor(v.overall_score) }}
+                    >
+                      {v.overall_score}
+                    </span>
+                  ) : (
+                    <span className="w-8 shrink-0" />
+                  )}
                   <span className="text-xs text-zinc-500 flex-1">
                     {formatDate(v.created_at)}
+                    {i === 0 && <span className="text-emerald-500/60 ml-1">(latest)</span>}
                   </span>
                   {v.execution_time && (
                     <span className="text-[10px] text-zinc-600">
@@ -403,6 +596,78 @@ function ProfileCard({
   );
 }
 
+// ── Compare Version Picker ──────────────────────────────────────────
+
+function ComparePickerModal({
+  profileId,
+  versions,
+  onCompare,
+  onClose,
+}: {
+  profileId: string;
+  versions: AuditVersionMeta[];
+  onCompare: (profileId: string, v1Id: string, v2Id: string) => void;
+  onClose: () => void;
+}) {
+  const [v1, setV1] = useState(versions.length >= 2 ? versions[1].id : "");
+  const [v2, setV2] = useState(versions.length >= 1 ? versions[0].id : "");
+
+  return (
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[13px] font-display font-semibold text-white">Select Versions to Compare</span>
+        <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Older Version</label>
+          <select
+            value={v1}
+            onChange={(e) => setV1(e.target.value)}
+            className={`${inputClass} appearance-none`}
+          >
+            {versions.map((v) => (
+              <option key={v.id} value={v.id} style={{ background: "#18181b" }}>
+                v{v.version} — {formatDate(v.created_at)}{v.overall_score != null ? ` (Score: ${v.overall_score})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Newer Version</label>
+          <select
+            value={v2}
+            onChange={(e) => setV2(e.target.value)}
+            className={`${inputClass} appearance-none`}
+          >
+            {versions.map((v) => (
+              <option key={v.id} value={v.id} style={{ background: "#18181b" }}>
+                v{v.version} — {formatDate(v.created_at)}{v.overall_score != null ? ` (Score: ${v.overall_score})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2">
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors">
+          Cancel
+        </button>
+        <button
+          onClick={() => { if (v1 && v2 && v1 !== v2) onCompare(profileId, v1, v2); }}
+          disabled={!v1 || !v2 || v1 === v2}
+          className="px-5 py-2 rounded-lg text-xs font-medium bg-gradient-to-br from-emerald-600 to-emerald-500 text-white hover:-translate-y-px hover:shadow-lg hover:shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+        >
+          Compare
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ───────────────────────────────────────────────────────
 
 export default function ProfileManagerPage() {
@@ -415,10 +680,14 @@ export default function ProfileManagerPage() {
     activeProfileId,
     switchProfile,
     setActiveProfileId,
-    setLastAudit,
   } = useDashboard();
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+  // Comparison state
+  const [comparePicker, setComparePicker] = useState<{ profileId: string; versions: AuditVersionMeta[] } | null>(null);
+  const [comparison, setComparison] = useState<AuditComparison | null>(null);
+  const [comparing, setComparing] = useState(false);
 
   // Fetch profiles on mount
   useEffect(() => {
@@ -442,11 +711,9 @@ export default function ProfileManagerPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        // If we deleted the active profile, clear it
         if (activeProfileId === profileId) {
           setActiveProfileId(null);
         }
-        // Refresh profiles
         await fetchProfiles(token);
       }
     } catch { /* ignore */ }
@@ -470,14 +737,37 @@ export default function ProfileManagerPage() {
     } catch { /* ignore */ }
   }
 
+  function handleOpenCompare(profileId: string, versions: AuditVersionMeta[]) {
+    setComparison(null);
+    setComparePicker({ profileId, versions });
+  }
+
+  async function handleCompare(profileId: string, v1Id: string, v2Id: string) {
+    const token = session?.accessToken as string | undefined;
+    if (!token) return;
+    setComparing(true);
+    try {
+      const res = await fetch(
+        `${apiUrl}/profiles/${profileId}/compare?v1=${encodeURIComponent(v1Id)}&v2=${encodeURIComponent(v2Id)}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.ok) {
+        const data: AuditComparison = await res.json();
+        setComparison(data);
+        setComparePicker(null);
+      }
+    } catch { /* ignore */ }
+    setComparing(false);
+  }
+
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display font-semibold text-xl text-white mb-1">Your Profiles</h1>
+          <h1 className="font-display font-semibold text-xl text-white mb-1">Profile Manager</h1>
           <p className="text-xs text-zinc-500">
-            Manage your business profiles and switch between them.
+            Manage your business profiles, view audit history, and compare versions.
             {profiles.length > 0 && ` ${profiles.length} profile${profiles.length !== 1 ? "s" : ""}`}
           </p>
         </div>
@@ -491,6 +781,34 @@ export default function ProfileManagerPage() {
           New Profile
         </Link>
       </div>
+
+      {/* Comparison view */}
+      {comparison && (
+        <ComparisonView comparison={comparison} onClose={() => setComparison(null)} />
+      )}
+
+      {/* Compare picker */}
+      {comparePicker && !comparison && (
+        <ComparePickerModal
+          profileId={comparePicker.profileId}
+          versions={comparePicker.versions}
+          onCompare={handleCompare}
+          onClose={() => setComparePicker(null)}
+        />
+      )}
+
+      {/* Comparing loading */}
+      {comparing && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center gap-3 text-zinc-500">
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-xs">Comparing versions...</span>
+          </div>
+        </div>
+      )}
 
       {/* Loading */}
       {profilesLoading && profiles.length === 0 && (
@@ -539,6 +857,7 @@ export default function ProfileManagerPage() {
               onSwitch={() => handleSwitch(profile.id)}
               onDelete={() => handleDelete(profile.id)}
               onUpdate={(data) => handleUpdate(profile.id, data)}
+              onCompare={handleOpenCompare}
             />
           ))}
         </div>

@@ -27,6 +27,7 @@ export interface Profile {
     version: number;
     keyword: string;
     status: string;
+    overall_score: number | null;
     created_at: string;
   } | null;
 }
@@ -784,6 +785,7 @@ export interface AuditVersionMeta {
   status: string;
   pages_crawled: number | null;
   execution_time: number | null;
+  overall_score: number | null;
   created_at: string;
 }
 
@@ -837,4 +839,31 @@ export interface AuditResult {
     quick_wins: string[];
     estimated_api_cost: number;
   };
+}
+
+// ── Audit Version Comparison ────────────────────────────────────────
+
+export interface ScoreChange {
+  v1: number;
+  v2: number;
+  change: number;
+}
+
+export interface AuditComparison {
+  profile_id: string;
+  v1: { id: string; version: number; created_at: string };
+  v2: { id: string; version: number; created_at: string };
+  score_changes: {
+    overall: ScoreChange;
+    website_seo: ScoreChange;
+    backlinks: ScoreChange;
+    local_seo: ScoreChange;
+    ai_seo: ScoreChange;
+  };
+  issues_fixed: string[];
+  new_issues: string[];
+  unchanged_issues: string[];
+  new_keywords: string[];
+  lost_keywords: string[];
+  common_keywords: string[];
 }
