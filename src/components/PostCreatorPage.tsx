@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
 import {
@@ -106,6 +107,17 @@ export function PostCreatorPage() {
     Array<{ platform: string; content: string; title?: string; author_bio?: string; word_count?: number }>
   >([]);
   const [guestLoading, setGuestLoading] = useState(false);
+
+  /* ── Deep-link from Backlinks page ─────────────────── */
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const topic = searchParams.get("topic");
+    if (tab === "guest") {
+      setActiveTab("guest");
+      if (topic) setGuestTopic(topic);
+    }
+  }, [searchParams]);
 
   /* ── Review state ──────────────────────────────────── */
   const [reviewText, setReviewText] = useState("");

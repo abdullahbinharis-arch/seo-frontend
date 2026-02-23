@@ -804,6 +804,8 @@ export interface BacklinkItem {
   da: number;
   type: string;
   anchor: string;
+  first_seen?: string;
+  status?: string;
 }
 
 export interface BacklinkOpportunity {

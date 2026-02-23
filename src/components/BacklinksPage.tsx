@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useDashboard } from "@/components/DashboardContext";
 import {
   StatRow,
@@ -85,6 +86,26 @@ export function BacklinksToolView() {
 
   /* Opportunity filter */
   const [oppFilter, setOppFilter] = useState<string>("all");
+
+  /* Directory submission tracking (localStorage) */
+  const [submittedDirs, setSubmittedDirs] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("submitted_dirs");
+      if (saved) setSubmittedDirs(new Set(JSON.parse(saved)));
+    } catch { /* ignore */ }
+  }, []);
+
+  function markSubmitted(url: string) {
+    setSubmittedDirs((prev) => {
+      const next = new Set(prev);
+      next.add(url);
+      localStorage.setItem("submitted_dirs", JSON.stringify([...next]));
+      return next;
+    });
+  }
+
+  const router = useRouter();
 
   const da = bd?.domain_authority ?? 0;
   const totalLinks = bd?.total_backlinks ?? 0;
@@ -212,6 +233,14 @@ export function BacklinksToolView() {
                         {bl.anchor || "—"}
                       </span>
                     ),
+                    first_seen: (
+                      <span className="text-zinc-500 text-[11px]">{bl.first_seen || "—"}</span>
+                    ),
+                    status: (
+                      <Tag variant={bl.status === "active" ? "low" : bl.status === "likely-active" ? "med" : "info"}>
+                        {bl.status || "unverified"}
+                      </Tag>
+                    ),
                   }))}
                 />
               ) : (
@@ -289,10 +318,22 @@ export function BacklinksToolView() {
               outreachResults={outreachResults}
               outreachLoading={outreachLoading}
               onGenerateOutreach={generateOutreach}
+              submittedDirs={submittedDirs}
+              onMarkSubmitted={markSubmitted}
+              onGuestPostNavigate={(topic) => router.push(`/dashboard/posts?tab=guest&topic=${encodeURIComponent(topic)}`)}
             />
           </Card>
         </>
       )}
+
+      {/* ═══ BROKEN LINK OPPORTUNITIES (Placeholder) ═════ */}
+      <Card title="Broken Link Opportunities" dotColor="#8b5cf6" meta="Coming Soon">
+        <p className="text-[12px] text-zinc-500 leading-relaxed">
+          Find broken links on competitor pages that you could replace with your own content.
+          This feature will automatically scan competitor backlink profiles to identify dead links,
+          then suggest replacement content you can pitch to the linking site.
+        </p>
+      </Card>
 
       {/* ═══ MANUAL LINK OPPORTUNITY CHECKER ═════════════ */}
       <SectionHead
@@ -383,11 +424,17 @@ function OpportunityList({
   outreachResults,
   outreachLoading,
   onGenerateOutreach,
+  submittedDirs,
+  onMarkSubmitted,
+  onGuestPostNavigate,
 }: {
   rows: BacklinkOpportunity[];
   outreachResults: Record<string, OutreachResult>;
   outreachLoading: string | null;
   onGenerateOutreach: (site: string, type: string, context?: string) => void;
+  submittedDirs: Set<string>;
+  onMarkSubmitted: (url: string) => void;
+  onGuestPostNavigate: (topic: string) => void;
 }) {
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -398,11 +445,12 @@ function OpportunityList({
   return (
     <div>
       {/* Header */}
-      <div className="grid grid-cols-[1fr_50px_80px_60px_80px] gap-2 px-4 py-2 border-b border-white/6">
+      <div className="grid grid-cols-[1fr_50px_80px_60px_80px_90px] gap-2 px-4 py-2 border-b border-white/6">
         <span className="text-[10px] uppercase tracking-wider text-zinc-500">Target</span>
         <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">DA</span>
         <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Type</span>
         <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Effort</span>
+        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Outreach</span>
         <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Action</span>
       </div>
 
@@ -410,11 +458,15 @@ function OpportunityList({
         const isExpanded = expanded === i;
         const outreach = outreachResults[opp.name] || outreachResults[opp.url];
         const isLoadingOutreach = outreachLoading === opp.name || outreachLoading === opp.url;
+        const isDirectory = /directory|citation|profile/i.test(opp.type);
+        const isGuestPost = /guest/i.test(opp.type);
+        const dirKey = opp.url || opp.name;
+        const isSubmitted = isDirectory && submittedDirs.has(dirKey);
 
         return (
           <div key={i}>
             <div
-              className="grid grid-cols-[1fr_50px_80px_60px_80px] gap-2 px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.015] transition-colors cursor-pointer"
+              className="grid grid-cols-[1fr_50px_80px_60px_80px_90px] gap-2 px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.015] transition-colors cursor-pointer"
               onClick={() => setExpanded(isExpanded ? null : i)}
             >
               <span className="text-[12px] text-zinc-300 truncate">{opp.name}</span>
@@ -440,6 +492,40 @@ function OpportunityList({
                     className="text-[10px] text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
                   >
                     {isLoadingOutreach ? "..." : "Outreach"}
+                  </button>
+                )}
+              </span>
+              <span className="text-center flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                {isDirectory && (
+                  <>
+                    {isSubmitted ? (
+                      <Tag variant="low">Submitted</Tag>
+                    ) : (
+                      <button
+                        onClick={() => onMarkSubmitted(dirKey)}
+                        className="text-[9px] text-amber-400 hover:text-amber-300 whitespace-nowrap"
+                      >
+                        Mark Done
+                      </button>
+                    )}
+                    {opp.url && (
+                      <a
+                        href={opp.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[9px] text-blue-400 hover:text-blue-300"
+                      >
+                        Apply
+                      </a>
+                    )}
+                  </>
+                )}
+                {isGuestPost && (
+                  <button
+                    onClick={() => onGuestPostNavigate(opp.name)}
+                    className="text-[9px] text-violet-400 hover:text-violet-300 whitespace-nowrap"
+                  >
+                    Write Post
                   </button>
                 )}
               </span>
@@ -625,6 +711,8 @@ const BACKLINK_COLUMNS: Column[] = [
   { key: "da", label: "DA", mono: true, align: "center" },
   { key: "type", label: "Type", align: "center" },
   { key: "anchor", label: "Anchor" },
+  { key: "first_seen", label: "First Seen", align: "center" },
+  { key: "status", label: "Status", align: "center" },
 ];
 
 /* ── Utility ─────────────────────────────────────────────── */
