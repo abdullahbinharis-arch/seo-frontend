@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar, MobileMenuButton } from "@/components/Sidebar";
 import { TopBar, PAGE_TITLES } from "@/components/TopBar";
 import { DashboardProvider } from "@/components/DashboardContext";
+import { AuthProvider } from "@/components/AuthProvider";
 import { Logo } from "@/components/brand/Logo";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pageTitle = PAGE_TITLES[pathname] ?? "Dashboard";
 
   return (
+    <AuthProvider>
     <DashboardProvider>
       <div className="min-h-screen bg-[#09090b] flex">
         <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
@@ -37,5 +39,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </DashboardProvider>
+    </AuthProvider>
   );
 }
