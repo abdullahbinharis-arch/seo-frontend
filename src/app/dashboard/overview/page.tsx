@@ -203,7 +203,7 @@ function ScoreStrip({
           ${activeTab === "overall" ? "border border-emerald-500/25" : "border border-white/6"}`}
       >
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">Overall Score</span>
+          <span className="text-[11px] text-white font-semibold uppercase tracking-wider">Overall Score</span>
           <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
               <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
@@ -212,7 +212,7 @@ function ScoreStrip({
         </div>
         <div className="flex items-center gap-3.5">
           <ScoreRing score={scores.overall} large />
-          <div className="text-[11.5px] text-zinc-400 leading-snug">
+          <div className="text-[11.5px] text-white leading-snug">
             {scoreLabel(scores.overall)}
             <div className="text-[10.5px] mt-0.5">Weighted avg of 4 pillars</div>
           </div>
@@ -236,14 +236,14 @@ function ScoreStrip({
               ${isActive ? `border ${cfg.borderActive}` : "border border-white/6"}`}
           >
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">{cfg.label}</span>
+              <span className="text-[11px] text-white font-semibold uppercase tracking-wider">{cfg.label}</span>
               <div className={`w-7 h-7 rounded-lg ${cfg.iconBg} flex items-center justify-center`}>
                 {cfg.cardIcon}
               </div>
             </div>
             <div className="flex items-center gap-3.5">
               <ScoreRing score={score} />
-              <div className="text-[11.5px] text-zinc-400 leading-snug">
+              <div className="text-[11.5px] text-white leading-snug">
                 <span style={{ color: scoreTextColor(score), fontWeight: 600 }}>{scoreLabel(score)}</span>
                 <div className="text-[10.5px] mt-0.5">{score} / 100</div>
               </div>
@@ -272,7 +272,7 @@ function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
         </div>
         <div>
           <div className="font-display font-semibold text-[17px] text-white">Top 10 Quick Wins</div>
-          <div className="text-xs text-zinc-400 mt-0.5">
+          <div className="text-xs text-white mt-0.5">
             Highest-impact actions sorted by expected ranking improvement. Do these first.
           </div>
         </div>
@@ -286,16 +286,16 @@ function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
               key={win.rank}
               className="flex items-start gap-3 px-3.5 py-3 bg-white/4 border border-white/4 rounded-[10px]"
             >
-              <div className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center font-mono text-[10px] font-semibold bg-zinc-800 text-zinc-400">
+              <div className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center font-mono text-[10px] font-semibold bg-zinc-800 text-white">
                 {win.rank}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-medium leading-snug text-zinc-100">{win.title}</div>
                 {win.description && (
-                  <div className="text-[12px] text-zinc-400 mt-1 leading-relaxed">{win.description}</div>
+                  <div className="text-[12px] text-white mt-1 leading-relaxed">{win.description}</div>
                 )}
                 {win.impact && (
-                  <div className="text-[11px] text-zinc-400 mt-1">
+                  <div className="text-[11px] text-white mt-1">
                     {win.impact}{win.time_estimate ? ` · ${win.time_estimate}` : ""}
                   </div>
                 )}
@@ -344,10 +344,10 @@ function PillarSection({
         </div>
         <div className="flex-1">
           <div className="font-display font-semibold text-[17px] text-white">{data.title}</div>
-          <div className="text-xs text-zinc-400 mt-0.5">{data.subtitle}</div>
+          <div className="text-xs text-white mt-0.5">{data.subtitle}</div>
         </div>
         <div className="font-display font-bold text-[34px]" style={{ color: scoreTextColor(data.score) }}>
-          {data.score}<span className="text-lg font-normal text-zinc-500">/100</span>
+          {data.score}<span className="text-lg font-normal text-white">/100</span>
         </div>
       </div>
 
@@ -359,7 +359,7 @@ function PillarSection({
           </div>
           <Link
             href={cfg.href}
-            className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
+            className="text-xs text-white hover:text-emerald-400 transition-colors flex items-center gap-1"
           >
             View details
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -384,10 +384,10 @@ function PillarSection({
             </div>
             <div className="flex-1">
               <div className="text-[13.5px] font-medium leading-snug mb-1 text-zinc-100">{step.title}</div>
-              <div className="text-xs text-zinc-400 leading-relaxed">{step.description}</div>
+              <div className="text-xs text-white leading-relaxed">{step.description}</div>
               <div className="flex gap-1.5 mt-1.5 flex-wrap">
                 {step.category && (
-                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-400 font-medium">
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-white font-medium">
                     {step.category}
                   </span>
                 )}
@@ -397,7 +397,7 @@ function PillarSection({
                   </span>
                 )}
                 {step.time_estimate && (
-                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-400 font-medium">
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-white font-medium">
                     {step.time_estimate}
                   </span>
                 )}
@@ -424,7 +424,7 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
         <h1 className="font-display font-semibold text-xl mb-1">
           {audit.business_name || displayUrl}
         </h1>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-white">
           {displayUrl} · {audit.keyword} · {audit.location} · {date}
           {audit.version && <span> · v{audit.version}</span>}
         </p>
@@ -433,7 +433,7 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
         <VersionSelector />
         <Link
           href="/dashboard/audit"
-          className="px-4 py-[7px] rounded-lg text-xs font-medium border border-white/10 text-zinc-400 hover:border-emerald-500/20 hover:text-zinc-200 transition-all"
+          className="px-4 py-[7px] rounded-lg text-xs font-medium border border-white/10 text-white hover:border-emerald-500/20 hover:text-zinc-200 transition-all"
         >
           Re-run Audit
         </Link>
@@ -657,7 +657,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
           <h2 className="font-display font-bold text-white" style={{ fontSize: 22 }}>
             Run Your First Audit
           </h2>
-          <p className="text-zinc-500 mt-1" style={{ fontSize: 13 }}>
+          <p className="text-white mt-1" style={{ fontSize: 13 }}>
             Paste your website and we&apos;ll analyze everything
           </p>
         </div>
@@ -764,9 +764,9 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
 
         {/* Footer */}
         <div className="flex items-center justify-center gap-2 mt-4" style={{ fontSize: 12 }}>
-          <span className="text-zinc-500">Takes about 60 seconds</span>
+          <span className="text-white">Takes about 60 seconds</span>
           <span className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
-          <span className="text-zinc-500">No credit card required</span>
+          <span className="text-white">No credit card required</span>
         </div>
 
         {/* Error */}
@@ -793,7 +793,7 @@ function EmptyState({ onComplete }: { onComplete: (r: AuditResult) => void }) {
             <p className="font-display font-medium text-white" style={{ fontSize: 14 }}>
               {stage || "Analyzing your business..."}
             </p>
-            <p className="text-zinc-500 mt-1.5" style={{ fontSize: 11 }}>
+            <p className="text-white mt-1.5" style={{ fontSize: 11 }}>
               Scanning website &middot; Detecting keywords &middot; Checking rankings
             </p>
           </div>
@@ -877,7 +877,7 @@ export default function OverviewPage() {
         quickWins.length > 0 ? (
           <QuickWinsSection wins={quickWins} />
         ) : (
-          <div className="animate-fadeIn py-16 text-center text-zinc-500 text-sm">
+          <div className="animate-fadeIn py-16 text-center text-white text-sm">
             No quick wins available. Run a new audit to see your action plan.
           </div>
         )
@@ -910,7 +910,7 @@ export default function OverviewPage() {
 
 function NoData() {
   return (
-    <div className="animate-fadeIn py-16 text-center text-zinc-500 text-sm">
+    <div className="animate-fadeIn py-16 text-center text-white text-sm">
       Run a new audit to see detailed improvement steps for this pillar.
     </div>
   );
