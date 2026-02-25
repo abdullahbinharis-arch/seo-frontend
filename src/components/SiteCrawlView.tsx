@@ -260,29 +260,29 @@ export function SiteCrawlView() {
       <SectionHead title="Site Crawl Results" subtitle="Full-site SEO analysis from your latest audit" />
 
       <StatRow>
-        <StatBox label="Pages Found" value={siteCrawl.pages_found} />
-        <StatBox label="Pages Analyzed" value={siteCrawl.pages_analyzed} />
+        <StatBox label="Pages Found" value={siteCrawl.pages_found} accent="emerald" />
+        <StatBox label="Pages Analyzed" value={siteCrawl.pages_analyzed} accent="blue" />
         <StatBox
           label="Avg Page Score"
           value={avgScore}
           suffix="/100"
-          color={scoreColor(avgScore)}
+          accent="amber"
           progress={avgScore}
           progressColor={scoreColor(avgScore)}
         />
-        <StatBox label="Total Issues" value={totalIssues} color="#f43f5e" />
+        <StatBox label="Total Issues" value={totalIssues} accent="violet" />
       </StatRow>
 
       {aggregate && (
         <StatRow>
-          <StatBox label="Avg Word Count" value={aggregate.avg_word_count} />
-          <StatBox label="Thin Content" value={aggregate.thin_content_count} color="#f59e0b" />
-          <StatBox label="Missing Meta" value={aggregate.missing_meta_description} color="#f59e0b" />
+          <StatBox label="Avg Word Count" value={aggregate.avg_word_count} accent="emerald" />
+          <StatBox label="Thin Content" value={aggregate.thin_content_count} accent="amber" />
+          <StatBox label="Missing Meta" value={aggregate.missing_meta_description} accent="violet" />
           <StatBox
             label="Coverage Score"
             value={aggregate.coverage_score}
             suffix="/100"
-            color={scoreColor(aggregate.coverage_score)}
+            accent="blue"
             progress={aggregate.coverage_score}
             progressColor={scoreColor(aggregate.coverage_score)}
           />

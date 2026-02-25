@@ -12,12 +12,23 @@ export function StatRow({ children }: { children: ReactNode }) {
 }
 
 /* ── StatBox ─────────────────────────────────────────────── */
+
+const ACCENT_STYLES = {
+  emerald: { bg: "rgba(16,185,129,0.06)", border: "rgba(16,185,129,0.15)", value: "#6ee7b7" },
+  blue:    { bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.15)", value: "#93c5fd" },
+  amber:   { bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.15)", value: "#fcd34d" },
+  violet:  { bg: "rgba(139,92,246,0.06)", border: "rgba(139,92,246,0.15)", value: "#c4b5fd" },
+} as const;
+
+export type StatAccent = keyof typeof ACCENT_STYLES;
+
 interface StatBoxProps {
   label: string;
   value: string | number;
   suffix?: string;
   note?: string;
   color?: string;
+  accent?: StatAccent;
   progress?: number;
   progressColor?: string;
 }
@@ -28,15 +39,22 @@ export function StatBox({
   suffix,
   note,
   color,
+  accent,
   progress,
   progressColor,
 }: StatBoxProps) {
+  const a = accent ? ACCENT_STYLES[accent] : null;
+  const valueColor = color ?? a?.value;
+
   return (
-    <div className="bg-surface-2 border border-white/6 rounded-[10px] p-3.5">
-      <div className="text-[10px] uppercase tracking-wider text-white mb-1">
+    <div
+      className={a ? "rounded-[10px] p-3.5" : "bg-surface-2 border border-white/6 rounded-[10px] p-3.5"}
+      style={a ? { background: a.bg, border: `1px solid ${a.border}` } : undefined}
+    >
+      <div className="text-[10px] uppercase tracking-wider text-zinc-400 mb-1">
         {label}
       </div>
-      <div className="font-display font-bold text-2xl" style={color ? { color } : undefined}>
+      <div className="font-display font-bold text-2xl" style={valueColor ? { color: valueColor } : undefined}>
         {value}
         {suffix && (
           <span className="text-sm font-normal text-white ml-0.5">{suffix}</span>

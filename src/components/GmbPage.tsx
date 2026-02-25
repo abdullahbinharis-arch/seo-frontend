@@ -55,7 +55,7 @@ export function GmbToolView() {
           label="GBP Score"
           value={gbpScore}
           suffix="/100"
-          color={scoreColor(gbpScore)}
+          accent="emerald"
           progress={gbpScore}
           progressColor={scoreColor(gbpScore)}
         />
@@ -63,18 +63,20 @@ export function GmbToolView() {
           label="Reviews"
           value={reviewCount}
           note={gmb.avg_rating ? `${gmb.avg_rating}★ avg` : ""}
+          accent="blue"
         />
         <StatBox
           label="Citations Found"
           value={citationsFound}
           suffix="/20"
+          accent="amber"
           progress={(citationsFound / 20) * 100}
           progressColor="#f59e0b"
         />
         <StatBox
           label="Photos"
           value={photoStatus}
-          color={photoStatus === "Added" ? "#10b981" : "#f59e0b"}
+          accent="violet"
         />
       </StatRow>
 

@@ -198,15 +198,16 @@ export function BacklinksToolView() {
               label="Domain Authority"
               value={da}
               suffix="/100"
-              color={daColor(da)}
+              accent="emerald"
               progress={da}
               progressColor={daColor(da)}
             />
-            <StatBox label="Total Backlinks" value={totalLinks.toLocaleString()} />
-            <StatBox label="Referring Domains" value={referringDomains.toLocaleString()} />
+            <StatBox label="Total Backlinks" value={totalLinks.toLocaleString()} accent="blue" />
+            <StatBox label="Referring Domains" value={referringDomains.toLocaleString()} accent="amber" />
             <StatBox
               label="Dofollow / Nofollow"
               value={`${bd.dofollow ?? 0} / ${bd.nofollow ?? 0}`}
+              accent="violet"
             />
           </StatRow>
 

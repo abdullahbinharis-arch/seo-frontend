@@ -274,14 +274,14 @@ export function KeywordsToolView() {
           <SectionHead title="Your Audit Keywords" subtitle="Keywords from your latest SEO audit" />
 
           <StatRow>
-            <StatBox label="Primary Keyword" value={truncate(primaryKw, 22)} />
-            <StatBox label="Keywords Tracked" value={keywords.length} />
-            <StatBox label="Keyword Gaps" value={gaps.length} color="#f59e0b" />
+            <StatBox label="Primary Keyword" value={truncate(primaryKw, 22)} accent="emerald" />
+            <StatBox label="Keywords Tracked" value={keywords.length} accent="blue" />
+            <StatBox label="Keyword Gaps" value={gaps.length} accent="amber" />
             <StatBox
               label="Avg Difficulty"
               value={avgDiff}
               suffix="/100"
-              color={diffColor(avgDiff)}
+              accent="violet"
               progress={avgDiff}
               progressColor={diffColor(avgDiff)}
             />

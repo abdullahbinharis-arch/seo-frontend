@@ -349,22 +349,22 @@ export function ContentWriterPage() {
               <StatBox
                 label="Homepage Words"
                 value={wordCount.toLocaleString()}
-                color={wordCount >= 800 ? "#10b981" : wordCount >= 300 ? "#f59e0b" : "#f43f5e"}
+                accent="emerald"
               />
               <StatBox
                 label="Pages to Rewrite"
                 value={rewrites.length || "0"}
-                color={rewrites.length > 0 ? "#f59e0b" : "#10b981"}
+                accent="blue"
               />
               <StatBox
                 label="Area Pages Needed"
                 value={areaPages.length}
-                color={areaPages.length > 0 ? "#3b82f6" : "#10b981"}
+                accent="amber"
               />
               <StatBox
                 label="FAQ Suggestions"
                 value={faqItems.length}
-                color="#8b5cf6"
+                accent="violet"
               />
             </StatRow>
           )}

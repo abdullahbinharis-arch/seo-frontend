@@ -327,20 +327,21 @@ export function KeywordGapView() {
         <>
           {/* ── 3. Stat Row ──────────────────────────────────── */}
           <StatRow>
-            <StatBox label="Total Gaps" value={gaps.length} color="#f59e0b" />
+            <StatBox label="Total Gaps" value={gaps.length} accent="emerald" />
             <StatBox
               label="Avg Volume"
               value={avgVol.toLocaleString()}
+              accent="blue"
             />
             <StatBox
               label="Avg Difficulty"
               value={avgDiff}
               suffix="/100"
-              color={diffColor(avgDiff)}
+              accent="amber"
               progress={avgDiff}
               progressColor={diffColor(avgDiff)}
             />
-            <StatBox label="Top Opportunity" value={truncate(topOpp, 20)} />
+            <StatBox label="Top Opportunity" value={truncate(topOpp, 20)} accent="violet" />
           </StatRow>
 
           {/* ── 4. Gap Keywords Table ────────────────────────── */}
