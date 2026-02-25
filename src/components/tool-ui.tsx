@@ -33,16 +33,16 @@ export function StatBox({
 }: StatBoxProps) {
   return (
     <div className="bg-surface-2 border border-white/6 rounded-[10px] p-3.5">
-      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
+      <div className="text-[10px] uppercase tracking-wider text-white mb-1">
         {label}
       </div>
       <div className="font-display font-bold text-2xl" style={color ? { color } : undefined}>
         {value}
         {suffix && (
-          <span className="text-sm font-normal text-zinc-500 ml-0.5">{suffix}</span>
+          <span className="text-sm font-normal text-white ml-0.5">{suffix}</span>
         )}
       </div>
-      {note && <div className="text-[10px] text-zinc-500 mt-0.5">{note}</div>}
+      {note && <div className="text-[10px] text-white mt-0.5">{note}</div>}
       {progress !== undefined && (
         <div className="mt-2 h-1 rounded-full bg-white/6 overflow-hidden">
           <div
@@ -83,7 +83,7 @@ export function Card({ title, dotColor, meta, children, noPadding }: CardProps) 
           </span>
         </div>
         {meta && (
-          <span className="text-[10px] text-zinc-500">{meta}</span>
+          <span className="text-[10px] text-white">{meta}</span>
         )}
       </div>
       <div className={noPadding ? "" : "p-4"}>{children}</div>
@@ -108,7 +108,7 @@ interface DataTableProps {
 export function DataTable({ columns, rows, highlightRow }: DataTableProps) {
   if (rows.length === 0) {
     return (
-      <p className="text-[11px] text-zinc-600 py-4 text-center">No data available</p>
+      <p className="text-[11px] text-white py-4 text-center">No data available</p>
     );
   }
   return (
@@ -119,7 +119,7 @@ export function DataTable({ columns, rows, highlightRow }: DataTableProps) {
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium text-left px-2.5 py-2 border-b border-white/6"
+                className="text-[10px] uppercase tracking-wider text-white font-medium text-left px-2.5 py-2 border-b border-white/6"
                 style={col.align ? { textAlign: col.align } : undefined}
               >
                 {col.label}
@@ -203,7 +203,7 @@ export function CheckItem({ done, label, tag, muted }: CheckItemProps) {
         {done ? "✓" : ""}
       </span>
       <span
-        className={`text-[12px] flex-1 ${muted ? "text-zinc-500" : "text-zinc-300"}`}
+        className={`text-[12px] flex-1 ${muted ? "text-white" : "text-zinc-300"}`}
       >
         {label}
       </span>
@@ -229,7 +229,7 @@ export function ContentCard({ title, description, tag, meta, children }: Content
         {tag}
       </div>
       {description && (
-        <p className="text-[11px] text-zinc-500 leading-relaxed mb-2">{description}</p>
+        <p className="text-[11px] text-white leading-relaxed mb-2">{description}</p>
       )}
       {meta && <div className="flex items-center gap-1.5">{meta}</div>}
       {children}
@@ -250,7 +250,7 @@ export function SectionHead({ title, subtitle, action }: SectionHeadProps) {
       <div>
         <h3 className="text-[15px] font-semibold font-display text-white">{title}</h3>
         {subtitle && (
-          <p className="text-[11px] text-zinc-500 mt-0.5">{subtitle}</p>
+          <p className="text-[11px] text-white mt-0.5">{subtitle}</p>
         )}
       </div>
       {action}
@@ -298,7 +298,7 @@ export function BtnGhost({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg font-medium border border-white/10 text-zinc-400 hover:border-white/20 hover:text-white transition-all disabled:opacity-50 ${
+      className={`rounded-lg font-medium border border-white/10 text-white hover:border-white/20 hover:text-white transition-all disabled:opacity-50 ${
         small ? "text-[11px] px-2.5 py-[5px]" : "text-[12px] px-3.5 py-[7px]"
       }`}
     >
@@ -317,7 +317,7 @@ export function CopyBtn({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="text-[10px] text-zinc-500 hover:text-emerald-400 transition-colors"
+      className="text-[10px] text-white hover:text-emerald-400 transition-colors"
     >
       {copied ? "Copied!" : "Copy"}
     </button>
@@ -355,7 +355,7 @@ export function EmptyState({ message }: { message: string }) {
           <path d="M12 8v4M12 16h.01" />
         </svg>
       </div>
-      <p className="text-[13px] text-zinc-500">{message}</p>
+      <p className="text-[13px] text-white">{message}</p>
     </div>
   );
 }
