@@ -203,7 +203,7 @@ function ScoreStrip({
           ${activeTab === "overall" ? "border border-emerald-500/25" : "border border-white/6"}`}
       >
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">Overall Score</span>
+          <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">Overall Score</span>
           <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
               <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
@@ -212,7 +212,7 @@ function ScoreStrip({
         </div>
         <div className="flex items-center gap-3.5">
           <ScoreRing score={scores.overall} large />
-          <div className="text-[11.5px] text-zinc-500 leading-snug">
+          <div className="text-[11.5px] text-zinc-400 leading-snug">
             {scoreLabel(scores.overall)}
             <div className="text-[10.5px] mt-0.5">Weighted avg of 4 pillars</div>
           </div>
@@ -236,14 +236,14 @@ function ScoreStrip({
               ${isActive ? `border ${cfg.borderActive}` : "border border-white/6"}`}
           >
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">{cfg.label}</span>
+              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">{cfg.label}</span>
               <div className={`w-7 h-7 rounded-lg ${cfg.iconBg} flex items-center justify-center`}>
                 {cfg.cardIcon}
               </div>
             </div>
             <div className="flex items-center gap-3.5">
               <ScoreRing score={score} />
-              <div className="text-[11.5px] text-zinc-500 leading-snug">
+              <div className="text-[11.5px] text-zinc-400 leading-snug">
                 <span style={{ color: scoreTextColor(score), fontWeight: 600 }}>{scoreLabel(score)}</span>
                 <div className="text-[10.5px] mt-0.5">{score} / 100</div>
               </div>
@@ -271,8 +271,8 @@ function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
           </svg>
         </div>
         <div>
-          <div className="font-display font-semibold text-[17px]">Top 10 Quick Wins</div>
-          <div className="text-xs text-zinc-500 mt-0.5">
+          <div className="font-display font-semibold text-[17px] text-white">Top 10 Quick Wins</div>
+          <div className="text-xs text-zinc-400 mt-0.5">
             Highest-impact actions sorted by expected ranking improvement. Do these first.
           </div>
         </div>
@@ -290,12 +290,12 @@ function QuickWinsSection({ wins }: { wins: QuickWin[] }) {
                 {win.rank}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium leading-snug">{win.title}</div>
+                <div className="text-[13px] font-medium leading-snug text-zinc-100">{win.title}</div>
                 {win.description && (
-                  <div className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{win.description}</div>
+                  <div className="text-[12px] text-zinc-400 mt-1 leading-relaxed">{win.description}</div>
                 )}
                 {win.impact && (
-                  <div className="text-[11px] text-zinc-500 mt-1">
+                  <div className="text-[11px] text-zinc-400 mt-1">
                     {win.impact}{win.time_estimate ? ` · ${win.time_estimate}` : ""}
                   </div>
                 )}
@@ -343,23 +343,23 @@ function PillarSection({
           {cfg.pillarIcon}
         </div>
         <div className="flex-1">
-          <div className="font-display font-semibold text-[17px]">{data.title}</div>
-          <div className="text-xs text-zinc-500 mt-0.5">{data.subtitle}</div>
+          <div className="font-display font-semibold text-[17px] text-white">{data.title}</div>
+          <div className="text-xs text-zinc-400 mt-0.5">{data.subtitle}</div>
         </div>
         <div className="font-display font-bold text-[34px]" style={{ color: scoreTextColor(data.score) }}>
-          {data.score}<span className="text-lg font-normal text-zinc-600">/100</span>
+          {data.score}<span className="text-lg font-normal text-zinc-500">/100</span>
         </div>
       </div>
 
       {/* Steps */}
       <div className="p-[22px] bg-[#0f0f12] border-t border-white/6">
         <div className="flex items-center justify-between mb-3.5">
-          <div className="font-display font-semibold text-sm">
+          <div className="font-display font-semibold text-sm text-white">
             Improvement Steps
           </div>
           <Link
             href={cfg.href}
-            className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-1"
+            className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
           >
             View details
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -383,11 +383,11 @@ function PillarSection({
               {step.rank}
             </div>
             <div className="flex-1">
-              <div className="text-[13.5px] font-medium leading-snug mb-1">{step.title}</div>
-              <div className="text-xs text-zinc-500 leading-relaxed">{step.description}</div>
+              <div className="text-[13.5px] font-medium leading-snug mb-1 text-zinc-100">{step.title}</div>
+              <div className="text-xs text-zinc-400 leading-relaxed">{step.description}</div>
               <div className="flex gap-1.5 mt-1.5 flex-wrap">
                 {step.category && (
-                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-500 font-medium">
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-400 font-medium">
                     {step.category}
                   </span>
                 )}
@@ -397,7 +397,7 @@ function PillarSection({
                   </span>
                 )}
                 {step.time_estimate && (
-                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-500 font-medium">
+                  <span className="text-[11px] py-0.5 px-[7px] rounded-[5px] bg-white/4 text-zinc-400 font-medium">
                     {step.time_estimate}
                   </span>
                 )}
