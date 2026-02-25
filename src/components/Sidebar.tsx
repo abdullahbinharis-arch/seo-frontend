@@ -192,7 +192,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
       // Show "AI" always, but swap to "—" when no audit data
       if (!lastAudit) {
         return (
-          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-zinc-600">
+          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-white">
             —
           </span>
         );
@@ -207,7 +207,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     if (item.badge === "locked") {
       if (!lastAudit) {
         return (
-          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-zinc-600">
+          <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-white">
             —
           </span>
         );
@@ -238,7 +238,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               className={`flex items-center gap-[11px] px-3 py-[9px] rounded-[9px] text-[13px] mb-[2px] transition-all ${
                 isActive(item.href)
                   ? "bg-emerald-500/8 text-emerald-300"
-                  : "text-zinc-400 hover:bg-white/4 hover:text-white"
+                  : "text-white hover:bg-white/4 hover:text-white"
               }`}
             >
               <span className={`shrink-0 ${isActive(item.href) ? "opacity-100" : "opacity-50"}`}>
@@ -285,7 +285,7 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors"
+      className="md:hidden p-2 rounded-lg text-white hover:text-zinc-200 hover:bg-white/5 transition-colors"
       aria-label="Open menu"
     >
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

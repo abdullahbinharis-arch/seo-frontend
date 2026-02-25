@@ -26,8 +26,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <header className="md:hidden nav-blur sticky top-0 z-30 border-b border-white/6 px-4 py-3 flex items-center gap-3">
             <MobileMenuButton onClick={() => setMobileOpen(true)} />
             <Logo size="sidebar" animated={false} />
-            <span className="text-zinc-600 text-sm">/</span>
-            <span className="text-[13px] text-zinc-500 truncate">{pageTitle}</span>
+            <span className="text-white text-sm">/</span>
+            <span className="text-[13px] text-white truncate">{pageTitle}</span>
           </header>
 
           {/* Page content */}

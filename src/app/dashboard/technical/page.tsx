@@ -13,7 +13,7 @@ export default function TechnicalPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Technical SEO</h1>
-        <p className="text-sm text-zinc-400 mt-1">Core Web Vitals, HTTPS, canonical tags, schema markup, broken links, robots.txt, and site-wide crawl issues.</p>
+        <p className="text-sm text-white mt-1">Core Web Vitals, HTTPS, canonical tags, schema markup, broken links, robots.txt, and site-wide crawl issues.</p>
       </div>
       <AgentRunner<TechnicalSeoAgent>
         endpoint="/agents/technical-seo"

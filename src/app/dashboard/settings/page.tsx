@@ -47,19 +47,19 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Settings</h1>
-        <p className="text-sm text-zinc-400 mt-1">Manage your account preferences.</p>
+        <p className="text-sm text-white mt-1">Manage your account preferences.</p>
       </div>
 
       {/* Account info */}
       <div className="glass rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-zinc-300 mb-4">Account</h2>
+        <h2 className="text-sm font-semibold text-white mb-4">Account</h2>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
-            <dt className="text-zinc-500">Email</dt>
+            <dt className="text-white">Email</dt>
             <dd className="text-zinc-200 font-medium">{session?.user?.email ?? "—"}</dd>
           </div>
           <div className="flex justify-between items-center">
-            <dt className="text-zinc-500">Plan</dt>
+            <dt className="text-white">Plan</dt>
             <dd>
               <span className="bg-emerald-500/15 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full">Free</span>
             </dd>
@@ -69,18 +69,18 @@ export default function SettingsPage() {
 
       {/* Change password */}
       <div className="glass rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-zinc-300 mb-4">Change Password</h2>
+        <h2 className="text-sm font-semibold text-white mb-4">Change Password</h2>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-zinc-400">Current password</label>
+            <label className="text-sm text-white">Current password</label>
             <input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required className={inputClass} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-zinc-400">New password</label>
+            <label className="text-sm text-white">New password</label>
             <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={8} className={inputClass} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-zinc-400">Confirm new password</label>
+            <label className="text-sm text-white">Confirm new password</label>
             <input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required className={inputClass} />
           </div>
 
@@ -100,7 +100,7 @@ export default function SettingsPage() {
       {/* Danger zone */}
       <div className="glass rounded-2xl p-6 border border-red-500/10">
         <h2 className="text-sm font-semibold text-red-400 mb-4">Sign Out</h2>
-        <p className="text-sm text-zinc-400 mb-4">You&apos;ll be redirected to the login page.</p>
+        <p className="text-sm text-white mb-4">You&apos;ll be redirected to the login page.</p>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="btn-secondary text-red-400 border-red-500/20 font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-red-500/10 transition-colors"

@@ -37,7 +37,7 @@ export function GmbToolView() {
 
   /* Citation table rows */
   const citationRows = (gmb.citations ?? []).map((c) => ({
-    directory: <span className="text-zinc-300">{c.directory}</span>,
+    directory: <span className="text-white">{c.directory}</span>,
     da: c.da,
     status: (
       <Tag variant={c.status === "found" || c.status === "listed" ? "found" : "missing"}>
@@ -145,8 +145,8 @@ export function GmbToolView() {
 function NapRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="text-[11px] text-zinc-500 w-[70px] shrink-0">{label}</span>
-      <span className="text-[12px] text-zinc-300">{value || "—"}</span>
+      <span className="text-[11px] text-white w-[70px] shrink-0">{label}</span>
+      <span className="text-[12px] text-white">{value || "—"}</span>
     </div>
   );
 }

@@ -329,7 +329,7 @@ export function ContentWriterPage() {
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13px] font-medium transition-all ${
               activeTab === tab.key
                 ? "bg-white/[0.06] text-white shadow-sm"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "text-white hover:text-white"
             }`}
           >
             <span className="w-4 h-4" dangerouslySetInnerHTML={{ __html: tab.icon }} />
@@ -378,13 +378,13 @@ export function ContentWriterPage() {
                   Generate SEO Content
                 </span>
               </div>
-              <span className="text-[10px] text-zinc-500">15-Rule Engine + Competitor Analysis</span>
+              <span className="text-[10px] text-white">15-Rule Engine + Competitor Analysis</span>
             </div>
 
             <div className="p-5 space-y-4">
               {/* Content type selector */}
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-2">
+                <label className="text-[10px] uppercase tracking-wider text-white block mb-2">
                   Content Type
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -395,14 +395,14 @@ export function ContentWriterPage() {
                       className={`relative flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border text-left transition-all ${
                         contentType === ct.value
                           ? "bg-emerald-500/[0.08] border-emerald-500/30 text-emerald-400"
-                          : "bg-white/[0.02] border-white/6 text-zinc-400 hover:border-white/12 hover:text-zinc-200"
+                          : "bg-white/[0.02] border-white/6 text-white hover:border-white/12 hover:text-zinc-200"
                       }`}
                     >
                       <span
                         className={`w-7 h-7 rounded-lg flex items-center justify-center text-[12px] font-bold font-display shrink-0 ${
                           contentType === ct.value
                             ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-white/5 text-zinc-500"
+                            : "bg-white/5 text-white"
                         }`}
                       >
                         {ct.icon}
@@ -416,7 +416,7 @@ export function ContentWriterPage() {
               {/* Input fields — Row 1: Keyword + URL */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                  <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                     Target Keyword
                   </label>
                   <input
@@ -425,11 +425,11 @@ export function ContentWriterPage() {
                     onChange={(e) => setTargetKeyword(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                     placeholder={keyword || "e.g. kitchen remodeler toronto"}
-                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                  <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                     Your URL
                   </label>
                   <input
@@ -437,7 +437,7 @@ export function ContentWriterPage() {
                     value={yourUrl}
                     onChange={(e) => setYourUrl(e.target.value)}
                     placeholder={targetUrl || "https://yourbusiness.com"}
-                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
                   />
                 </div>
               </div>
@@ -445,7 +445,7 @@ export function ContentWriterPage() {
               {/* Conditional fields based on content type */}
               {contentType === "outrank" && (
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                  <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                     Competitor URL to Outrank
                   </label>
                   <input
@@ -454,7 +454,7 @@ export function ContentWriterPage() {
                     onChange={(e) => setCompetitorUrl(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                     placeholder="https://competitor.com/their-page"
-                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
                   />
                 </div>
               )}
@@ -462,7 +462,7 @@ export function ContentWriterPage() {
               {(contentType === "service" || contentType === "area") && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                    <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                       Service Name
                     </label>
                     <input
@@ -470,12 +470,12 @@ export function ContentWriterPage() {
                       value={serviceName}
                       onChange={(e) => setServiceName(e.target.value)}
                       placeholder={businessType || "e.g. Kitchen Renovation"}
-                      className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                      className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
                     />
                   </div>
                   {contentType === "area" && (
                     <div>
-                      <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                         Target City
                       </label>
                       <input
@@ -483,7 +483,7 @@ export function ContentWriterPage() {
                         value={targetCity}
                         onChange={(e) => setTargetCity(e.target.value)}
                         placeholder="e.g. North York"
-                        className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                        className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
                       />
                     </div>
                   )}
@@ -493,7 +493,7 @@ export function ContentWriterPage() {
               {/* Quick-pick area pages from audit */}
               {contentType === "area" && areaPages.length > 0 && (
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1.5">
+                  <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
                     Suggested Areas
                   </label>
                   <div className="flex flex-wrap gap-1.5">
@@ -507,7 +507,7 @@ export function ContentWriterPage() {
                         className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
                           targetCity === area.city
                             ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                            : "bg-white/[0.02] border-white/8 text-zinc-500 hover:text-zinc-300 hover:border-white/12"
+                            : "bg-white/[0.02] border-white/8 text-white hover:text-white hover:border-white/12"
                         }`}
                       >
                         {area.city}
@@ -603,7 +603,7 @@ export function ContentWriterPage() {
                           <span className="text-[13px] font-semibold text-white font-display">
                             {tpl.type}
                           </span>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">{tpl.description}</p>
+                          <p className="text-[10px] text-white mt-0.5">{tpl.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Tag variant={tpl.priority === "high" ? "high" : tpl.priority === "medium" ? "med" : "low"}>
@@ -647,12 +647,12 @@ export function ContentWriterPage() {
                   const results = schemaResults[key];
                   return {
                     url: (
-                      <span className="text-zinc-300 text-[11px] truncate max-w-[200px] block">
+                      <span className="text-white text-[11px] truncate max-w-[200px] block">
                         {page.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </span>
                     ),
                     title: (
-                      <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
+                      <span className="text-white text-[11px] truncate max-w-[180px] block">
                         {page.title || "\u2014"}
                       </span>
                     ),
@@ -685,7 +685,7 @@ export function ContentWriterPage() {
                 if (!results || results.length === 0) return null;
                 return (
                   <div key={key} className="px-4 pb-3">
-                    <p className="text-[11px] text-zinc-300 font-medium mb-2 mt-2">
+                    <p className="text-[11px] text-white font-medium mb-2 mt-2">
                       {page.url.replace(/^https?:\/\//, "")}
                     </p>
                     <div className="space-y-2">
@@ -749,7 +749,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
                   ? "bg-emerald-500/20 text-emerald-400"
                   : isActive
                   ? "bg-amber-500/20 text-amber-400 animate-pulse"
-                  : "bg-white/5 text-zinc-600"
+                  : "bg-white/5 text-white"
               }`}
             >
               {isDone ? "\u2713" : i + 1}
@@ -760,7 +760,7 @@ function EngineProgress({ step }: { step: EngineStep }) {
                   ? "text-emerald-400"
                   : isActive
                   ? "text-amber-400"
-                  : "text-zinc-600"
+                  : "text-white"
               }`}
             >
               {step === "fixing" && i === currentIdx ? "Fixing issues..." : s.label}
@@ -804,7 +804,7 @@ function ContentPreview({
         <div className="space-y-2">
           {c.meta_title && (
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Title</label>
+              <label className="text-[10px] uppercase tracking-wider text-white block mb-0.5">Meta Title</label>
               <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[12px] text-blue-400">
                 {c.meta_title}
               </div>
@@ -812,8 +812,8 @@ function ContentPreview({
           )}
           {c.meta_description && (
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Meta Description</label>
-              <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[11px] text-zinc-300">
+              <label className="text-[10px] uppercase tracking-wider text-white block mb-0.5">Meta Description</label>
+              <div className="bg-surface-1 border border-white/8 rounded-lg px-3 py-1.5 text-[11px] text-white">
                 {c.meta_description}
               </div>
             </div>
@@ -821,20 +821,20 @@ function ContentPreview({
           <div className="flex items-center gap-3">
             {c.url_slug && (
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">URL Slug</label>
+                <label className="text-[10px] uppercase tracking-wider text-white block mb-0.5">URL Slug</label>
                 <span className="text-[11px] text-emerald-400 font-mono">{c.url_slug}</span>
               </div>
             )}
             {c.word_count > 0 && (
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Words</label>
-                <span className="text-[11px] text-zinc-300 font-mono">{c.word_count}</span>
+                <label className="text-[10px] uppercase tracking-wider text-white block mb-0.5">Words</label>
+                <span className="text-[11px] text-white font-mono">{c.word_count}</span>
               </div>
             )}
             {c.primary_keyword_count > 0 && (
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-0.5">Keywords</label>
-                <span className="text-[11px] text-zinc-300 font-mono">{c.primary_keyword_count}x</span>
+                <label className="text-[10px] uppercase tracking-wider text-white block mb-0.5">Keywords</label>
+                <span className="text-[11px] text-white font-mono">{c.primary_keyword_count}x</span>
               </div>
             )}
           </div>
@@ -847,9 +847,9 @@ function ContentPreview({
           className="prose prose-sm prose-invert max-w-none text-[12px] leading-relaxed max-h-[500px] overflow-y-auto
             [&_h1]:text-[16px] [&_h1]:font-bold [&_h1]:font-display [&_h1]:text-white [&_h1]:mb-2 [&_h1]:mt-0
             [&_h2]:text-[14px] [&_h2]:font-semibold [&_h2]:font-display [&_h2]:text-zinc-200 [&_h2]:mb-1.5 [&_h2]:mt-4
-            [&_h3]:text-[13px] [&_h3]:font-medium [&_h3]:text-zinc-300 [&_h3]:mb-1 [&_h3]:mt-3
-            [&_p]:text-zinc-400 [&_p]:mb-2
-            [&_ul]:text-zinc-400 [&_li]:mb-0.5
+            [&_h3]:text-[13px] [&_h3]:font-medium [&_h3]:text-white [&_h3]:mb-1 [&_h3]:mt-3
+            [&_p]:text-white [&_p]:mb-2
+            [&_ul]:text-white [&_li]:mb-0.5
             [&_strong]:text-zinc-200"
           dangerouslySetInnerHTML={{ __html: c.content }}
         />
@@ -858,7 +858,7 @@ function ContentPreview({
       {/* Images */}
       {c.images?.length > 0 && (
         <div className="px-4 pb-3">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Image Suggestions</p>
+          <p className="text-[10px] uppercase tracking-wider text-white mb-1.5">Image Suggestions</p>
           <div className="flex flex-wrap gap-1.5">
             {c.images.map((img, i) => (
               <span
@@ -876,13 +876,13 @@ function ContentPreview({
       {/* Internal links */}
       {c.internal_links?.length > 0 && (
         <div className="px-4 pb-3">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Internal Links</p>
+          <p className="text-[10px] uppercase tracking-wider text-white mb-1.5">Internal Links</p>
           <div className="space-y-1">
             {c.internal_links.map((link, i) => (
               <div key={i} className="flex items-center gap-2 text-[11px]">
                 <span className="text-emerald-400">{link.anchor}</span>
-                <span className="text-zinc-600">&rarr;</span>
-                <span className="text-zinc-500 font-mono">{link.url}</span>
+                <span className="text-white">&rarr;</span>
+                <span className="text-white font-mono">{link.url}</span>
               </div>
             ))}
           </div>
@@ -892,12 +892,12 @@ function ContentPreview({
       {/* FAQs */}
       {c.faqs?.length > 0 && (
         <div className="px-4 pb-3">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">FAQs ({c.faqs.length})</p>
+          <p className="text-[10px] uppercase tracking-wider text-white mb-1.5">FAQs ({c.faqs.length})</p>
           <div className="space-y-2">
             {c.faqs.map((faq, i) => (
               <div key={i} className="bg-surface-1 border border-white/6 rounded-lg p-2.5">
                 <p className="text-[11px] text-zinc-200 font-medium">{faq.question}</p>
-                <p className="text-[10px] text-zinc-400 mt-1 leading-relaxed">{faq.answer}</p>
+                <p className="text-[10px] text-white mt-1 leading-relaxed">{faq.answer}</p>
               </div>
             ))}
           </div>
@@ -907,7 +907,7 @@ function ContentPreview({
       {/* Semantic keywords */}
       {c.semantic_keywords_used?.length > 0 && (
         <div className="px-4 pb-3">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Semantic Keywords Used</p>
+          <p className="text-[10px] uppercase tracking-wider text-white mb-1.5">Semantic Keywords Used</p>
           <div className="flex flex-wrap gap-1">
             {c.semantic_keywords_used.map((kw, i) => (
               <span key={i} className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
@@ -922,13 +922,13 @@ function ContentPreview({
       <div className="px-4 pb-4 flex gap-2 justify-end">
         <button
           onClick={() => handleCopy("html")}
-          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-zinc-400 hover:text-white transition-colors"
+          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-white hover:text-white transition-colors"
         >
           {copied === "html" ? "Copied!" : "Copy HTML"}
         </button>
         <button
           onClick={() => handleCopy("text")}
-          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-zinc-400 hover:text-white transition-colors"
+          className="text-[11px] px-3 py-1.5 rounded-lg bg-surface-1 border border-white/8 text-white hover:text-white transition-colors"
         >
           {copied === "text" ? "Copied!" : "Copy Text"}
         </button>
@@ -981,24 +981,24 @@ function SeoScoreCardPanel({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-[28px] font-bold font-display text-white">{pct}</span>
-            <span className="text-[10px] text-zinc-500">/ 100</span>
+            <span className="text-[10px] text-white">/ 100</span>
           </div>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <span className="text-[18px] font-bold font-display" style={{ color }}>
             {scoreCard.grade}
           </span>
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px] text-white">
             {scoreCard.total_score}/{scoreCard.max_score} points
           </span>
         </div>
       </div>
 
       {/* Competitor info */}
-      <div className="px-4 py-2 border-b border-white/6 flex gap-4 text-[10px] text-zinc-500">
-        <span>Competitors: <span className="text-zinc-300 font-mono">{competitorAnalysis.competitors_analyzed}</span></span>
-        <span>Avg words: <span className="text-zinc-300 font-mono">{competitorAnalysis.avg_words}</span></span>
-        <span>Target: <span className="text-zinc-300 font-mono">{competitorAnalysis.target_words}</span></span>
+      <div className="px-4 py-2 border-b border-white/6 flex gap-4 text-[10px] text-white">
+        <span>Competitors: <span className="text-white font-mono">{competitorAnalysis.competitors_analyzed}</span></span>
+        <span>Avg words: <span className="text-white font-mono">{competitorAnalysis.avg_words}</span></span>
+        <span>Target: <span className="text-white font-mono">{competitorAnalysis.target_words}</span></span>
       </div>
 
       {/* Rules list */}
@@ -1016,7 +1016,7 @@ function SeoScoreCardPanel({
 
       {/* Meta + Fix button */}
       <div className="p-4 border-t border-white/6">
-        <div className="flex items-center justify-between mb-2 text-[10px] text-zinc-500">
+        <div className="flex items-center justify-between mb-2 text-[10px] text-white">
           <span>{meta.generation_time_seconds}s generation time</span>
           {meta.auto_fixed && <Tag variant="info">Auto-fixed</Tag>}
         </div>
@@ -1030,7 +1030,7 @@ function SeoScoreCardPanel({
       {/* Gap topics */}
       {competitorAnalysis.gap_topics?.length > 0 && (
         <div className="px-4 pb-4">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Competitor Gaps</p>
+          <p className="text-[10px] uppercase tracking-wider text-white mb-1.5">Competitor Gaps</p>
           <div className="flex flex-wrap gap-1">
             {competitorAnalysis.gap_topics.map((t, i) => (
               <span key={i} className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
@@ -1071,14 +1071,14 @@ function RuleRow({
           className="w-2 h-2 rounded-full shrink-0"
           style={{ backgroundColor: dotColor }}
         />
-        <span className={`flex-1 text-[11px] ${info.status === "fail" ? "text-zinc-200 font-medium" : "text-zinc-400"}`}>
+        <span className={`flex-1 text-[11px] ${info.status === "fail" ? "text-zinc-200 font-medium" : "text-white"}`}>
           {RULE_LABELS[rule] || rule}
         </span>
-        <span className="text-[11px] font-mono text-zinc-500">
+        <span className="text-[11px] font-mono text-white">
           {info.score}/{info.max}
         </span>
         <svg
-          className={`w-3 h-3 text-zinc-600 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`w-3 h-3 text-white transition-transform ${expanded ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1086,7 +1086,7 @@ function RuleRow({
       </button>
       {expanded && (
         <div className="px-4 pb-2 pl-8">
-          <p className="text-[10px] text-zinc-500 leading-relaxed">{info.detail}</p>
+          <p className="text-[10px] text-white leading-relaxed">{info.detail}</p>
           {info.positions && (
             <div className="mt-1.5 flex flex-wrap gap-1">
               {Object.entries(info.positions).map(([pos, ok]) => (
@@ -1125,7 +1125,7 @@ function CompetitorAnalysisPanel({
       <div className="p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-surface-1 border border-white/6 rounded-lg p-3">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1">
+            <span className="text-[10px] uppercase tracking-wider text-white block mb-1">
               Competitor Words
             </span>
             <span className="text-[20px] font-bold font-display text-white">
@@ -1133,7 +1133,7 @@ function CompetitorAnalysisPanel({
             </span>
           </div>
           <div className="bg-surface-1 border border-white/6 rounded-lg p-3">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-500 block mb-1">
+            <span className="text-[10px] uppercase tracking-wider text-white block mb-1">
               Your Target
             </span>
             <span className="text-[20px] font-bold font-display text-emerald-400">
@@ -1144,14 +1144,14 @@ function CompetitorAnalysisPanel({
 
         {analysis.gap_topics?.length > 0 && (
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">
+            <p className="text-[10px] uppercase tracking-wider text-white mb-2">
               Weaknesses to Exploit
             </p>
             <div className="space-y-1.5">
               {analysis.gap_topics.map((topic, i) => (
                 <div key={i} className="flex items-start gap-2 text-[11px]">
                   <span className="text-rose-400 shrink-0 mt-0.5">-</span>
-                  <span className="text-zinc-400">{topic}</span>
+                  <span className="text-white">{topic}</span>
                 </div>
               ))}
             </div>
@@ -1220,7 +1220,7 @@ function CrawledPagesSection({
       <div className="flex items-end justify-between mb-3 mt-6">
         <div>
           <h3 className="text-[15px] font-semibold font-display text-white">Page Rewrites</h3>
-          <p className="text-[11px] text-zinc-500 mt-0.5">{crawledPages.length} crawled pages — generate optimized rewrites</p>
+          <p className="text-[11px] text-white mt-0.5">{crawledPages.length} crawled pages — generate optimized rewrites</p>
         </div>
       </div>
       <Card title="Crawled Pages" dotColor="#10b981" meta={`${crawledPages.length} pages`} noPadding>
@@ -1232,17 +1232,17 @@ function CrawledPagesSection({
             const issues = page.issues?.length ?? 0;
             return {
               url: (
-                <span className="text-zinc-300 text-[11px] truncate max-w-[200px] block">
+                <span className="text-white text-[11px] truncate max-w-[200px] block">
                   {page.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                 </span>
               ),
               title: (
-                <span className="text-zinc-400 text-[11px] truncate max-w-[180px] block">
+                <span className="text-white text-[11px] truncate max-w-[180px] block">
                   {page.title || "\u2014"}
                 </span>
               ),
               words: (
-                <span className="font-mono text-[11px] text-zinc-400">{page.word_count}</span>
+                <span className="font-mono text-[11px] text-white">{page.word_count}</span>
               ),
               issues: issues > 0 ? (
                 <Tag variant="high">{issues} issues</Tag>
@@ -1276,7 +1276,7 @@ function CrawledPagesSection({
         if (!content) return null;
         return (
           <Card key={key} title={`Rewrite: ${crawledPages[i].title || crawledPages[i].url}`} dotColor="#10b981">
-            <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
+            <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
               {content}
             </div>
             <div className="mt-2 flex justify-end">
@@ -1323,7 +1323,7 @@ function SchemaGeneratorCard({
           value={pageUrl}
           onChange={(e) => setPageUrl(e.target.value)}
           placeholder="Page URL (leave empty for homepage)"
-          className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+          className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
         />
         <div className="flex flex-wrap gap-1.5">
           {SCHEMA_TYPES.map((t) => (
@@ -1333,7 +1333,7 @@ function SchemaGeneratorCard({
               className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
                 selectedTypes.includes(t)
                   ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                  : "bg-white/[0.02] border-white/8 text-zinc-500 hover:text-zinc-300"
+                  : "bg-white/[0.02] border-white/8 text-white hover:text-white"
               }`}
             >
               {t}
@@ -1359,7 +1359,7 @@ function SchemaGeneratorCard({
                 <div>
                   <span className="text-[12px] font-semibold text-white font-display">{schema.type}</span>
                   {schema.description && (
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{schema.description}</p>
+                    <p className="text-[10px] text-white mt-0.5">{schema.description}</p>
                   )}
                 </div>
                 <CopyBtn text={schema.json_ld} />
@@ -1373,7 +1373,7 @@ function SchemaGeneratorCard({
       )}
 
       {results && results.length === 0 && (
-        <p className="mt-3 text-[11px] text-zinc-500">No schemas generated. Try again.</p>
+        <p className="mt-3 text-[11px] text-white">No schemas generated. Try again.</p>
       )}
     </Card>
   );

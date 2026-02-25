@@ -333,7 +333,7 @@ export function PostCreatorPage() {
             className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
               activeTab === tab.key
                 ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                : "text-zinc-500 hover:text-zinc-300 border border-transparent"
+                : "text-white hover:text-white border border-transparent"
             }`}
           >
             {tab.label}
@@ -353,14 +353,14 @@ export function PostCreatorPage() {
                 onChange={(e) => setCustomBlogTopic(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && customBlogTopic.trim() && generateBlog("custom", customBlogTopic.trim(), parseInt(customBlogWords) || 1500)}
                 placeholder="Enter blog topic or keyword..."
-                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
               />
               <input
                 type="number"
                 value={customBlogWords}
                 onChange={(e) => setCustomBlogWords(e.target.value)}
                 placeholder="Words"
-                className="w-24 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                className="w-24 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
               />
               <BtnPrimary
                 onClick={() => generateBlog("custom", customBlogTopic.trim(), parseInt(customBlogWords) || 1500)}
@@ -374,7 +374,7 @@ export function PostCreatorPage() {
                 <div className="flex justify-end mb-1">
                   <CopyBtn text={blogGenerated["custom"]} />
                 </div>
-                <div className="p-3 bg-surface-1 rounded-lg border border-white/[0.03] text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
+                <div className="p-3 bg-surface-1 rounded-lg border border-white/[0.03] text-[11px] text-white whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
                   {blogGenerated["custom"]}
                 </div>
               </div>
@@ -413,7 +413,7 @@ export function PostCreatorPage() {
                       }
                     >
                       {content && (
-                        <div className="mt-2 p-3 bg-surface-2 rounded-lg border border-white/[0.03] text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
+                        <div className="mt-2 p-3 bg-surface-2 rounded-lg border border-white/[0.03] text-[11px] text-white whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
                           {content}
                         </div>
                       )}
@@ -449,7 +449,7 @@ export function PostCreatorPage() {
                   <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
               </div>
-              <p className="text-[13px] text-zinc-400 mb-4">
+              <p className="text-[13px] text-white mb-4">
                 Generate a 4-week content calendar with GBP posts, social media posts, and blog intros
               </p>
               <BtnPrimary onClick={generateCalendar} disabled={calLoading}>
@@ -463,7 +463,7 @@ export function PostCreatorPage() {
                   key={wi}
                   className="bg-surface-1 border border-white/6 rounded-[10px] p-3.5 hover:border-white/12 transition-colors"
                 >
-                  <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2.5">
+                  <div className="text-[10px] uppercase tracking-wider text-white mb-2.5">
                     {week.label}
                   </div>
                   <div className="space-y-0">
@@ -473,8 +473,8 @@ export function PostCreatorPage() {
                       const isLoading = gmbLoading === key;
                       return (
                         <div key={pi} className="py-2.5 border-b border-white/[0.03] last:border-0">
-                          <div className="text-[9px] uppercase text-zinc-600 mb-0.5">{post.type}</div>
-                          <div className="text-[11px] font-medium text-zinc-300 leading-snug mb-1.5">
+                          <div className="text-[9px] uppercase text-white mb-0.5">{post.type}</div>
+                          <div className="text-[11px] font-medium text-white leading-snug mb-1.5">
                             {post.title}
                           </div>
                           {!generated ? (
@@ -487,7 +487,7 @@ export function PostCreatorPage() {
                             </button>
                           ) : (
                             <div className="mt-1">
-                              <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed bg-surface-2 rounded-lg p-2.5 border border-white/[0.03]">
+                              <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed bg-surface-2 rounded-lg p-2.5 border border-white/[0.03]">
                                 {generated}
                               </div>
                               <div className="flex justify-end mt-1">
@@ -518,7 +518,7 @@ export function PostCreatorPage() {
                 className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all border ${
                   socialPlatform === p
                     ? "text-white border-white/20"
-                    : "text-zinc-500 border-transparent hover:text-zinc-300"
+                    : "text-white border-transparent hover:text-white"
                 }`}
                 style={
                   socialPlatform === p
@@ -544,7 +544,7 @@ export function PostCreatorPage() {
                 onChange={(e) => setSocialTopic(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && socialTopic.trim() && generateSocialPost(socialPlatform, socialTopic.trim())}
                 placeholder="Enter post topic..."
-                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
               />
               <BtnPrimary
                 onClick={() => generateSocialPost(socialPlatform, socialTopic.trim())}
@@ -589,7 +589,7 @@ export function PostCreatorPage() {
                         </span>
                         <CopyBtn text={data.content + (data.hashtags?.length ? `\n\n${data.hashtags.join(" ")}` : "")} />
                       </div>
-                      <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
+                      <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
                         {data.content}
                       </div>
                       {data.hashtags?.length > 0 && (
@@ -600,15 +600,15 @@ export function PostCreatorPage() {
                             </span>
                           ))}
                           {data.hashtags.length > 15 && (
-                            <span className="text-[9px] text-zinc-500">+{data.hashtags.length - 15} more</span>
+                            <span className="text-[9px] text-white">+{data.hashtags.length - 15} more</span>
                           )}
                         </div>
                       )}
                       {data.thread?.length > 0 && (
                         <div className="mt-2 space-y-1">
-                          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Thread</span>
+                          <span className="text-[10px] text-white uppercase tracking-wider">Thread</span>
                           {data.thread.map((tweet: string, ti: number) => (
-                            <div key={ti} className="text-[10px] text-zinc-400 bg-surface-1 p-2 rounded border border-white/[0.03]">
+                            <div key={ti} className="text-[10px] text-white bg-surface-1 p-2 rounded border border-white/[0.03]">
                               {ti + 1}. {tweet}
                             </div>
                           ))}
@@ -638,10 +638,10 @@ export function PostCreatorPage() {
                         <span className="text-[12px] font-semibold text-white font-display">
                           {platform.charAt(0).toUpperCase() + platform.slice(1)}
                         </span>
-                        <span className="text-[10px] text-zinc-500">{key.split("-").slice(1).join("-")}</span>
+                        <span className="text-[10px] text-white">{key.split("-").slice(1).join("-")}</span>
                         <CopyBtn text={result.content + (result.hashtags?.length ? `\n\n${result.hashtags.join(" ")}` : "")} />
                       </div>
-                      <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                      <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">
                         {result.content}
                       </div>
                       {result.hashtags && result.hashtags.length > 0 && (
@@ -654,12 +654,12 @@ export function PostCreatorPage() {
                         </div>
                       )}
                       {result.post_idea && (
-                        <p className="mt-2 text-[10px] text-zinc-500">
+                        <p className="mt-2 text-[10px] text-white">
                           <span className="text-emerald-400">Idea:</span> {result.post_idea}
                         </p>
                       )}
                       {result.best_time && (
-                        <p className="text-[10px] text-zinc-500">
+                        <p className="text-[10px] text-white">
                           <span className="text-amber-400">Best time:</span> {result.best_time}
                         </p>
                       )}
@@ -685,7 +685,7 @@ export function PostCreatorPage() {
                   className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all border ${
                     guestPlatform === p.key
                       ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                      : "bg-surface-1 border-white/8 text-zinc-500 hover:text-zinc-300"
+                      : "bg-surface-1 border-white/8 text-white hover:text-white"
                   }`}
                 >
                   {p.label}
@@ -700,7 +700,7 @@ export function PostCreatorPage() {
                 onChange={(e) => setGuestTopic(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && guestTopic.trim() && generateGuestPost()}
                 placeholder={`Topic for ${GUEST_PLATFORMS.find((p) => p.key === guestPlatform)?.label ?? "guest"} article...`}
-                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
               />
               <BtnPrimary
                 onClick={generateGuestPost}
@@ -726,7 +726,7 @@ export function PostCreatorPage() {
       <div className="bg-surface-2 border border-white/6 rounded-[14px] p-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-zinc-500">Rating:</span>
+            <span className="text-[11px] text-white">Rating:</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -746,7 +746,7 @@ export function PostCreatorPage() {
             onChange={(e) => setReviewText(e.target.value)}
             placeholder="Paste a customer review here..."
             rows={3}
-            className="w-full px-3 py-2.5 rounded-lg border border-white/6 bg-surface-1 text-[12px] text-zinc-300 outline-none focus:border-emerald-500/40 placeholder:text-zinc-600 transition-colors resize-none"
+            className="w-full px-3 py-2.5 rounded-lg border border-white/6 bg-surface-1 text-[12px] text-white outline-none focus:border-emerald-500/40 placeholder:text-white transition-colors resize-none"
           />
           <BtnPrimary
             onClick={generateReviewResponse}
@@ -775,7 +775,7 @@ function SocialResultCard({ result, platform }: { result: SocialResult; platform
       <div className="flex justify-end mb-1">
         <CopyBtn text={result.content + (result.hashtags?.length ? `\n\n${result.hashtags.join(" ")}` : "")} />
       </div>
-      <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">
+      <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">
         {result.content}
       </div>
       {result.hashtags && result.hashtags.length > 0 && (
@@ -788,25 +788,25 @@ function SocialResultCard({ result, platform }: { result: SocialResult; platform
         </div>
       )}
       {result.post_idea && (
-        <p className="mt-2 text-[10px] text-zinc-500">
+        <p className="mt-2 text-[10px] text-white">
           <span className="text-emerald-400">Post idea:</span> {result.post_idea}
         </p>
       )}
       {result.best_time && (
-        <p className="text-[10px] text-zinc-500">
+        <p className="text-[10px] text-white">
           <span className="text-amber-400">Best time:</span> {result.best_time}
         </p>
       )}
       {result.cta && (
-        <p className="text-[10px] text-zinc-500">
+        <p className="text-[10px] text-white">
           <span className="text-rose-400">CTA:</span> {result.cta}
         </p>
       )}
       {platform === "twitter" && result.thread && result.thread.length > 0 && (
         <div className="mt-2 space-y-1">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Thread</span>
+          <span className="text-[10px] text-white uppercase tracking-wider">Thread</span>
           {result.thread.map((tweet, ti) => (
-            <div key={ti} className="text-[10px] text-zinc-400 bg-surface-2 p-2 rounded border border-white/[0.03]">
+            <div key={ti} className="text-[10px] text-white bg-surface-2 p-2 rounded border border-white/[0.03]">
               {ti + 1}. {tweet}
             </div>
           ))}
@@ -835,7 +835,7 @@ function GuestPostCard({
             <div className="flex items-center gap-2 mt-1">
               <Tag variant="med">{platformLabel}</Tag>
               {result.word_count ? (
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-white">
                   {result.word_count.toLocaleString()} words
                 </span>
               ) : null}
@@ -846,8 +846,8 @@ function GuestPostCard({
 
         {result.author_bio && (
           <div className="bg-surface-1 border border-white/6 rounded-lg p-2.5 mt-2">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-500">Author Bio</span>
-            <p className="text-[11px] text-zinc-400 mt-0.5">{result.author_bio}</p>
+            <span className="text-[10px] uppercase tracking-wider text-white">Author Bio</span>
+            <p className="text-[11px] text-white mt-0.5">{result.author_bio}</p>
           </div>
         )}
 
@@ -861,7 +861,7 @@ function GuestPostCard({
 
       {expanded && (
         <div className="border-t border-white/6 p-4">
-          <div className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">
+          <div className="text-[11px] text-white whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto">
             {result.content}
           </div>
         </div>

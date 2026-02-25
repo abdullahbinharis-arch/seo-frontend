@@ -62,13 +62,13 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
       {/* Title Analysis */}
       <div className="bg-surface-1 border border-white/[0.04] rounded-lg p-3">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Title Tag</span>
+          <span className="text-[11px] font-semibold text-white uppercase tracking-wider">Title Tag</span>
           <Tag variant={ratingVariant(analysis.title_analysis?.rating ?? "poor")}>
             {ratingLabel(analysis.title_analysis?.rating ?? "poor")}
           </Tag>
         </div>
-        <p className="text-[12px] text-zinc-300 mb-1">{analysis.title_analysis?.current || "—"}</p>
-        <div className="flex gap-3 text-[10px] text-zinc-500">
+        <p className="text-[12px] text-white mb-1">{analysis.title_analysis?.current || "—"}</p>
+        <div className="flex gap-3 text-[10px] text-white">
           <span>Length: {analysis.title_analysis?.length ?? 0}</span>
           <span>Keyword: {analysis.title_analysis?.has_keyword ? "Yes" : "No"}</span>
           <span>Location: {analysis.title_analysis?.has_location ? "Yes" : "No"}</span>
@@ -76,7 +76,7 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
         {analysis.recommended_title && (
           <div className="mt-2 flex items-start gap-2">
             <span className="text-[10px] text-emerald-400 shrink-0">Suggested:</span>
-            <span className="text-[11px] text-zinc-300 flex-1">{analysis.recommended_title}</span>
+            <span className="text-[11px] text-white flex-1">{analysis.recommended_title}</span>
             <CopyBtn text={analysis.recommended_title} />
           </div>
         )}
@@ -85,13 +85,13 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
       {/* Meta Analysis */}
       <div className="bg-surface-1 border border-white/[0.04] rounded-lg p-3">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Meta Description</span>
+          <span className="text-[11px] font-semibold text-white uppercase tracking-wider">Meta Description</span>
           <Tag variant={ratingVariant(analysis.meta_analysis?.rating ?? "poor")}>
             {ratingLabel(analysis.meta_analysis?.rating ?? "poor")}
           </Tag>
         </div>
-        <p className="text-[12px] text-zinc-300 mb-1">{analysis.meta_analysis?.current || "—"}</p>
-        <div className="flex gap-3 text-[10px] text-zinc-500">
+        <p className="text-[12px] text-white mb-1">{analysis.meta_analysis?.current || "—"}</p>
+        <div className="flex gap-3 text-[10px] text-white">
           <span>Length: {analysis.meta_analysis?.length ?? 0}</span>
           <span>Keyword: {analysis.meta_analysis?.has_keyword ? "Yes" : "No"}</span>
           <span>CTA: {analysis.meta_analysis?.has_cta ? "Yes" : "No"}</span>
@@ -99,7 +99,7 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
         {analysis.recommended_meta && (
           <div className="mt-2 flex items-start gap-2">
             <span className="text-[10px] text-emerald-400 shrink-0">Suggested:</span>
-            <span className="text-[11px] text-zinc-300 flex-1">{analysis.recommended_meta}</span>
+            <span className="text-[11px] text-white flex-1">{analysis.recommended_meta}</span>
             <CopyBtn text={analysis.recommended_meta} />
           </div>
         )}
@@ -108,12 +108,12 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
       {/* Issues */}
       {analysis.issues?.length > 0 && (
         <div className="bg-surface-1 border border-white/[0.04] rounded-lg p-3">
-          <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Issues Found</div>
+          <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5">Issues Found</div>
           <div className="flex flex-col gap-1">
             {analysis.issues.map((issue, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
-                <span className="text-[11px] text-zinc-400 leading-relaxed">{issue}</span>
+                <span className="text-[11px] text-white leading-relaxed">{issue}</span>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
       <div className="flex flex-col sm:flex-row gap-3">
         {analysis.recommended_keywords?.length > 0 && (
           <div className="flex-1 bg-surface-1 border border-white/[0.04] rounded-lg p-3">
-            <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Target Keywords</div>
+            <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5">Target Keywords</div>
             <div className="flex flex-wrap gap-1">
               {analysis.recommended_keywords.map((kw) => (
                 <span key={kw} className="text-[10px] px-2 py-[3px] rounded-md bg-emerald-500/10 text-emerald-400 font-medium">
@@ -136,8 +136,8 @@ function PageAnalysisDetail({ analysis }: { analysis: PageAnalysis }) {
         )}
         {analysis.content_recommendation && (
           <div className="flex-1 bg-surface-1 border border-white/[0.04] rounded-lg p-3">
-            <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Content Recommendation</div>
-            <p className="text-[11px] text-zinc-400 leading-relaxed">{analysis.content_recommendation}</p>
+            <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5">Content Recommendation</div>
+            <p className="text-[11px] text-white leading-relaxed">{analysis.content_recommendation}</p>
           </div>
         )}
       </div>
@@ -168,18 +168,18 @@ function ServiceKeywordsSection({ data }: { data: Record<string, ServiceKeywordT
                 <Tag variant="missing">No Page</Tag>
               )}
             </div>
-            <div className="text-[11px] text-zinc-400 mb-2">
+            <div className="text-[11px] text-white mb-2">
               Primary: <span className="text-zinc-200 font-medium">{target.primary}</span>
             </div>
             {target.current_page && (
-              <div className="text-[10px] text-zinc-500 mb-2">
-                Current page: <span className="text-zinc-400 font-mono">{extractPath(target.current_page)}</span>
+              <div className="text-[10px] text-white mb-2">
+                Current page: <span className="text-white font-mono">{extractPath(target.current_page)}</span>
               </div>
             )}
             {target.related.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {target.related.map((r) => (
-                  <span key={r} className="text-[9px] px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-500">{r}</span>
+                  <span key={r} className="text-[9px] px-2 py-0.5 rounded-md bg-white/[0.04] text-white">{r}</span>
                 ))}
               </div>
             )}
@@ -207,7 +207,7 @@ function SchemaSection({ data }: { data: Record<string, string[]> }) {
         <DataTable
           columns={SCHEMA_COLUMNS}
           rows={entries.map(([path, schemas]) => ({
-            page: <span className="text-zinc-300 font-mono text-[11px]">{path}</span>,
+            page: <span className="text-white font-mono text-[11px]">{path}</span>,
             schemas: (
               <div className="flex flex-wrap gap-1">
                 {schemas.map((s) => (
@@ -298,7 +298,7 @@ export function SiteCrawlView() {
             className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-all ${
               typeFilter === type
                 ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-white/[0.04] text-zinc-500 hover:text-zinc-300"
+                : "bg-white/[0.04] text-white hover:text-white"
             }`}
           >
             {type}
@@ -342,19 +342,19 @@ export function SiteCrawlView() {
                   {/* URL + title */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[12px] text-zinc-300 font-mono truncate">{path}</span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-zinc-500 shrink-0">
+                      <span className="text-[12px] text-white font-mono truncate">{path}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-white shrink-0">
                         {page.type}
                       </span>
                     </div>
                     {page.title && (
-                      <span className="text-[10px] text-zinc-500 truncate block">{page.title}</span>
+                      <span className="text-[10px] text-white truncate block">{page.title}</span>
                     )}
                   </div>
 
                   {/* Meta */}
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[10px] text-zinc-600">{page.word_count}w</span>
+                    <span className="text-[10px] text-white">{page.word_count}w</span>
                     {page.issues_count > 0 && (
                       <Tag variant={page.issues_count >= 3 ? "high" : "med"}>
                         {page.issues_count} issue{page.issues_count !== 1 ? "s" : ""}
@@ -362,7 +362,7 @@ export function SiteCrawlView() {
                     )}
                     {analysis && (
                       <svg
-                        className={`w-3 h-3 text-zinc-600 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                        className={`w-3 h-3 text-white transition-transform ${isExpanded ? "rotate-90" : ""}`}
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

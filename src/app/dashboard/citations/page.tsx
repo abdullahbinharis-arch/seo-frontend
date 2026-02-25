@@ -13,7 +13,7 @@ export default function CitationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Citation Builder</h1>
-        <p className="text-sm text-zinc-400 mt-1">Tier-1 to tier-3 citation opportunities, NAP template, consistency rules, and monthly submission plan.</p>
+        <p className="text-sm text-white mt-1">Tier-1 to tier-3 citation opportunities, NAP template, consistency rules, and monthly submission plan.</p>
       </div>
       <AgentRunner<CitationBuilderAgent>
         endpoint="/agents/citation-builder"

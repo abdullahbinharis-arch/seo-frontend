@@ -46,15 +46,15 @@ export function TopBar() {
     <div className="hidden md:flex sticky top-0 z-30 items-center justify-between px-7 py-3 border-b border-white/6 bg-[#09090b]/92 backdrop-blur-xl">
       <div className="flex items-center gap-[10px]">
         <h1 className="font-display font-semibold text-[15px] text-white">{businessName}</h1>
-        <span className="text-zinc-600 text-sm">/</span>
-        <span className="text-[13px] text-zinc-500">{pageTitle}</span>
+        <span className="text-white text-sm">/</span>
+        <span className="text-[13px] text-white">{pageTitle}</span>
       </div>
 
       <div className="flex gap-2">
         {pathname === "/dashboard/overview" && (
           <Link
             href="/dashboard/audit"
-            className="px-[14px] py-[7px] rounded-lg text-xs font-medium border border-white/6 text-zinc-400 hover:border-white/12 hover:text-white transition-all"
+            className="px-[14px] py-[7px] rounded-lg text-xs font-medium border border-white/6 text-white hover:border-white/12 hover:text-white transition-all"
           >
             Re-run Audit
           </Link>

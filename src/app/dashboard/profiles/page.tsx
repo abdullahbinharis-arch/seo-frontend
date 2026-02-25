@@ -59,10 +59,10 @@ function ScoreCompareRow({ label, data }: { label: string; data: ScoreChange }) 
   const color = changeColor(data.change);
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-white/[0.03] last:border-0">
-      <span className="text-[12px] text-zinc-400 capitalize">{label.replace(/_/g, " ")}</span>
+      <span className="text-[12px] text-white capitalize">{label.replace(/_/g, " ")}</span>
       <div className="flex items-center gap-3">
-        <span className="text-[12px] text-zinc-500 font-mono">{data.v1}</span>
-        <svg className="w-3 h-3 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <span className="text-[12px] text-white font-mono">{data.v1}</span>
+        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
         <span className="text-[12px] font-mono font-semibold" style={{ color: scoreColor(data.v2) }}>{data.v2}</span>
@@ -87,11 +87,11 @@ function ComparisonView({
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
           <span className="text-[13px] font-display font-semibold text-white">Version Comparison</span>
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px] text-white">
             v{comparison.v1.version} vs v{comparison.v2.version}
           </span>
         </div>
-        <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+        <button onClick={onClose} className="text-white hover:text-white transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -102,13 +102,13 @@ function ComparisonView({
         {/* Overall score hero */}
         <div className="flex items-center justify-center gap-8">
           <div className="text-center">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
+            <div className="text-[10px] text-white uppercase tracking-wider mb-2">
               v{comparison.v1.version} · {formatDate(comparison.v1.created_at)}
             </div>
             <MiniScoreRing score={comparison.score_changes.overall.v1} size={56} />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
             <span
@@ -119,7 +119,7 @@ function ComparisonView({
             </span>
           </div>
           <div className="text-center">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
+            <div className="text-[10px] text-white uppercase tracking-wider mb-2">
               v{comparison.v2.version} · {formatDate(comparison.v2.created_at)}
             </div>
             <MiniScoreRing score={comparison.score_changes.overall.v2} size={56} />
@@ -128,7 +128,7 @@ function ComparisonView({
 
         {/* Score breakdown */}
         <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-          <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">Score Breakdown</div>
+          <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-2">Score Breakdown</div>
           {(["website_seo", "backlinks", "local_seo", "ai_seo"] as const).map((key) => (
             <ScoreCompareRow key={key} label={key} data={comparison.score_changes[key]} />
           ))}
@@ -140,7 +140,7 @@ function ComparisonView({
             <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
                   Issues Fixed ({comparison.issues_fixed.length})
                 </span>
               </div>
@@ -155,7 +155,7 @@ function ComparisonView({
             <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="w-2 h-2 rounded-full bg-rose-400" />
-                <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
                   New Issues ({comparison.new_issues.length})
                 </span>
               </div>
@@ -172,7 +172,7 @@ function ComparisonView({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {comparison.new_keywords.length > 0 && (
             <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-              <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-2">
                 New Keywords ({comparison.new_keywords.length})
               </div>
               <div className="flex flex-wrap gap-1">
@@ -186,7 +186,7 @@ function ComparisonView({
           )}
           {comparison.lost_keywords.length > 0 && (
             <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-              <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              <div className="text-[11px] font-semibold text-white uppercase tracking-wider mb-2">
                 Lost Keywords ({comparison.lost_keywords.length})
               </div>
               <div className="flex flex-wrap gap-1">
@@ -202,7 +202,7 @@ function ComparisonView({
 
         {comparison.issues_fixed.length === 0 && comparison.new_issues.length === 0 &&
          comparison.new_keywords.length === 0 && comparison.lost_keywords.length === 0 && (
-          <div className="text-center py-4 text-[12px] text-zinc-500">
+          <div className="text-center py-4 text-[12px] text-white">
             No changes in issues or keywords between these versions.
           </div>
         )}
@@ -328,7 +328,7 @@ function ProfileCard({
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 truncate">{domain}</p>
+            <p className="text-xs text-white truncate">{domain}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0 ml-3">
             {latestScore != null && latestScore > 0 && (
@@ -336,7 +336,7 @@ function ProfileCard({
             )}
             {profile.audit_count != null && profile.audit_count > 0 && (
               <div className="text-right">
-                <div className="text-[10px] text-zinc-600">
+                <div className="text-[10px] text-white">
                   {profile.audit_count} audit{profile.audit_count !== 1 ? "s" : ""}
                 </div>
               </div>
@@ -347,12 +347,12 @@ function ProfileCard({
         {/* Metadata */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {profile.business_category && (
-            <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-400">
+            <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.04] text-white">
               {profile.business_category}
             </span>
           )}
           {profile.city && profile.country && (
-            <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-400">
+            <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.04] text-white">
               {profile.city}, {profile.country}
             </span>
           )}
@@ -367,7 +367,7 @@ function ProfileCard({
               </span>
             ))}
             {profile.services.length > 3 && (
-              <span className="text-[10px] px-2 py-[3px] rounded-md bg-white/[0.04] text-zinc-500 font-medium">
+              <span className="text-[10px] px-2 py-[3px] rounded-md bg-white/[0.04] text-white font-medium">
                 +{profile.services.length - 3} more
               </span>
             )}
@@ -376,7 +376,7 @@ function ProfileCard({
 
         {/* Last audit info */}
         {profile.latest_audit && (
-          <div className="flex items-center gap-2 text-[11px] text-zinc-500 mb-3">
+          <div className="flex items-center gap-2 text-[11px] text-white mb-3">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -396,20 +396,20 @@ function ProfileCard({
           )}
           <button
             onClick={() => setEditing(!editing)}
-            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200 transition-all"
+            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-white hover:bg-white/[0.08] hover:text-zinc-200 transition-all"
           >
             {editing ? "Cancel" : "Edit"}
           </button>
           <button
             onClick={toggleVersions}
-            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200 transition-all"
+            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-white hover:bg-white/[0.08] hover:text-zinc-200 transition-all"
           >
             {showVersions ? "Hide History" : "History"}
           </button>
           {!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-all"
+              className="px-3 py-2 rounded-lg text-xs font-medium bg-white/[0.04] text-white hover:bg-red-500/10 hover:text-red-400 transition-all"
             >
               Delete
             </button>
@@ -423,7 +423,7 @@ function ProfileCard({
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="px-2 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 transition-all"
+                className="px-2 py-2 rounded-lg text-xs text-white hover:text-white transition-all"
               >
                 No
               </button>
@@ -437,7 +437,7 @@ function ProfileCard({
         <div className="border-t border-white/[0.06] bg-white/[0.02] p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Business Name</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Business Name</label>
               <input
                 type="text"
                 value={editName}
@@ -446,7 +446,7 @@ function ProfileCard({
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Website URL</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Website URL</label>
               <input
                 type="url"
                 value={editUrl}
@@ -455,7 +455,7 @@ function ProfileCard({
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Category</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Category</label>
               <CategorySelect
                 value={editCategory}
                 onChange={setEditCategory}
@@ -463,7 +463,7 @@ function ProfileCard({
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Services</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Services</label>
               <ServiceTagInput
                 tags={editServices}
                 onChange={setEditServices}
@@ -472,7 +472,7 @@ function ProfileCard({
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Country</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Country</label>
               <div className="relative">
                 <select
                   value={editCountry}
@@ -484,13 +484,13 @@ function ProfileCard({
                     <option key={c.code} value={c.name} style={{ background: "#18181b" }}>{c.name}</option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">City</label>
+              <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">City</label>
               <div className="relative">
                 <select
                   value={editCity}
@@ -503,7 +503,7 @@ function ProfileCard({
                     <option key={c} value={c} style={{ background: "#18181b" }}>{c}</option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
@@ -512,7 +512,7 @@ function ProfileCard({
           <div className="flex justify-end gap-2">
             <button
               onClick={handleCancelEdit}
-              className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-4 py-2 rounded-lg text-xs font-medium text-white hover:text-zinc-200 transition-colors"
             >
               Cancel
             </button>
@@ -531,7 +531,7 @@ function ProfileCard({
       {showVersions && (
         <div className="border-t border-white/[0.06] bg-white/[0.02] p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-white uppercase tracking-wider">
               Audit History
             </div>
             {versionsLoaded && versions.length >= 2 && (
@@ -544,7 +544,7 @@ function ProfileCard({
             )}
           </div>
           {!versionsLoaded ? (
-            <div className="flex items-center gap-2 text-xs text-zinc-500 py-3">
+            <div className="flex items-center gap-2 text-xs text-white py-3">
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -552,7 +552,7 @@ function ProfileCard({
               Loading versions...
             </div>
           ) : versions.length === 0 ? (
-            <div className="text-xs text-zinc-500 py-3">No audits yet for this profile.</div>
+            <div className="text-xs text-white py-3">No audits yet for this profile.</div>
           ) : (
             <div className="flex flex-col gap-1">
               {versions.map((v, i) => (
@@ -561,7 +561,7 @@ function ProfileCard({
                   onClick={() => handleVersionClick(v.id)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/4 transition-all text-left w-full"
                 >
-                  <span className="text-xs font-mono font-semibold text-zinc-400 w-8 shrink-0">
+                  <span className="text-xs font-mono font-semibold text-white w-8 shrink-0">
                     v{v.version}
                   </span>
                   {v.overall_score != null && v.overall_score > 0 ? (
@@ -574,16 +574,16 @@ function ProfileCard({
                   ) : (
                     <span className="w-8 shrink-0" />
                   )}
-                  <span className="text-xs text-zinc-500 flex-1">
+                  <span className="text-xs text-white flex-1">
                     {formatDate(v.created_at)}
                     {i === 0 && <span className="text-emerald-500/60 ml-1">(latest)</span>}
                   </span>
                   {v.execution_time && (
-                    <span className="text-[10px] text-zinc-600">
+                    <span className="text-[10px] text-white">
                       {Math.round(v.execution_time)}s
                     </span>
                   )}
-                  <svg className="w-3 h-3 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -616,7 +616,7 @@ function ComparePickerModal({
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <span className="text-[13px] font-display font-semibold text-white">Select Versions to Compare</span>
-        <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+        <button onClick={onClose} className="text-white hover:text-white transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -624,7 +624,7 @@ function ComparePickerModal({
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Older Version</label>
+          <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Older Version</label>
           <select
             value={v1}
             onChange={(e) => setV1(e.target.value)}
@@ -638,7 +638,7 @@ function ComparePickerModal({
           </select>
         </div>
         <div>
-          <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 block">Newer Version</label>
+          <label className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1.5 block">Newer Version</label>
           <select
             value={v2}
             onChange={(e) => setV2(e.target.value)}
@@ -653,7 +653,7 @@ function ComparePickerModal({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors">
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-white hover:text-zinc-200 transition-colors">
           Cancel
         </button>
         <button
@@ -766,7 +766,7 @@ export default function ProfileManagerPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-semibold text-xl text-white mb-1">Profile Manager</h1>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-white">
             Manage your business profiles, view audit history, and compare versions.
             {profiles.length > 0 && ` ${profiles.length} profile${profiles.length !== 1 ? "s" : ""}`}
           </p>
@@ -800,7 +800,7 @@ export default function ProfileManagerPage() {
       {/* Comparing loading */}
       {comparing && (
         <div className="flex items-center justify-center py-8">
-          <div className="flex items-center gap-3 text-zinc-500">
+          <div className="flex items-center gap-3 text-white">
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -813,7 +813,7 @@ export default function ProfileManagerPage() {
       {/* Loading */}
       {profilesLoading && profiles.length === 0 && (
         <div className="flex items-center justify-center py-20">
-          <div className="flex items-center gap-3 text-zinc-500">
+          <div className="flex items-center gap-3 text-white">
             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -827,13 +827,13 @@ export default function ProfileManagerPage() {
       {!profilesLoading && profiles.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-4">
-            <svg className="w-7 h-7 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
           <h3 className="font-display font-semibold text-white mb-1">No profiles yet</h3>
-          <p className="text-xs text-zinc-500 mb-5">Run your first audit to create a business profile.</p>
+          <p className="text-xs text-white mb-5">Run your first audit to create a business profile.</p>
           <Link
             href="/dashboard/audit"
             className="flex items-center gap-2 px-5 py-[9px] rounded-xl text-xs font-medium bg-gradient-to-br from-emerald-600 to-emerald-500 text-white hover:-translate-y-px hover:shadow-lg hover:shadow-emerald-500/25 transition-all"

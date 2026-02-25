@@ -178,13 +178,13 @@ export function CategorySelect({ value, onChange, disabled }: CategorySelectProp
             type="button"
             onClick={handleBackToList}
             disabled={disabled}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-medium text-zinc-500 hover:text-emerald-400 transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-medium text-white hover:text-emerald-400 transition-colors"
           >
             Back
           </button>
         ) : (
           <svg
-            className={`pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white transition-transform ${open ? "rotate-180" : ""}`}
             width="10" height="6" viewBox="0 0 10 6" fill="none"
           >
             <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -236,7 +236,7 @@ export function CategorySelect({ value, onChange, disabled }: CategorySelectProp
             style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}
           >
             {filtered.length === 0 ? (
-              <div className="px-3 py-2.5 text-zinc-500" style={{ fontSize: 12.5 }}>No matches</div>
+              <div className="px-3 py-2.5 text-white" style={{ fontSize: 12.5 }}>No matches</div>
             ) : (
               filtered.map((cat, i) => (
                 <div

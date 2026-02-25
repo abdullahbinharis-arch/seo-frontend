@@ -16,7 +16,7 @@ export default function OnPagePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">On-Page SEO</h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-white mt-1">
           {hasCrawlData
             ? "Full-site crawl results — per-page scores, issues, service keywords, and schema recommendations."
             : "Audit title, meta, H1, content structure, internal links — and get a competitor-benchmarked action plan."}

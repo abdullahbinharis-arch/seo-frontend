@@ -58,7 +58,7 @@ export function ProfileSwitcher() {
           </div>
         </div>
         <svg
-          className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`w-3.5 h-3.5 text-white transition-transform ${open ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <polyline points="6 9 12 15 18 9" />
@@ -71,7 +71,7 @@ export function ProfileSwitcher() {
           {/* Profile list */}
           <div className="max-h-[240px] overflow-y-auto py-1.5">
             {profiles.length === 0 ? (
-              <div className="px-4 py-3 text-xs text-zinc-500 text-center">No profiles yet</div>
+              <div className="px-4 py-3 text-xs text-white text-center">No profiles yet</div>
             ) : (
               profiles.map((profile) => {
                 const isActive = profile.id === activeProfileId;
@@ -85,15 +85,15 @@ export function ProfileSwitcher() {
                     }`}
                   >
                     <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                      isActive ? "bg-emerald-500/20 text-emerald-300" : "bg-white/6 text-zinc-400"
+                      isActive ? "bg-emerald-500/20 text-emerald-300" : "bg-white/6 text-white"
                     }`}>
                       {profile.business_name[0]?.toUpperCase() ?? "?"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-xs font-medium truncate ${isActive ? "text-emerald-300" : "text-zinc-300"}`}>
+                      <div className={`text-xs font-medium truncate ${isActive ? "text-emerald-300" : "text-white"}`}>
                         {profile.business_name}
                       </div>
-                      <div className="text-[10px] text-zinc-500 truncate">
+                      <div className="text-[10px] text-white truncate">
                         {profile.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </div>
                     </div>
@@ -119,7 +119,7 @@ export function ProfileSwitcher() {
             <Link
               href="/dashboard/profiles"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-1 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 transition-colors"
+              className="flex items-center gap-2 px-1 py-1.5 text-xs text-white hover:text-emerald-400 transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -134,7 +134,7 @@ export function ProfileSwitcher() {
       {/* Sign out */}
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}
-        className="w-full flex items-center gap-2.5 px-3 py-1.5 mt-1 rounded-[9px] text-xs text-zinc-500 hover:text-zinc-300 hover:bg-white/4 transition-all"
+        className="w-full flex items-center gap-2.5 px-3 py-1.5 mt-1 rounded-[9px] text-xs text-white hover:text-white hover:bg-white/4 transition-all"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

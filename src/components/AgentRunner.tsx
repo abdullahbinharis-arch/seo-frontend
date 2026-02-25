@@ -219,11 +219,11 @@ export function AgentRunner<T = unknown>({
         <div className="flex items-center justify-between gap-3 glass rounded-xl px-4 py-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-2 h-2 rounded-full shrink-0 ${isFromFullAudit ? "bg-emerald-400" : "bg-blue-400"}`} />
-            <span className="text-xs text-zinc-400 truncate">
+            <span className="text-xs text-white truncate">
               {isFromFullAudit ? "From full audit" : "Standalone result"}
-              {metaKeyword && <> · <span className="text-zinc-300">{metaKeyword}</span></>}
-              {metaUrl     && <> · <span className="text-zinc-500 font-mono">{metaUrl}</span></>}
-              {metaTime    && <> · <span className="text-zinc-600">{metaTime}</span></>}
+              {metaKeyword && <> · <span className="text-white">{metaKeyword}</span></>}
+              {metaUrl     && <> · <span className="text-white font-mono">{metaUrl}</span></>}
+              {metaTime    && <> · <span className="text-white">{metaTime}</span></>}
             </span>
           </div>
           <button
@@ -339,7 +339,7 @@ export function AgentRunner<T = unknown>({
                           : { type: "form", hasBack: false }
                     )
                   }
-                  className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                  className="text-sm text-white hover:text-zinc-200 transition-colors"
                 >
                   Cancel
                 </button>
@@ -379,7 +379,7 @@ function Field({
 }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-300">{label}</label>
+      <label htmlFor={htmlFor} className="text-sm font-medium text-white">{label}</label>
       {children}
     </div>
   );

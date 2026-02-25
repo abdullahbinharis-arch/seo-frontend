@@ -28,7 +28,7 @@ export default function GbpPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">GBP Audit &amp; Optimization</h1>
-        <p className="text-sm text-zinc-400 mt-1">Google Business Profile completeness audit, map pack status, review strategy, and competitor insights.</p>
+        <p className="text-sm text-white mt-1">Google Business Profile completeness audit, map pack status, review strategy, and competitor insights.</p>
       </div>
       <GmbToolView />
     </div>

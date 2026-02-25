@@ -218,23 +218,23 @@ export function BacklinksToolView() {
                   columns={BACKLINK_COLUMNS}
                   rows={currentBacklinks.map((bl) => ({
                     source: (
-                      <span className="text-zinc-300 text-[11px] truncate block max-w-[200px]">
+                      <span className="text-white text-[11px] truncate block max-w-[200px]">
                         {bl.source || "—"}
                       </span>
                     ),
-                    da: <span className="font-mono text-[11px] text-zinc-400">{bl.da || "—"}</span>,
+                    da: <span className="font-mono text-[11px] text-white">{bl.da || "—"}</span>,
                     type: (
                       <Tag variant={bl.type === "nofollow" ? "high" : "low"}>
                         {bl.type || "dofollow"}
                       </Tag>
                     ),
                     anchor: (
-                      <span className="text-zinc-500 text-[11px] truncate block max-w-[150px]">
+                      <span className="text-white text-[11px] truncate block max-w-[150px]">
                         {bl.anchor || "—"}
                       </span>
                     ),
                     first_seen: (
-                      <span className="text-zinc-500 text-[11px]">{bl.first_seen || "—"}</span>
+                      <span className="text-white text-[11px]">{bl.first_seen || "—"}</span>
                     ),
                     status: (
                       <Tag variant={bl.status === "active" ? "low" : bl.status === "likely-active" ? "med" : "info"}>
@@ -328,7 +328,7 @@ export function BacklinksToolView() {
 
       {/* ═══ BROKEN LINK OPPORTUNITIES (Placeholder) ═════ */}
       <Card title="Broken Link Opportunities" dotColor="#8b5cf6" meta="Coming Soon">
-        <p className="text-[12px] text-zinc-500 leading-relaxed">
+        <p className="text-[12px] text-white leading-relaxed">
           Find broken links on competitor pages that you could replace with your own content.
           This feature will automatically scan competitor backlink profiles to identify dead links,
           then suggest replacement content you can pitch to the linking site.
@@ -348,7 +348,7 @@ export function BacklinksToolView() {
             onChange={(e) => setCheckUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCheck()}
             placeholder="Enter website URL to check (e.g. https://example.com)"
-            className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+            className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
           />
           <BtnPrimary onClick={handleCheck} disabled={checking || !checkUrl.trim()}>
             {checking ? "Checking..." : "Check"}
@@ -385,8 +385,8 @@ function DaBar({ label, value, max }: { label: string; value: number; max: numbe
   return (
     <div>
       <div className="flex justify-between mb-1">
-        <span className="text-[11px] text-zinc-500">{label}</span>
-        <span className="text-[11px] font-mono text-zinc-300">{value}</span>
+        <span className="text-[11px] text-white">{label}</span>
+        <span className="text-[11px] font-mono text-white">{value}</span>
       </div>
       <div className="h-1 rounded-full bg-white/6 overflow-hidden">
         <div
@@ -403,7 +403,7 @@ function DaCompareBar({ label, value, max, color }: { label: string; value: numb
   return (
     <div>
       <div className="flex justify-between mb-1.5">
-        <span className="text-[12px] text-zinc-400 font-medium">{label}</span>
+        <span className="text-[12px] text-white font-medium">{label}</span>
         <span className="text-[14px] font-bold font-mono" style={{ color }}>
           {value}
         </span>
@@ -439,19 +439,19 @@ function OpportunityList({
   const [expanded, setExpanded] = useState<number | null>(null);
 
   if (rows.length === 0) {
-    return <p className="text-[11px] text-zinc-600 py-4 text-center">No opportunities match this filter</p>;
+    return <p className="text-[11px] text-white py-4 text-center">No opportunities match this filter</p>;
   }
 
   return (
     <div>
       {/* Header */}
       <div className="grid grid-cols-[1fr_50px_80px_60px_80px_90px] gap-2 px-4 py-2 border-b border-white/6">
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500">Target</span>
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">DA</span>
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Type</span>
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Effort</span>
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Outreach</span>
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 text-center">Action</span>
+        <span className="text-[10px] uppercase tracking-wider text-white">Target</span>
+        <span className="text-[10px] uppercase tracking-wider text-white text-center">DA</span>
+        <span className="text-[10px] uppercase tracking-wider text-white text-center">Type</span>
+        <span className="text-[10px] uppercase tracking-wider text-white text-center">Effort</span>
+        <span className="text-[10px] uppercase tracking-wider text-white text-center">Outreach</span>
+        <span className="text-[10px] uppercase tracking-wider text-white text-center">Action</span>
       </div>
 
       {rows.map((opp, i) => {
@@ -469,8 +469,8 @@ function OpportunityList({
               className="grid grid-cols-[1fr_50px_80px_60px_80px_90px] gap-2 px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.015] transition-colors cursor-pointer"
               onClick={() => setExpanded(isExpanded ? null : i)}
             >
-              <span className="text-[12px] text-zinc-300 truncate">{opp.name}</span>
-              <span className="text-[11px] font-mono text-zinc-400 text-center">
+              <span className="text-[12px] text-white truncate">{opp.name}</span>
+              <span className="text-[11px] font-mono text-white text-center">
                 {opp.expected_da ?? "—"}
               </span>
               <span className="text-center">
@@ -536,22 +536,22 @@ function OpportunityList({
               <div className="px-4 py-3 bg-surface-1 border-b border-white/6">
                 {opp.outreach_template ? (
                   <>
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Outreach Template</p>
-                    <p className="text-[12px] font-semibold text-zinc-300 mb-1">{opp.outreach_template.subject}</p>
-                    <p className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">{opp.outreach_template.body}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white mb-1">Outreach Template</p>
+                    <p className="text-[12px] font-semibold text-white mb-1">{opp.outreach_template.subject}</p>
+                    <p className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">{opp.outreach_template.body}</p>
                     <div className="mt-2 flex justify-end">
                       <CopyBtn text={`Subject: ${opp.outreach_template.subject}\n\n${opp.outreach_template.body}`} />
                     </div>
                   </>
                 ) : outreach ? (
                   <>
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Outreach Email</p>
-                    <p className="text-[12px] font-semibold text-zinc-300 mb-1">{outreach.email_subject}</p>
-                    <p className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">{outreach.email_body}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white mb-1">Outreach Email</p>
+                    <p className="text-[12px] font-semibold text-white mb-1">{outreach.email_subject}</p>
+                    <p className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">{outreach.email_body}</p>
                     {outreach.follow_up && (
                       <div className="mt-3 pt-3 border-t border-white/6">
-                        <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Follow-up (5 days later)</p>
-                        <p className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">{outreach.follow_up}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-white mb-1">Follow-up (5 days later)</p>
+                        <p className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">{outreach.follow_up}</p>
                       </div>
                     )}
                     <div className="mt-2 flex justify-end">
@@ -560,7 +560,7 @@ function OpportunityList({
                   </>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <p className="text-[11px] text-zinc-500">No outreach template yet.</p>
+                    <p className="text-[11px] text-white">No outreach template yet.</p>
                     <BtnPrimary
                       small
                       onClick={() => onGenerateOutreach(opp.url || opp.name, opp.type)}
@@ -601,7 +601,7 @@ function LinkCheckCard({
             <h4 className="text-[14px] font-semibold font-display text-white">
               {result.title || extractDomain(result.url)}
             </h4>
-            <p className="text-[10px] text-zinc-500 mt-0.5">{result.url}</p>
+            <p className="text-[10px] text-white mt-0.5">{result.url}</p>
           </div>
           <div className="flex items-center gap-2">
             <div
@@ -611,7 +611,7 @@ function LinkCheckCard({
                 borderColor: `${scoreColor(result.opportunity_score)}30`,
               }}
             >
-              <span className="text-[10px] text-zinc-400">Score</span>
+              <span className="text-[10px] text-white">Score</span>
               <span
                 className="text-[14px] font-bold font-mono"
                 style={{ color: scoreColor(result.opportunity_score) }}
@@ -626,7 +626,7 @@ function LinkCheckCard({
                 borderColor: `${daColor(result.estimated_da)}30`,
               }}
             >
-              <span className="text-[10px] text-zinc-400">DA</span>
+              <span className="text-[10px] text-white">DA</span>
               <span
                 className="text-[14px] font-bold font-mono"
                 style={{ color: daColor(result.estimated_da) }}
@@ -645,14 +645,14 @@ function LinkCheckCard({
         </div>
 
         {/* Strategy */}
-        <p className="text-[11px] text-zinc-400 leading-relaxed mb-2">
+        <p className="text-[11px] text-white leading-relaxed mb-2">
           <span className="text-emerald-400 font-medium">Strategy: </span>
           {result.link_strategy}
         </p>
 
         {/* Relevance */}
         {result.relevance && (
-          <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
+          <p className="text-[11px] text-white leading-relaxed mb-3">
             <span className="text-blue-400 font-medium">Relevance: </span>
             {result.relevance}
           </p>
@@ -676,17 +676,17 @@ function LinkCheckCard({
       {showOutreach && outreachResult && (
         <div className="border-t border-white/6 p-4">
           <div className="flex items-start justify-between mb-1">
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500">Outreach Email</p>
+            <p className="text-[10px] uppercase tracking-wider text-white">Outreach Email</p>
             <CopyBtn
               text={`Subject: ${outreachResult.email_subject}\n\n${outreachResult.email_body}\n\n---\nFollow-up:\n${outreachResult.follow_up}`}
             />
           </div>
-          <p className="text-[12px] font-semibold text-zinc-300 mb-1">{outreachResult.email_subject}</p>
-          <p className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">{outreachResult.email_body}</p>
+          <p className="text-[12px] font-semibold text-white mb-1">{outreachResult.email_subject}</p>
+          <p className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">{outreachResult.email_body}</p>
           {outreachResult.follow_up && (
             <div className="mt-3 pt-3 border-t border-white/6">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Follow-up (5 days later)</p>
-              <p className="text-[11px] text-zinc-400 whitespace-pre-wrap leading-relaxed">{outreachResult.follow_up}</p>
+              <p className="text-[10px] uppercase tracking-wider text-white mb-1">Follow-up (5 days later)</p>
+              <p className="text-[11px] text-white whitespace-pre-wrap leading-relaxed">{outreachResult.follow_up}</p>
             </div>
           )}
         </div>

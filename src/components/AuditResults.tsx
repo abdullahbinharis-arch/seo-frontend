@@ -98,11 +98,11 @@ export function AuditResults({ data }: { data: AuditResult }) {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-xs text-zinc-500 font-mono hidden sm:block">#{data.audit_id?.slice(0, 8)}</span>
+          <span className="text-xs text-white font-mono hidden sm:block">#{data.audit_id?.slice(0, 8)}</span>
           <button
             onClick={handleDownloadPdf}
             disabled={downloading}
-            className="btn-secondary flex items-center gap-2 text-xs font-medium text-zinc-300 px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-secondary flex items-center gap-2 text-xs font-medium text-white px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {downloading ? (
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="shrink-0 text-xs font-medium text-zinc-500 hover:text-white px-3 py-1.5 rounded-full border border-white/6 hover:border-emerald-500/20 transition-all"
+                className="shrink-0 text-xs font-medium text-white hover:text-white px-3 py-1.5 rounded-full border border-white/6 hover:border-emerald-500/20 transition-all"
               >
                 {s.label}
               </a>
@@ -154,7 +154,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
           <div className="sm:hidden relative">
             <button
               onClick={() => setNavOpen((v) => !v)}
-              className="w-full flex items-center justify-between text-xs font-medium text-zinc-400 px-3 py-1.5 rounded-full border border-white/6"
+              className="w-full flex items-center justify-between text-xs font-medium text-white px-3 py-1.5 rounded-full border border-white/6"
             >
               Jump to section
               <svg className={`w-3.5 h-3.5 transition-transform ${navOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -168,7 +168,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
                     key={s.id}
                     href={`#${s.id}`}
                     onClick={() => setNavOpen(false)}
-                    className="block text-xs text-zinc-400 hover:text-white hover:bg-white/5 px-4 py-2.5 transition-colors"
+                    className="block text-xs text-white hover:text-white hover:bg-white/5 px-4 py-2.5 transition-colors"
                   >
                     {s.label}
                   </a>
@@ -213,7 +213,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
           <Card title="Quick Wins" icon="⚡" badgeColor="blue">
             <ul className="space-y-2">
               {data.summary.quick_wins.map((win, i) => (
-                <li key={i} className="flex gap-3 text-zinc-300 text-sm">
+                <li key={i} className="flex gap-3 text-white text-sm">
                   <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">→</span>
                   <span>{win}</span>
                 </li>
@@ -291,7 +291,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
         <div className="glass rounded-2xl overflow-hidden">
           <button
             onClick={() => setShowJson((v) => !v)}
-            className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-white hover:text-zinc-200 hover:bg-white/5 transition-colors"
           >
             <span>View raw JSON</span>
             <svg
@@ -305,7 +305,7 @@ export function AuditResults({ data }: { data: AuditResult }) {
             </svg>
           </button>
           {showJson && (
-            <pre className="bg-[#09090b] text-zinc-300 p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed border-t border-white/5">
+            <pre className="bg-[#09090b] text-white p-6 text-xs overflow-auto max-h-[32rem] leading-relaxed border-t border-white/5">
               {JSON.stringify(data, null, 2)}
             </pre>
           )}
@@ -340,7 +340,7 @@ export function SiteCrawlSection({
         {stats.map((s) => (
           <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
             <div className={`text-xl sm:text-2xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="text-xs text-zinc-500 mt-0.5">{s.label}</div>
+            <div className="text-xs text-white mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
@@ -354,7 +354,7 @@ export function SiteCrawlSection({
             { label: "Missing H1s", count: aggregate.missing_h1 },
           ].map(({ label, count }) => (
             <div key={label} className="flex items-center gap-3">
-              <span className="text-xs text-zinc-400 w-44 shrink-0">{label}</span>
+              <span className="text-xs text-white w-44 shrink-0">{label}</span>
               <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full ${count > 0 ? "bg-red-500" : "bg-emerald-500"}`}
@@ -395,10 +395,10 @@ export function SiteCrawlSection({
                     >
                       {page.url}
                     </a>
-                    <span className="text-xs text-zinc-500 shrink-0">{page.word_count} words</span>
+                    <span className="text-xs text-white shrink-0">{page.word_count} words</span>
                   </div>
                   {page.title && (
-                    <p className="text-xs text-zinc-300 mt-1 truncate">{page.title}</p>
+                    <p className="text-xs text-white mt-1 truncate">{page.title}</p>
                   )}
                   {page.issues.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
@@ -433,7 +433,7 @@ export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["ag
     if (h === "good") return "text-blue-400";
     if (h === "improving") return "text-yellow-400";
     if (h === "needs_work") return "text-orange-400";
-    return "text-zinc-500";
+    return "text-white";
   }
 
   function rankLabel(rank: number | null, type: "organic" | "map") {
@@ -461,13 +461,13 @@ export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["ag
           label="To Page 1"
           value={r.positions_to_page_1 === 0 ? "✓ On P1" : `${r.positions_to_page_1} positions`}
           sub={r.in_top_10 ? "already top 10" : "to close"}
-          color={r.in_top_10 ? "text-emerald-400" : "text-zinc-400"}
+          color={r.in_top_10 ? "text-emerald-400" : "text-white"}
         />
         <RankTile
           label="SERP Features"
           value={data.serp_features.length.toString()}
           sub={data.serp_features.join(", ") || "none detected"}
-          color="text-zinc-400"
+          color="text-white"
         />
       </div>
 
@@ -478,10 +478,10 @@ export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["ag
           <div className="space-y-2">
             {data.local_pack.map((e: LocalPackEntry) => (
               <div key={e.rank} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
-                <span className="text-lg font-black text-zinc-500 w-5 shrink-0">#{e.rank}</span>
+                <span className="text-lg font-black text-white w-5 shrink-0">#{e.rank}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{e.title}</p>
-                  <p className="text-xs text-zinc-500 truncate">{e.address}</p>
+                  <p className="text-xs text-white truncate">{e.address}</p>
                 </div>
                 {e.rating && (
                   <span className="text-xs text-amber-400 shrink-0">
@@ -501,9 +501,9 @@ export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["ag
           <div className="space-y-1.5">
             {data.top_10_organic.slice(0, 5).map((r) => (
               <div key={r.rank} className="flex items-center gap-3 text-sm">
-                <span className="text-xs text-zinc-600 font-mono w-5 shrink-0">#{r.rank}</span>
-                <span className="text-zinc-300 truncate flex-1">{r.title}</span>
-                <span className="text-xs text-zinc-600 truncate max-w-[180px] hidden sm:block">{r.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
+                <span className="text-xs text-white font-mono w-5 shrink-0">#{r.rank}</span>
+                <span className="text-white truncate flex-1">{r.title}</span>
+                <span className="text-xs text-white truncate max-w-[180px] hidden sm:block">{r.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
               </div>
             ))}
           </div>
@@ -516,9 +516,9 @@ export function RankTrackerSection({ data }: { data: NonNullable<AuditResult["ag
 function RankTile({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   return (
     <div className="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-xs text-white mb-1">{label}</p>
       <p className={`text-base sm:text-xl font-black ${color} break-words`}>{value}</p>
-      <p className="text-xs text-zinc-600 mt-0.5 capitalize truncate">{sub}</p>
+      <p className="text-xs text-white mt-0.5 capitalize truncate">{sub}</p>
     </div>
   );
 }
@@ -537,7 +537,7 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
     pass:    "text-emerald-400",
     warn:    "text-yellow-400",
     fail:    "text-red-400",
-    unknown: "text-zinc-500",
+    unknown: "text-white",
   };
   const checkIcons: Record<string, string> = {
     pass: "✓", warn: "⚠", fail: "✕", unknown: "?",
@@ -553,14 +553,14 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
       {/* Score bar */}
       <div className="mb-6">
         <div className="flex items-end justify-between mb-2">
-          <p className="text-sm text-zinc-400">GBP Optimisation Score</p>
-          <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-zinc-600">/100</span></span>
+          <p className="text-sm text-white">GBP Optimisation Score</p>
+          <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-white">/100</span></span>
         </div>
         <div className="bg-white/10 rounded-full h-2 overflow-hidden">
           <div className={`h-2 rounded-full ${barColor} transition-all duration-500`} style={{ width: `${score}%` }} />
         </div>
         {a.summary && (
-          <p className="text-xs text-zinc-500 mt-2">After fixes: <span className="text-zinc-300">{a.summary.score_after_fixes}/100</span> · Timeline: <span className="text-zinc-300">{a.summary.estimated_pack_entry_timeline}</span></p>
+          <p className="text-xs text-white mt-2">After fixes: <span className="text-white">{a.summary.score_after_fixes}/100</span> · Timeline: <span className="text-white">{a.summary.estimated_pack_entry_timeline}</span></p>
         )}
       </div>
 
@@ -573,12 +573,12 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
               const item = val as GbpCheckItem;
               return (
                 <div key={key} className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2.5 border border-white/5">
-                  <span className={`text-sm font-bold shrink-0 mt-0.5 ${checkColors[item.status] ?? "text-zinc-500"}`}>
+                  <span className={`text-sm font-bold shrink-0 mt-0.5 ${checkColors[item.status] ?? "text-white"}`}>
                     {checkIcons[item.status] ?? "?"}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-zinc-300 capitalize">{key.replace(/_/g, " ")}</p>
-                    <p className="text-xs text-zinc-500 break-words">{item.note}</p>
+                    <p className="text-xs font-medium text-white capitalize">{key.replace(/_/g, " ")}</p>
+                    <p className="text-xs text-white break-words">{item.note}</p>
                   </div>
                 </div>
               );
@@ -599,7 +599,7 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
                   <EffortBadge effort={action.effort} />
                   <p className="text-sm font-semibold text-white flex-1">{action.action}</p>
                 </div>
-                <p className="text-xs text-zinc-500 mb-1">{action.reason}</p>
+                <p className="text-xs text-white mb-1">{action.reason}</p>
                 {action.how_to && (
                   <p className="text-xs text-[#6ee7b7]/70 border-l-2 border-[#6ee7b7]/30 pl-3">{action.how_to}</p>
                 )}
@@ -618,7 +618,7 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
             {a.review_strategy.acquisition_tactics?.length > 0 && (
               <ul className="space-y-1">
                 {a.review_strategy.acquisition_tactics.map((t: string, i: number) => (
-                  <li key={i} className="text-xs text-zinc-400 flex gap-2"><span className="text-[#6ee7b7]">→</span>{t}</li>
+                  <li key={i} className="text-xs text-white flex gap-2"><span className="text-[#6ee7b7]">→</span>{t}</li>
                 ))}
               </ul>
             )}
@@ -636,7 +636,7 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
                 <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-2">They do better</p>
                 <ul className="space-y-1">
                   {a.competitor_insights.what_competitors_do_better.map((s: string, i: number) => (
-                    <li key={i} className="text-xs text-zinc-400">· {s}</li>
+                    <li key={i} className="text-xs text-white">· {s}</li>
                   ))}
                 </ul>
               </div>
@@ -646,7 +646,7 @@ export function GbpAuditSection({ data }: { data: NonNullable<AuditResult["agent
                 <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wide mb-2">Gaps to exploit</p>
                 <ul className="space-y-1">
                   {a.competitor_insights.gaps_to_exploit.map((s: string, i: number) => (
-                    <li key={i} className="text-xs text-zinc-400">· {s}</li>
+                    <li key={i} className="text-xs text-white">· {s}</li>
                   ))}
                 </ul>
               </div>
@@ -683,7 +683,7 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <CitStat label="Tier 1" value={summary.tier_1_count} color="text-red-400" />
           <CitStat label="Tier 2" value={summary.tier_2_count} color="text-orange-400" />
-          <CitStat label="Tier 3" value={summary.tier_3_count} color="text-zinc-400" />
+          <CitStat label="Tier 3" value={summary.tier_3_count} color="text-white" />
           <CitStat label="DA Impact" value={summary.estimated_da_impact ?? "—"} color="text-emerald-400" isText />
         </div>
       )}
@@ -691,7 +691,7 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
       <CitationTierList title="Tier 1 — Critical (submit first)" items={tier1} accentClass="border-red-500/30 bg-red-500/5" labelClass="text-red-400" />
       <CitationTierList title="Tier 2 — Important" items={tier2} accentClass="border-orange-500/30 bg-orange-500/5" labelClass="text-orange-400" />
       {tier3.length > 0 && (
-        <CitationTierList title="Tier 3 — Supplemental" items={tier3} accentClass="border-white/10 bg-white/5" labelClass="text-zinc-400" />
+        <CitationTierList title="Tier 3 — Supplemental" items={tier3} accentClass="border-white/10 bg-white/5" labelClass="text-white" />
       )}
 
       {/* NAP consistency rules */}
@@ -700,7 +700,7 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
           <SectionHeading>NAP Consistency Rules</SectionHeading>
           <ul className="space-y-1.5">
             {plan.consistency_rules.map((rule: string, i: number) => (
-              <li key={i} className="text-xs text-zinc-400 flex gap-2">
+              <li key={i} className="text-xs text-white flex gap-2">
                 <span className="text-[#6ee7b7] shrink-0">→</span>{rule}
               </li>
             ))}
@@ -713,7 +713,7 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
         <div>
           <button
             onClick={() => setShowNap(v => !v)}
-            className="flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 mb-2"
+            className="flex items-center gap-2 text-xs font-medium text-white hover:text-zinc-200 mb-2"
           >
             <svg className={`w-3.5 h-3.5 transition-transform ${showNap ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -721,14 +721,14 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
             {showNap ? "Hide" : "Show"} NAP template (copy for all submissions)
           </button>
           {showNap && (
-            <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-xs text-zinc-300 font-mono leading-relaxed space-y-1">
-              <p><span className="text-zinc-500">Name: </span>{plan.nap_template.business_name}</p>
-              <p><span className="text-zinc-500">Address: </span>{plan.nap_template.address}</p>
-              <p><span className="text-zinc-500">Phone: </span>{plan.nap_template.phone}</p>
-              <p><span className="text-zinc-500">Website: </span>{plan.nap_template.website}</p>
-              <p><span className="text-zinc-500">Categories: </span>{plan.nap_template.categories?.join(", ")}</p>
+            <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-xs text-white font-mono leading-relaxed space-y-1">
+              <p><span className="text-white">Name: </span>{plan.nap_template.business_name}</p>
+              <p><span className="text-white">Address: </span>{plan.nap_template.address}</p>
+              <p><span className="text-white">Phone: </span>{plan.nap_template.phone}</p>
+              <p><span className="text-white">Website: </span>{plan.nap_template.website}</p>
+              <p><span className="text-white">Categories: </span>{plan.nap_template.categories?.join(", ")}</p>
               {plan.nap_template.description && (
-                <div className="mt-2 pt-2 border-t border-white/10 font-sans text-zinc-400 leading-relaxed">
+                <div className="mt-2 pt-2 border-t border-white/10 font-sans text-white leading-relaxed">
                   {plan.nap_template.description}
                 </div>
               )}
@@ -743,7 +743,7 @@ export function CitationBuilderSection({ data }: { data: NonNullable<AuditResult
 function CitStat({ label, value, color, isText }: { label: string; value: number | string; color: string; isText?: boolean }) {
   return (
     <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-xs text-white mb-1">{label}</p>
       <p className={`${isText ? "text-xs leading-tight" : "text-xl font-black"} ${color}`}>{value}</p>
     </div>
   );
@@ -765,13 +765,13 @@ function CitationTierList({ title, items, accentClass, labelClass }: {
             <div className="flex items-center justify-between gap-2 mb-0.5">
               <p className="text-sm font-semibold text-white">{c.name}</p>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-zinc-500 font-mono">DA:{c.da}</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.free ? "bg-emerald-500/15 text-emerald-400" : "bg-zinc-500/15 text-zinc-400"}`}>
+                <span className="text-xs text-white font-mono">DA:{c.da}</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.free ? "bg-emerald-500/15 text-emerald-400" : "bg-zinc-500/15 text-white"}`}>
                   {c.free ? "FREE" : "PAID"}
                 </span>
               </div>
             </div>
-            {c.reason && <p className="text-xs text-zinc-500 mb-1">{c.reason}</p>}
+            {c.reason && <p className="text-xs text-white mb-1">{c.reason}</p>}
             {c.submit_url && (
               <a href={c.submit_url} target="_blank" rel="noopener noreferrer" className={`text-xs font-medium ${labelClass} hover:underline`}>
                 Submit listing →
@@ -809,7 +809,7 @@ export function BacklinkSection({ data }: { data: any }) {
         <RankTile label="Domain Authority" value={String(da)} sub={isVerified ? "verified" : "estimated"} color={da >= 50 ? "text-emerald-400" : da >= 30 ? "text-yellow-400" : "text-red-400"} />
         <RankTile label="Page Authority" value={String(pa)} sub={isVerified ? "verified" : "estimated"} color={pa >= 40 ? "text-emerald-400" : pa >= 20 ? "text-yellow-400" : "text-red-400"} />
         {client.linking_domains != null && (
-          <RankTile label="Linking Domains" value={client.linking_domains.toLocaleString()} sub="unique root domains" color="text-zinc-300" />
+          <RankTile label="Linking Domains" value={client.linking_domains.toLocaleString()} sub="unique root domains" color="text-white" />
         )}
         {client.spam_score != null && (
           <RankTile label="Spam Score" value={`${client.spam_score}%`} sub={client.spam_score < 5 ? "healthy" : "review needed"} color={client.spam_score < 5 ? "text-emerald-400" : "text-red-400"} />
@@ -827,8 +827,8 @@ export function BacklinkSection({ data }: { data: any }) {
               return (
                 <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-300 truncate">{comp.url.replace(/^https?:\/\/(www\.)?/, "")}</p>
-                    <p className="text-xs text-zinc-500">DA:{cDa} · PA:{comp.page_authority}</p>
+                    <p className="text-sm text-white truncate">{comp.url.replace(/^https?:\/\/(www\.)?/, "")}</p>
+                    <p className="text-xs text-white">DA:{cDa} · PA:{comp.page_authority}</p>
                   </div>
                   <span className={`text-xs font-semibold shrink-0 ${gap > 0 ? "text-red-400" : "text-emerald-400"}`}>
                     {gap > 0 ? `+${gap} ahead` : gap < 0 ? `${gap} behind` : "tied"}
@@ -860,7 +860,7 @@ export function BacklinkSection({ data }: { data: any }) {
           <SectionHeading>Quick Wins</SectionHeading>
           <ul className="space-y-1.5">
             {a.quick_wins.map((win: string, i: number) => (
-              <li key={i} className="flex gap-2 text-sm text-zinc-300">
+              <li key={i} className="flex gap-2 text-sm text-white">
                 <span className="text-[#6ee7b7] shrink-0 mt-0.5">→</span>{win}
               </li>
             ))}
@@ -891,14 +891,14 @@ export function LinkBuildingSection({ data }: { data: NonNullable<AuditResult["a
       {/* Summary */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <RankTile label="Total" value={String(summary.total_opportunities)} sub="opportunities" color="text-zinc-300" />
+          <RankTile label="Total" value={String(summary.total_opportunities)} sub="opportunities" color="text-white" />
           <RankTile label="DA Gain (3mo)" value={summary.estimated_da_gain_3mo} sub="estimated" color="text-emerald-400" />
           <RankTile label="Monthly Target" value={`${summary.monthly_link_target} links`} sub="per month" color="text-blue-400" />
           <div className="bg-white/5 rounded-xl p-3 border border-white/5">
-            <p className="text-xs text-zinc-500 mb-1">Priority Order</p>
+            <p className="text-xs text-white mb-1">Priority Order</p>
             <ol className="space-y-0.5">
               {summary.priority_order?.slice(0, 3).map((cat: string, i: number) => (
-                <li key={i} className="text-xs text-zinc-400 capitalize">{i + 1}. {cat.replace(/_/g, " ")}</li>
+                <li key={i} className="text-xs text-white capitalize">{i + 1}. {cat.replace(/_/g, " ")}</li>
               ))}
             </ol>
           </div>
@@ -921,10 +921,10 @@ export function LinkBuildingSection({ data }: { data: NonNullable<AuditResult["a
                     <div className="px-4 py-3">
                       <div className="flex items-start gap-2 mb-1">
                         <p className="text-sm font-semibold text-white flex-1">{item.name}</p>
-                        <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0">DA {item.expected_da}</span>
+                        <span className="text-xs bg-white/10 text-white px-2 py-0.5 rounded-full shrink-0">DA {item.expected_da}</span>
                         <EffortBadge effort={item.difficulty} />
                       </div>
-                      <p className="text-xs text-zinc-500 mb-2">
+                      <p className="text-xs text-white mb-2">
                         {item.reason ?? item.topic_idea ?? item.angle ?? ""}
                       </p>
                       {item.url && (
@@ -943,10 +943,10 @@ export function LinkBuildingSection({ data }: { data: NonNullable<AuditResult["a
                     </div>
                     {isOpen && item.outreach_template && (
                       <div className="border-t border-white/5 px-4 pb-4 pt-3 bg-[#09090b]/60">
-                        <p className="text-xs font-medium text-zinc-500 mb-1">Subject:</p>
-                        <p className="text-xs text-zinc-300 font-mono mb-3 bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.subject}</p>
-                        <p className="text-xs font-medium text-zinc-500 mb-1">Body:</p>
-                        <pre className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.body}</pre>
+                        <p className="text-xs font-medium text-white mb-1">Subject:</p>
+                        <p className="text-xs text-white font-mono mb-3 bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.subject}</p>
+                        <p className="text-xs font-medium text-white mb-1">Body:</p>
+                        <pre className="text-xs text-white leading-relaxed whitespace-pre-wrap bg-white/5 px-3 py-2 rounded-lg">{item.outreach_template.body}</pre>
                       </div>
                     )}
                   </div>
@@ -991,17 +991,17 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
       <div className="flex items-start gap-4 mb-5">
         <div className="flex-1">
           <div className="flex items-end justify-between mb-2">
-            <p className="text-sm text-zinc-400">AI Visibility Score</p>
-            <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-zinc-600">/100</span></span>
+            <p className="text-sm text-white">AI Visibility Score</p>
+            <span className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg font-normal text-white">/100</span></span>
           </div>
           <div className="bg-white/10 rounded-full h-2 overflow-hidden">
             <div className={`h-2 rounded-full ${barColor} transition-all duration-500`} style={{ width: `${score}%` }} />
           </div>
           {a.summary && (
-            <p className="text-xs text-zinc-500 mt-1">After fixes: {a.summary.estimated_score_after_fixes}/100 · {a.summary.time_to_implement}</p>
+            <p className="text-xs text-white mt-1">After fixes: {a.summary.estimated_score_after_fixes}/100 · {a.summary.time_to_implement}</p>
           )}
         </div>
-        <span className={`text-xs font-semibold px-3 py-1.5 rounded-full capitalize shrink-0 ${likelihoodColors[a.ai_mention_likelihood] ?? "bg-white/10 text-zinc-400"}`}>
+        <span className={`text-xs font-semibold px-3 py-1.5 rounded-full capitalize shrink-0 ${likelihoodColors[a.ai_mention_likelihood] ?? "bg-white/10 text-white"}`}>
           {a.ai_mention_likelihood} likelihood
         </span>
       </div>
@@ -1016,11 +1016,11 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
               const pct = Math.round(((val as number) / max) * 100);
               return (
                 <div key={dim} className="flex items-center gap-3">
-                  <p className="text-xs text-zinc-500 w-36 capitalize shrink-0">{dim.replace(/_/g, " ")}</p>
+                  <p className="text-xs text-white w-36 capitalize shrink-0">{dim.replace(/_/g, " ")}</p>
                   <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
                     <div className="h-1.5 rounded-full bg-[#6ee7b7]" style={{ width: `${pct}%` }} />
                   </div>
-                  <p className="text-xs text-zinc-400 w-12 text-right tabular-nums">{val as number}/{max}</p>
+                  <p className="text-xs text-white w-12 text-right tabular-nums">{val as number}/{max}</p>
                 </div>
               );
             })}
@@ -1032,7 +1032,7 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
       {a.ai_answer_preview && (
         <div className="mb-6">
           <SectionHeading>AI Answer Preview</SectionHeading>
-          <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm text-zinc-300 leading-relaxed italic">
+          <div className="bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm text-white leading-relaxed italic">
             &ldquo;{a.ai_answer_preview}&rdquo;
           </div>
         </div>
@@ -1093,7 +1093,7 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
                   <EffortBadge effort={action.effort} />
                   <p className="text-sm font-semibold text-white flex-1">{action.action}</p>
                 </div>
-                <p className="text-xs text-zinc-500 mb-1">{action.why}</p>
+                <p className="text-xs text-white mb-1">{action.why}</p>
                 <p className="text-xs text-[#6ee7b7]/70 border-l-2 border-[#6ee7b7]/30 pl-3">{action.how}</p>
               </div>
             ))}
@@ -1116,14 +1116,14 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
                     <PriorityBadge priority={tmpl.priority} />
                     <p className="text-sm font-semibold text-white">{tmpl.type}</p>
                   </div>
-                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${expandedSchema === i ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className={`w-4 h-4 text-white transition-transform ${expandedSchema === i ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {expandedSchema === i && (
                   <div className="border-t border-white/5 p-4 bg-[#09090b]/60">
-                    <p className="text-xs text-zinc-400 mb-3">{tmpl.description}</p>
-                    <pre className="text-xs text-zinc-300 bg-white/5 p-3 rounded-lg overflow-auto max-h-64 leading-relaxed whitespace-pre-wrap">{
+                    <p className="text-xs text-white mb-3">{tmpl.description}</p>
+                    <pre className="text-xs text-white bg-white/5 p-3 rounded-lg overflow-auto max-h-64 leading-relaxed whitespace-pre-wrap">{
                       (() => { try { return JSON.stringify(JSON.parse(tmpl.json_ld), null, 2); } catch { return tmpl.json_ld; } })()
                     }</pre>
                   </div>
@@ -1146,13 +1146,13 @@ export function AiSeoSection({ data }: { data: NonNullable<AuditResult["agents"]
                     <p className="text-sm font-semibold text-white">{faq.question}</p>
                     <span className="text-xs bg-blue-500/15 text-blue-400 px-2 py-0.5 rounded-full shrink-0 capitalize">{faq.ai_intent?.replace(/-/g, " ")}</span>
                   </div>
-                  <p className="text-sm text-zinc-400 leading-relaxed">{faq.answer}</p>
+                  <p className="text-sm text-white leading-relaxed">{faq.answer}</p>
                 </div>
               )
             )}
           </div>
           {a.faq_content.length > 4 && (
-            <button onClick={() => setShowAllFaq(v => !v)} className="mt-3 text-xs text-zinc-500 hover:text-zinc-300 underline">
+            <button onClick={() => setShowAllFaq(v => !v)} className="mt-3 text-xs text-white hover:text-white underline">
               {showAllFaq ? "Show less" : `Show ${a.faq_content.length - 4} more Q&As`}
             </button>
           )}
@@ -1180,7 +1180,7 @@ export function ContentRewriterSection({ data }: { data: any }) {
           <SectionHeading>Content Benchmark</SectionHeading>
           <div className="grid grid-cols-3 gap-3">
             <RankTile label="Current" value={String(analysis.benchmark.current_word_count ?? 0)} sub="words" color="text-red-400" />
-            <RankTile label="Competitor Avg" value={String(analysis.benchmark.avg_competitor_word_count ?? 0)} sub="words" color="text-zinc-400" />
+            <RankTile label="Competitor Avg" value={String(analysis.benchmark.avg_competitor_word_count ?? 0)} sub="words" color="text-white" />
             <RankTile label="Target" value={String(analysis.benchmark.target_word_count ?? 0)} sub="words" color="text-emerald-400" />
           </div>
         </div>
@@ -1192,14 +1192,14 @@ export function ContentRewriterSection({ data }: { data: any }) {
           <SectionHeading>SEO Template</SectionHeading>
           <div className="bg-white/5 rounded-xl p-4 border border-white/5 space-y-2 text-sm">
             {analysis.seo_template.primary_keyword && (
-              <p><span className="text-zinc-500">Primary: </span><span className="text-white">{analysis.seo_template.primary_keyword}</span></p>
+              <p><span className="text-white">Primary: </span><span className="text-white">{analysis.seo_template.primary_keyword}</span></p>
             )}
             {analysis.seo_template.keyword_density_target && (
-              <p><span className="text-zinc-500">Density target: </span><span className="text-white">{analysis.seo_template.keyword_density_target}</span></p>
+              <p><span className="text-white">Density target: </span><span className="text-white">{analysis.seo_template.keyword_density_target}</span></p>
             )}
             {analysis.seo_template.lsi_keywords?.length > 0 && (
               <div>
-                <p className="text-zinc-500 mb-1.5">LSI keywords:</p>
+                <p className="text-white mb-1.5">LSI keywords:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {analysis.seo_template.lsi_keywords.map((k: string, i: number) => (
                     <span key={i} className="text-xs bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded-full">{k}</span>
@@ -1217,7 +1217,7 @@ export function ContentRewriterSection({ data }: { data: any }) {
           <SectionHeading>Quick Wins</SectionHeading>
           <ul className="space-y-1.5">
             {analysis.quick_wins.map((w: string, i: number) => (
-              <li key={i} className="text-sm text-zinc-300 flex gap-2"><span className="text-[#6ee7b7] shrink-0">→</span>{w}</li>
+              <li key={i} className="text-sm text-white flex gap-2"><span className="text-[#6ee7b7] shrink-0">→</span>{w}</li>
             ))}
           </ul>
         </div>
@@ -1236,7 +1236,7 @@ export function ContentRewriterSection({ data }: { data: any }) {
             {showContent ? "Hide" : "Show"} rewritten content ({wc?.toLocaleString()} words)
           </button>
           {showContent && (
-            <div className="bg-[#09090b] border border-white/10 rounded-xl p-5 text-sm text-zinc-300 leading-relaxed max-h-[32rem] overflow-y-auto whitespace-pre-wrap font-sans">
+            <div className="bg-[#09090b] border border-white/10 rounded-xl p-5 text-sm text-white leading-relaxed max-h-[32rem] overflow-y-auto whitespace-pre-wrap font-sans">
               {content}
             </div>
           )}
@@ -1263,7 +1263,7 @@ export function KeywordSection({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-xs text-zinc-500 uppercase tracking-wide">
+                <tr className="border-b border-white/10 text-left text-xs text-white uppercase tracking-wide">
                   <th className="pb-2 font-medium">Keyword</th>
                   <th className="pb-2 font-medium">Intent</th>
                   <th className="pb-2 font-medium text-right">Searches/mo</th>
@@ -1275,7 +1275,7 @@ export function KeywordSection({
                   <tr key={i} className="hover:bg-white/5 transition-colors">
                     <td className="py-2.5 font-medium text-white">{k.keyword}</td>
                     <td className="py-2.5"><IntentBadge intent={k.intent} /></td>
-                    <td className="py-2.5 text-right text-zinc-400 tabular-nums">
+                    <td className="py-2.5 text-right text-white tabular-nums">
                       {k.estimated_monthly_searches?.toLocaleString() ?? "—"}
                     </td>
                     <td className="py-2.5 text-right"><DifficultyBadge difficulty={k.difficulty} /></td>
@@ -1305,7 +1305,7 @@ export function KeywordSection({
             {data.keyword_clusters.map((c: { theme: string; keywords: string[] }, i: number) => (
               <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <p className="font-semibold text-white text-sm mb-2">{c.theme}</p>
-                <p className="text-xs text-zinc-500 leading-relaxed">{c.keywords?.join(" · ")}</p>
+                <p className="text-xs text-white leading-relaxed">{c.keywords?.join(" · ")}</p>
               </div>
             ))}
           </div>
@@ -1378,11 +1378,11 @@ export function OnPageSection({
           {recs.h1 && <MetaField label="H1" value={recs.h1} />}
           {recs.target_word_count && (
             <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
-              <span className="text-sm font-medium text-zinc-400">Target word count</span>
+              <span className="text-sm font-medium text-white">Target word count</span>
               <span className="text-lg font-bold text-white">
                 {recs.target_word_count.toLocaleString()} words
                 {current?.word_count > 0 && (
-                  <span className="text-sm font-normal text-zinc-500 ml-2">(currently {current.word_count.toLocaleString()})</span>
+                  <span className="text-sm font-normal text-white ml-2">(currently {current.word_count.toLocaleString()})</span>
                 )}
               </span>
             </div>
@@ -1395,7 +1395,7 @@ export function OnPageSection({
           <SectionHeading>Priority Actions</SectionHeading>
           <ol className="space-y-2">
             {data.priority_actions.map((action: string, i: number) => (
-              <li key={i} className="flex gap-3 items-start text-sm text-zinc-300">
+              <li key={i} className="flex gap-3 items-start text-sm text-white">
                 <span className="shrink-0 w-6 h-6 rounded-full bg-orange-500/15 text-orange-400 text-xs font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
@@ -1413,7 +1413,7 @@ export function OnPageSection({
             {recs.heading_structure.map((h: string, i: number) => {
               const level  = h.startsWith("H2") ? "pl-0" : h.startsWith("H3") ? "pl-5" : "pl-10";
               const weight = h.startsWith("H2") ? "font-semibold" : "font-normal";
-              return <p key={i} className={`text-sm text-zinc-400 ${level} ${weight}`}>{h}</p>;
+              return <p key={i} className={`text-sm text-white ${level} ${weight}`}>{h}</p>;
             })}
           </div>
         </div>
@@ -1427,10 +1427,10 @@ export function OnPageSection({
               <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <p className="text-sm font-medium text-white">
                   <span className="text-[#6ee7b7]">&ldquo;{link.anchor_text}&rdquo;</span>
-                  <span className="text-zinc-500 mx-2">→</span>
-                  <code className="text-zinc-400 text-xs bg-white/10 px-1.5 py-0.5 rounded">{link.target_path}</code>
+                  <span className="text-white mx-2">→</span>
+                  <code className="text-white text-xs bg-white/10 px-1.5 py-0.5 rounded">{link.target_path}</code>
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">{link.reason}</p>
+                <p className="text-xs text-white mt-1">{link.reason}</p>
               </div>
             ))}
           </div>
@@ -1450,7 +1450,7 @@ export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <SectionHeading>Quick Wins</SectionHeading>
           <ul className="space-y-2">
             {data.quick_wins.map((win: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+              <li key={i} className="flex items-start gap-2 text-sm text-white">
                 <span className="text-[#6ee7b7] font-bold shrink-0 mt-0.5">✓</span>
                 {win}
               </li>
@@ -1465,27 +1465,27 @@ export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <div className="grid md:grid-cols-2 gap-4">
             {data.gbp_optimization.priority_attributes?.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Priority Attributes</p>
+                <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Priority Attributes</p>
                 <ul className="space-y-1">
                   {data.gbp_optimization.priority_attributes.map((attr: string, i: number) => (
-                    <li key={i} className="text-sm text-zinc-300">· {attr}</li>
+                    <li key={i} className="text-sm text-white">· {attr}</li>
                   ))}
                 </ul>
               </div>
             )}
             {data.gbp_optimization.categories?.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Recommended Categories</p>
+                <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Recommended Categories</p>
                 <ul className="space-y-1">
                   {data.gbp_optimization.categories.map((cat: string, i: number) => (
-                    <li key={i} className="text-sm text-zinc-300">· {cat}</li>
+                    <li key={i} className="text-sm text-white">· {cat}</li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
           {data.gbp_optimization.photo_strategy && (
-            <div className="mt-3 bg-white/5 rounded-xl p-4 border border-white/5 text-sm text-zinc-300">
+            <div className="mt-3 bg-white/5 rounded-xl p-4 border border-white/5 text-sm text-white">
               <span className="font-medium text-white">Photo strategy: </span>
               {data.gbp_optimization.photo_strategy}
             </div>
@@ -1507,7 +1507,7 @@ export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
               <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                 <div>
                   <p className="text-sm font-medium text-white">{c.site}</p>
-                  <p className="text-xs text-zinc-500 capitalize">{c.category}</p>
+                  <p className="text-xs text-white capitalize">{c.category}</p>
                 </div>
                 <PriorityBadge priority={c.priority} />
               </div>
@@ -1524,9 +1524,9 @@ export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
               <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="text-sm font-semibold text-white">{opp.name}</p>
-                  <span className="text-xs bg-white/10 text-zinc-400 px-2 py-0.5 rounded-full shrink-0 capitalize">{opp.link_type}</span>
+                  <span className="text-xs bg-white/10 text-white px-2 py-0.5 rounded-full shrink-0 capitalize">{opp.link_type}</span>
                 </div>
-                <p className="text-xs text-zinc-500 mb-2">{opp.reason}</p>
+                <p className="text-xs text-white mb-2">{opp.reason}</p>
                 {opp.outreach_template && (
                   <p className="text-xs text-[#6ee7b7]/80 italic border-l-2 border-[#6ee7b7]/30 pl-3">{opp.outreach_template}</p>
                 )}
@@ -1542,20 +1542,20 @@ export function LocalSection({ data }: { data: ReturnType<typeof getLocal> }) {
           <div className="grid md:grid-cols-2 gap-4">
             {data.local_content_strategy.blog_topics?.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Blog Topics</p>
+                <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Blog Topics</p>
                 <ul className="space-y-1.5">
                   {data.local_content_strategy.blog_topics.map((t: string, i: number) => (
-                    <li key={i} className="text-sm text-zinc-300">· {t}</li>
+                    <li key={i} className="text-sm text-white">· {t}</li>
                   ))}
                 </ul>
               </div>
             )}
             {data.local_content_strategy.service_area_pages?.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Service Area Pages</p>
+                <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Service Area Pages</p>
                 <ul className="space-y-1.5">
                   {data.local_content_strategy.service_area_pages.map((p: string, i: number) => (
-                    <li key={i} className="text-sm text-zinc-300">· {p}</li>
+                    <li key={i} className="text-sm text-white">· {p}</li>
                   ))}
                 </ul>
               </div>
@@ -1590,7 +1590,7 @@ export function Card({
   children: React.ReactNode;
 }) {
   const badgeColors: Record<string, string> = {
-    slate: "bg-white/10 text-zinc-400",
+    slate: "bg-white/10 text-white",
     green: "bg-emerald-500/15 text-emerald-400",
     amber: "bg-amber-500/15 text-amber-400",
     red:   "bg-red-500/15 text-red-400",
@@ -1617,7 +1617,7 @@ export function Card({
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
+    <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-3">
       {children}
     </h4>
   );
@@ -1628,15 +1628,15 @@ function MetaField({ label, value, charLimit }: { label: string; value: string; 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-medium text-zinc-500">{label}</p>
+        <p className="text-xs font-medium text-white">{label}</p>
         {charLimit && (
-          <p className={`text-xs tabular-nums ${over ? "text-red-400" : "text-zinc-500"}`}>
+          <p className={`text-xs tabular-nums ${over ? "text-red-400" : "text-white"}`}>
             {value.length}/{charLimit}
           </p>
         )}
       </div>
       <div className={`bg-white/5 border-l-4 ${over ? "border-red-500" : "border-[#6ee7b7]/50"} rounded-r-xl px-4 py-3`}>
-        <p className="text-sm text-zinc-300 font-mono leading-relaxed">{value}</p>
+        <p className="text-sm text-white font-mono leading-relaxed">{value}</p>
       </div>
     </div>
   );
@@ -1646,11 +1646,11 @@ function IntentBadge({ intent }: { intent: string }) {
   const colors: Record<string, string> = {
     transactional: "bg-emerald-500/15 text-emerald-400",
     commercial:    "bg-blue-500/15 text-blue-400",
-    informational: "bg-white/10 text-zinc-400",
+    informational: "bg-white/10 text-white",
     navigational:  "bg-purple-500/15 text-purple-400",
   };
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${colors[intent] ?? "bg-white/10 text-zinc-400"}`}>
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${colors[intent] ?? "bg-white/10 text-white"}`}>
       {intent}
     </span>
   );
@@ -1663,7 +1663,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
     high:   "text-red-400",
   };
   return (
-    <span className={`text-xs font-semibold capitalize ${colors[difficulty] ?? "text-zinc-500"}`}>
+    <span className={`text-xs font-semibold capitalize ${colors[difficulty] ?? "text-white"}`}>
       {difficulty}
     </span>
   );
@@ -1674,7 +1674,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     critical: "bg-red-500/15 text-red-400",
     high:     "bg-orange-500/15 text-orange-400",
     medium:   "bg-yellow-500/15 text-yellow-400",
-    low:      "bg-white/10 text-zinc-500",
+    low:      "bg-white/10 text-white",
   };
   return (
     <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize shrink-0 ${styles[priority] ?? styles.low}`}>
@@ -1687,7 +1687,7 @@ export function ImpactBadge({ impact }: { impact: string }) {
   const styles: Record<string, string> = {
     high:   "bg-red-500/15 text-red-400",
     medium: "bg-yellow-500/15 text-yellow-400",
-    low:    "bg-white/10 text-zinc-500",
+    low:    "bg-white/10 text-white",
   };
   return (
     <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize shrink-0 ${styles[impact] ?? styles.low}`}>
@@ -1748,14 +1748,14 @@ export function LocalSeoScoreCard({
         <div>
           <h2 className="text-lg font-bold text-white font-display">Local SEO Score</h2>
           {(businessName || businessType) && (
-            <p className="text-sm text-zinc-400 mt-0.5">
+            <p className="text-sm text-white mt-0.5">
               {[businessName, businessType && `(${businessType})`].filter(Boolean).join(" ")}
             </p>
           )}
         </div>
         <div className="text-right shrink-0">
           <span className={`text-6xl font-black leading-none ${colorScore}`}>{clamped}</span>
-          <span className="text-zinc-500 text-lg font-semibold">/100</span>
+          <span className="text-white text-lg font-semibold">/100</span>
         </div>
       </div>
 
@@ -1763,13 +1763,13 @@ export function LocalSeoScoreCard({
         <div className={`h-3 rounded-full ${colorBar} transition-all duration-500`} style={{ width: `${clamped}%` }} />
       </div>
 
-      <div className="flex justify-between text-xs text-zinc-500 mb-4">
+      <div className="flex justify-between text-xs text-white mb-4">
         <span>0 — Poor</span>
         <span className={`font-semibold ${colorScore}`}>{label}</span>
         <span>100 — Excellent</span>
       </div>
 
-      <p className="text-sm text-zinc-400">{hint}</p>
+      <p className="text-sm text-white">{hint}</p>
     </div>
   );
 }

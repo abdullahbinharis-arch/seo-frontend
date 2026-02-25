@@ -203,7 +203,7 @@ export function CheckItem({ done, label, tag, muted }: CheckItemProps) {
         {done ? "✓" : ""}
       </span>
       <span
-        className={`text-[12px] flex-1 ${muted ? "text-white" : "text-zinc-300"}`}
+        className={`text-[12px] flex-1 ${muted ? "text-white" : "text-white"}`}
       >
         {label}
       </span>
@@ -335,7 +335,7 @@ export function ExpandableContent({
   if (!visible) return null;
   return (
     <div className="mt-3 p-3 bg-surface-1 border border-white/6 rounded-lg">
-      <div className="text-[12px] text-zinc-300 whitespace-pre-wrap leading-relaxed">
+      <div className="text-[12px] text-white whitespace-pre-wrap leading-relaxed">
         {content}
       </div>
       <div className="mt-2 flex justify-end">

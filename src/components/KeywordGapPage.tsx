@@ -75,7 +75,7 @@ function CompetitorCard({ result }: { result: CompetitorGapResult }) {
               {extractDomain(result.competitor_url)}
             </h4>
             {result.competitor_title && (
-              <p className="text-[11px] text-zinc-500 mt-0.5 truncate max-w-md">
+              <p className="text-[11px] text-white mt-0.5 truncate max-w-md">
                 {result.competitor_title}
               </p>
             )}
@@ -87,7 +87,7 @@ function CompetitorCard({ result }: { result: CompetitorGapResult }) {
               borderColor: `${daColor(result.estimated_da)}30`,
             }}
           >
-            <span className="text-[10px] uppercase tracking-wide text-zinc-400">DA</span>
+            <span className="text-[10px] uppercase tracking-wide text-white">DA</span>
             <span
               className="text-[14px] font-bold font-mono"
               style={{ color: daColor(result.estimated_da) }}
@@ -99,19 +99,19 @@ function CompetitorCard({ result }: { result: CompetitorGapResult }) {
 
         {/* Badges */}
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-[11px] text-zinc-400">
+          <span className="text-[11px] text-white">
             Keywords: <span className="text-zinc-200 font-mono">{result.keywords_found}</span>
           </span>
-          <span className="text-[11px] text-zinc-400">
+          <span className="text-[11px] text-white">
             Gaps: <span className="text-amber-400 font-mono">{result.gaps?.length ?? 0}</span>
           </span>
-          <span className="text-[11px] text-zinc-400">
+          <span className="text-[11px] text-white">
             Overlap: <span className="text-emerald-400 font-mono">{result.overlap_keywords?.length ?? 0}</span>
           </span>
         </div>
 
         {/* Summary */}
-        <p className="text-[11px] text-zinc-500 leading-relaxed">{result.summary}</p>
+        <p className="text-[11px] text-white leading-relaxed">{result.summary}</p>
 
         {/* Overlap keywords */}
         {(result.overlap_keywords?.length ?? 0) > 0 && (
@@ -148,7 +148,7 @@ function CompetitorCard({ result }: { result: CompetitorGapResult }) {
             rows={result.gaps.map((g: CompetitorGapKeyword) => ({
               keyword: <span className="text-zinc-200 font-medium">{g.keyword}</span>,
               volume: (
-                <span className="font-mono text-[11px] text-zinc-400">
+                <span className="font-mono text-[11px] text-white">
                   {g.volume_estimate?.toLocaleString() ?? "—"}
                 </span>
               ),
@@ -280,9 +280,9 @@ export function KeywordGapView() {
         meta="Compare any competitor"
       >
         {lastAudit?.target_url && (
-          <p className="text-[11px] text-zinc-500 mb-3">
+          <p className="text-[11px] text-white mb-3">
             Comparing against:{" "}
-            <span className="text-zinc-300">{extractDomain(lastAudit.target_url)}</span>
+            <span className="text-white">{extractDomain(lastAudit.target_url)}</span>
           </p>
         )}
         <div className="flex flex-col sm:flex-row gap-2">
@@ -292,7 +292,7 @@ export function KeywordGapView() {
             onChange={(e) => setCompetitorUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAnalyse()}
             placeholder="Enter competitor URL to compare (e.g. https://competitor.com)"
-            className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+            className="flex-1 bg-surface-1 border border-white/8 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
           />
           <BtnPrimary
             onClick={handleAnalyse}
@@ -375,7 +375,7 @@ export function KeywordGapView() {
               rows={filteredGaps.map((g) => ({
                 keyword: <span className="text-zinc-200 font-medium">{g.keyword}</span>,
                 volume: (
-                  <span className="font-mono text-[11px] text-zinc-400">
+                  <span className="font-mono text-[11px] text-white">
                     {g.volume?.toLocaleString() ?? "—"}
                   </span>
                 ),
@@ -403,7 +403,7 @@ export function KeywordGapView() {
           <Card title="Content Gaps" dotColor="#8b5cf6">
             <ul className="space-y-2">
               {contentGaps.map((gap: string, i: number) => (
-                <li key={i} className="flex gap-3 text-[12px] text-zinc-300">
+                <li key={i} className="flex gap-3 text-[12px] text-white">
                   <span className="text-emerald-400 font-bold shrink-0 mt-0.5">
                     {i + 1}.
                   </span>

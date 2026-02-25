@@ -421,7 +421,7 @@ function AuditMetaBar({ audit }: { audit: AuditResult }) {
   return (
     <div className="flex items-center justify-between pb-5 flex-wrap gap-3">
       <div>
-        <h1 className="font-display font-semibold text-xl mb-1">
+        <h1 className="font-display font-semibold text-xl mb-1 text-white">
           {audit.business_name || displayUrl}
         </h1>
         <p className="text-xs text-white">

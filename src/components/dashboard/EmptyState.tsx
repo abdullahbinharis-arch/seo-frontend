@@ -36,7 +36,7 @@ export function EmptyState({
 
       {/* Description — 13px, #52525b, <strong> → #a1a1aa */}
       <p
-        className="text-[13px] text-zinc-600 leading-[1.7] mb-6 max-w-[400px] [&_strong]:text-zinc-400"
+        className="text-[13px] text-white leading-[1.7] mb-6 max-w-[400px] [&_strong]:text-white"
         dangerouslySetInnerHTML={{ __html: description }}
       />
 
@@ -47,7 +47,7 @@ export function EmptyState({
             key={label}
             className="bg-white/[0.02] border border-white/6 rounded-lg px-3 py-2.5 text-left"
           >
-            <div className="text-[9px] uppercase tracking-[0.05em] text-zinc-600 mb-0.5">
+            <div className="text-[9px] uppercase tracking-[0.05em] text-white mb-0.5">
               {label}
             </div>
             {/* Placeholder bar — matches .preview-item-val.placeholder */}

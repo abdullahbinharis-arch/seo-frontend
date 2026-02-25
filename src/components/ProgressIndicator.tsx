@@ -41,7 +41,7 @@ export function ProgressIndicator({
           </svg>
         </span>
         <span className="text-sm font-medium">{stage || "Starting audit…"}</span>
-        <span className="ml-auto text-xs text-zinc-500 tabular-nums">{progress}%</span>
+        <span className="ml-auto text-xs text-white tabular-nums">{progress}%</span>
       </div>
 
       {/* Steps */}
@@ -60,7 +60,7 @@ export function ProgressIndicator({
               className={`flex-1 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
                 active
                   ? "bg-emerald-500/10 text-[#6ee7b7] font-medium border border-emerald-500/20"
-                  : "bg-white/5 text-zinc-500 border border-white/5"
+                  : "bg-white/5 text-white border border-white/5"
               }`}
             >
               <span

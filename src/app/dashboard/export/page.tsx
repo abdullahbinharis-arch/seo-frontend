@@ -47,14 +47,14 @@ function ExportContent() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Export PDF</h1>
-        <p className="text-sm text-zinc-400 mt-1">Download your audit report as a branded PDF.</p>
+        <p className="text-sm text-white mt-1">Download your audit report as a branded PDF.</p>
       </div>
 
       <div className="glass rounded-2xl p-10 text-center space-y-5">
         {status === "loading" && (
           <>
             <div className="w-12 h-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin mx-auto" />
-            <p className="text-zinc-400">Generating your PDF report…</p>
+            <p className="text-white">Generating your PDF report…</p>
           </>
         )}
         {status === "done" && (
@@ -64,7 +64,7 @@ function ExportContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-zinc-300">PDF downloaded successfully.</p>
+            <p className="text-white">PDF downloaded successfully.</p>
             <Link href="/dashboard/history" className="text-emerald-400 hover:text-emerald-300 text-sm">
               ← Back to history
             </Link>
@@ -75,7 +75,7 @@ function ExportContent() {
         )}
         {status === "idle" && !auditId && (
           <>
-            <p className="text-zinc-400">Select an audit from your history to export.</p>
+            <p className="text-white">Select an audit from your history to export.</p>
             <Link href="/dashboard/history" className="btn-primary inline-flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
               View History
             </Link>
@@ -88,7 +88,7 @@ function ExportContent() {
 
 export default function ExportPage() {
   return (
-    <Suspense fallback={<div className="text-zinc-400 text-sm p-8">Loading…</div>}>
+    <Suspense fallback={<div className="text-white text-sm p-8">Loading…</div>}>
       <ExportContent />
     </Suspense>
   );

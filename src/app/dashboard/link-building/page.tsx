@@ -13,7 +13,7 @@ export default function LinkBuildingPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Link Building Strategy</h1>
-        <p className="text-sm text-zinc-400 mt-1">Quick wins, guest posts, resource pages, local directories, competitor gaps — with outreach email templates.</p>
+        <p className="text-sm text-white mt-1">Quick wins, guest posts, resource pages, local directories, competitor gaps — with outreach email templates.</p>
       </div>
       <AgentRunner<LinkBuildingAgent>
         endpoint="/agents/link-building"

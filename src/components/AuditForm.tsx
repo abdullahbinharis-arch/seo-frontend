@@ -237,7 +237,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
             <div className="flex-1" />
             {session?.user && (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-zinc-400 hidden sm:block">{session.user.email}</span>
+                <span className="text-sm text-white hidden sm:block">{session.user.email}</span>
               </div>
             )}
           </div>
@@ -254,7 +254,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span className="text-sm text-zinc-300">
+              <span className="text-sm text-white">
                 Audit complete for <span className="text-white font-medium">{businessName || url}</span>
               </span>
             </div>
@@ -265,7 +265,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                 setError("");
                 setProgress(0);
               }}
-              className="btn-secondary text-sm text-zinc-300 rounded-lg px-4 py-2"
+              className="btn-secondary text-sm text-white rounded-lg px-4 py-2"
             >
               Run another audit
             </button>
@@ -275,7 +275,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
             <h2 className="text-xl font-bold text-white font-display mb-1">
               Audit your local search presence
             </h2>
-            <p className="text-sm text-zinc-400 mb-6">
+            <p className="text-sm text-white mb-6">
               Takes 60{"\u2013"}90 seconds. We analyze your competitors and build a personalized strategy.
             </p>
 
@@ -289,7 +289,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                   className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     selectedProfileId === null
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                      : "bg-white/5 border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-300"
+                      : "bg-white/5 border-white/10 text-white hover:border-white/20 hover:text-white"
                   } disabled:opacity-50`}
                 >
                   + New Profile
@@ -303,7 +303,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                     className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
                       selectedProfileId === p.id
                         ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                        : "bg-white/5 border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-300"
+                        : "bg-white/5 border-white/10 text-white hover:border-white/20 hover:text-white"
                     } disabled:opacity-50`}
                   >
                     {p.business_name}
@@ -383,7 +383,7 @@ export function AuditForm({ onComplete, embedded = false, profileId }: { onCompl
                     {loading ? "Running audit\u2026" : "\u26a1 Run Free Audit"}
                   </button>
                   {!loading && (
-                    <p className="text-sm text-zinc-500 text-center mt-2">Takes 60{"\u2013"}90 seconds</p>
+                    <p className="text-sm text-white text-center mt-2">Takes 60{"\u2013"}90 seconds</p>
                   )}
                 </div>
               </div>

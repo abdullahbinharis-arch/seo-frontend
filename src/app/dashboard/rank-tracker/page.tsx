@@ -13,7 +13,7 @@ export default function RankTrackerPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">Local Rank Tracker</h1>
-        <p className="text-sm text-zinc-400 mt-1">Current organic rank, map pack position, positions to page 1, and top 10 SERP snapshot.</p>
+        <p className="text-sm text-white mt-1">Current organic rank, map pack position, positions to page 1, and top 10 SERP snapshot.</p>
       </div>
       <AgentRunner<RankTrackerAgent>
         endpoint="/agents/rank-tracker"

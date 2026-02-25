@@ -69,7 +69,7 @@ function ResultCard({
             className={`text-[10px] font-medium px-2 py-0.5 rounded-md transition-all ${
               saved
                 ? "bg-emerald-500/15 text-emerald-400 cursor-default"
-                : "bg-white/[0.04] text-zinc-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+                : "bg-white/[0.04] text-white hover:bg-emerald-500/10 hover:text-emerald-400"
             }`}
           >
             {saved ? "Saved" : "Save"}
@@ -79,10 +79,10 @@ function ResultCard({
 
       {/* Badges row */}
       <div className="flex items-center gap-3 mb-3">
-        <span className="text-[11px] text-zinc-400">
+        <span className="text-[11px] text-white">
           Vol: <span className="text-zinc-200 font-mono">{result.volume_estimate?.toLocaleString()}</span>
         </span>
-        <span className="text-[11px] text-zinc-400">
+        <span className="text-[11px] text-white">
           Diff:{" "}
           <span className="font-mono" style={{ color: diffColor(result.difficulty_estimate) }}>
             {result.difficulty_estimate}/100
@@ -92,29 +92,29 @@ function ResultCard({
       </div>
 
       {/* SERP analysis */}
-      <p className="text-[11px] text-zinc-500 leading-relaxed mb-2">
-        <span className="text-zinc-400 font-medium">SERP:</span> {result.serp_analysis}
+      <p className="text-[11px] text-white leading-relaxed mb-2">
+        <span className="text-white font-medium">SERP:</span> {result.serp_analysis}
       </p>
 
       {/* Recommendation */}
-      <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
+      <p className="text-[11px] text-white leading-relaxed mb-3">
         <span className="text-emerald-400 font-medium">Strategy:</span> {result.recommendation}
       </p>
 
       {/* Competitor snippets */}
       {result.competitor_snippets && result.competitor_snippets.length > 0 && (
         <div className="mb-3">
-          <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+          <div className="text-[10px] font-semibold text-white uppercase tracking-wider mb-1.5">
             Top Competitors
           </div>
           <div className="flex flex-col gap-1.5">
             {result.competitor_snippets.map((cs, i) => (
               <div key={i} className="bg-surface-1 border border-white/[0.04] rounded-lg px-3 py-2">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-mono text-zinc-600 shrink-0">#{i + 1}</span>
-                  <span className="text-[11px] font-medium text-zinc-300 truncate">{cs.title}</span>
+                  <span className="text-[10px] font-mono text-white shrink-0">#{i + 1}</span>
+                  <span className="text-[11px] font-medium text-white truncate">{cs.title}</span>
                 </div>
-                <p className="text-[10px] text-zinc-500 leading-relaxed">{cs.snippet}</p>
+                <p className="text-[10px] text-white leading-relaxed">{cs.snippet}</p>
               </div>
             ))}
           </div>
@@ -127,7 +127,7 @@ function ResultCard({
           {result.related_keywords.map((rk) => (
             <span
               key={rk}
-              className="text-[9px] bg-white/[0.04] border border-white/6 text-zinc-400 px-2 py-0.5 rounded-md"
+              className="text-[9px] bg-white/[0.04] border border-white/6 text-white px-2 py-0.5 rounded-md"
             >
               {rk}
             </span>
@@ -211,7 +211,7 @@ export function KeywordsToolView() {
               <span className="w-2 h-2 rounded-full shrink-0 bg-indigo-400" />
               <span className="text-[13px] font-semibold font-display text-white">Keyword Research</span>
             </div>
-            <span className="text-[10px] text-zinc-500">Powered by AI analysis</span>
+            <span className="text-[10px] text-white">Powered by AI analysis</span>
           </div>
         </div>
         <div className="p-4">
@@ -222,7 +222,7 @@ export function KeywordsToolView() {
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Research any keyword..."
-              className="flex-1 bg-surface-1 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+              className="flex-1 bg-surface-1 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
             />
             <input
               type="text"
@@ -230,7 +230,7 @@ export function KeywordsToolView() {
               onChange={(e) => setSearchLocation(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Location (e.g. Toronto, Canada)"
-              className="sm:w-56 bg-surface-1 border border-white/8 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+              className="sm:w-56 bg-surface-1 border border-white/8 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
             />
             <BtnPrimary onClick={handleSearch} disabled={searching || !searchKeyword.trim()}>
               {searching ? "Analysing..." : "Search"}
@@ -245,7 +245,7 @@ export function KeywordsToolView() {
           {searchResults.length > 0 && (
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-[11px] text-white">
                   {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
                 </span>
                 {searchResults.length > 1 && (
@@ -311,7 +311,7 @@ export function KeywordsToolView() {
                             </span>
                           ),
                           volume: (
-                            <span className="font-mono text-[11px] text-zinc-400">
+                            <span className="font-mono text-[11px] text-white">
                               {kw.volume?.toLocaleString() ?? "—"}
                             </span>
                           ),
@@ -333,7 +333,7 @@ export function KeywordsToolView() {
                         }))}
                       />
                     ) : (
-                      <p className="text-[11px] text-zinc-600 py-3 text-center">
+                      <p className="text-[11px] text-white py-3 text-center">
                         No keywords matched this service
                       </p>
                     )}
@@ -358,7 +358,7 @@ export function KeywordsToolView() {
                     </span>
                   ),
                   volume: (
-                    <span className="font-mono text-[11px] text-zinc-400">
+                    <span className="font-mono text-[11px] text-white">
                       {kw.volume?.toLocaleString() ?? "—"}
                     </span>
                   ),
@@ -396,10 +396,10 @@ export function KeywordsToolView() {
                   columns={GAP_COLUMNS}
                   rows={gaps.map((g) => ({
                     keyword: (
-                      <span className="text-zinc-300">{g.keyword}</span>
+                      <span className="text-white">{g.keyword}</span>
                     ),
                     volume: (
-                      <span className="font-mono text-[11px] text-zinc-400">
+                      <span className="font-mono text-[11px] text-white">
                         {g.volume?.toLocaleString() ?? "—"}
                       </span>
                     ),

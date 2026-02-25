@@ -56,7 +56,7 @@ export default function LoginPage() {
 
         <div className="glass rounded-2xl p-5 sm:p-8">
           <h1 className="text-2xl font-bold text-white font-display mb-2">Sign in</h1>
-          <p className="text-zinc-400 text-sm mb-6">
+          <p className="text-white text-sm mb-6">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-[#6ee7b7] hover:text-[#a7f3d0] font-medium transition-colors">
               Create one
@@ -68,7 +68,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogle}
             disabled={isDisabled}
-            className="btn-secondary w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-zinc-300 mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-secondary w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -88,14 +88,14 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-zinc-500 font-medium">or</span>
+            <span className="text-xs text-white font-medium">or</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
           {/* Email/password form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-zinc-300">
+              <label htmlFor="email" className="text-sm font-medium text-white">
                 Email
               </label>
               <input
@@ -113,12 +113,12 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-zinc-300">
+                <label htmlFor="password" className="text-sm font-medium text-white">
                   Password
                 </label>
                 <a
                   href="mailto:support@localrankr.io?subject=Password%20Reset%20Request"
-                  className="text-xs text-zinc-500 hover:text-[#6ee7b7] transition-colors py-2 -my-2 px-1"
+                  className="text-xs text-white hover:text-[#6ee7b7] transition-colors py-2 -my-2 px-1"
                 >
                   Forgot password?
                 </a>

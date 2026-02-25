@@ -12,8 +12,8 @@ function ScoreTile({ label, value, sub, color }: {
   return (
     <div className="bg-white/5 rounded-xl p-4 text-center">
       <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <div className="text-xs text-zinc-400 mt-0.5 font-medium">{label}</div>
-      {sub && <div className="text-[10px] text-zinc-600 mt-0.5">{sub}</div>}
+      <div className="text-xs text-white mt-0.5 font-medium">{label}</div>
+      {sub && <div className="text-[10px] text-white mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -26,9 +26,9 @@ function Check({ label, value }: { label: string; value: unknown }) {
       <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${pass ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/15 text-red-400"}`}>
         {pass ? "✓" : "✗"}
       </span>
-      <span className="text-zinc-400">{label}</span>
+      <span className="text-white">{label}</span>
       {strShow && (
-        <span className="text-zinc-500 text-xs truncate max-w-48">{strShow}</span>
+        <span className="text-white text-xs truncate max-w-48">{strShow}</span>
       )}
     </div>
   );
@@ -53,7 +53,7 @@ export function TechnicalSeoSection({ data }: { data: any }) {
       ? score >= 80 ? "text-emerald-400"
       : score >= 50 ? "text-amber-400"
       : "text-red-400"
-      : "text-zinc-400";
+      : "text-white";
 
   return (
     <Card title="Technical SEO" icon="⚙️" badgeColor="blue">
@@ -90,10 +90,10 @@ export function TechnicalSeoSection({ data }: { data: any }) {
       {/* Priority actions */}
       {(recs.priority_actions ?? recs.issues ?? []).length > 0 && (
         <div className="mb-5">
-          <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Priority Actions</h3>
+          <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Priority Actions</h3>
           <ul className="space-y-2">
             {(recs.priority_actions ?? recs.issues ?? []).map((action: string, i: number) => (
-              <li key={i} className="flex gap-3 text-sm text-zinc-300">
+              <li key={i} className="flex gap-3 text-sm text-white">
                 <span className="text-emerald-400 font-bold shrink-0 mt-0.5">→</span>
                 <span>{action}</span>
               </li>
@@ -105,7 +105,7 @@ export function TechnicalSeoSection({ data }: { data: any }) {
       {/* Core signals checklist */}
       {sig.success && (
         <div className="mb-4">
-          <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Technical Checklist</h3>
+          <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Technical Checklist</h3>
           <div className="grid sm:grid-cols-2 gap-2">
             <Check label="HTTPS" value={sig.https} />
             <Check label="Viewport meta" value={sig.viewport} />
@@ -122,11 +122,11 @@ export function TechnicalSeoSection({ data }: { data: any }) {
       {/* PageSpeed opportunities */}
       {(mob.opportunities ?? []).length > 0 && (
         <div className="mb-4">
-          <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Speed Opportunities</h3>
+          <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Speed Opportunities</h3>
           <ul className="space-y-1.5">
             {(mob.opportunities ?? []).slice(0, 6).map((opp: any, i: number) => (
               <li key={i} className="flex items-center justify-between gap-4 text-sm">
-                <span className="text-zinc-300">{opp.title}</span>
+                <span className="text-white">{opp.title}</span>
                 <span className="text-amber-400 text-xs shrink-0 font-mono">~{opp.savings_ms}ms</span>
               </li>
             ))}
@@ -138,7 +138,7 @@ export function TechnicalSeoSection({ data }: { data: any }) {
       {sig.success && (
         <button
           onClick={() => setShowSignals((v) => !v)}
-          className="text-xs text-zinc-500 hover:text-zinc-300 flex items-center gap-1 mt-1"
+          className="text-xs text-white hover:text-white flex items-center gap-1 mt-1"
         >
           {showSignals ? "Hide" : "Show"} raw signals
           <svg className={`w-3 h-3 transition-transform ${showSignals ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -147,7 +147,7 @@ export function TechnicalSeoSection({ data }: { data: any }) {
         </button>
       )}
       {showSignals && (
-        <pre className="mt-3 text-[11px] text-zinc-400 bg-black/30 rounded-xl p-4 overflow-auto max-h-72 leading-relaxed">
+        <pre className="mt-3 text-[11px] text-white bg-black/30 rounded-xl p-4 overflow-auto max-h-72 leading-relaxed">
           {JSON.stringify(sig, null, 2)}
         </pre>
       )}

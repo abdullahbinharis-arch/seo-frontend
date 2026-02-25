@@ -87,12 +87,12 @@ export default function TasksPage() {
     return (
       <div className="py-20 text-center">
         <div className="w-16 h-16 rounded-2xl bg-white/4 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M12 20V10M18 20V4M6 20v-4" />
           </svg>
         </div>
         <h2 className="font-display font-semibold text-lg text-white mb-2">No tasks yet</h2>
-        <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+        <p className="text-sm text-white max-w-sm mx-auto">
           Run an audit to generate your personalized SEO task list with prioritized action items.
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function TasksPage() {
     <div>
       {/* Progress bar */}
       <div className="mb-5">
-        <div className="flex justify-between text-[11px] text-zinc-500 mb-1.5">
+        <div className="flex justify-between text-[11px] text-white mb-1.5">
           <span>SEO Progress</span>
           <span>
             {completed} of {total} tasks completed
@@ -170,7 +170,7 @@ function TaskGroup({
         <div className="font-display font-semibold text-[13px]" style={{ color: titleColor }}>
           {title}
         </div>
-        <span className="text-[10px] text-zinc-500 bg-white/4 px-2 py-0.5 rounded-md">
+        <span className="text-[10px] text-white bg-white/4 px-2 py-0.5 rounded-md">
           {count} tasks
         </span>
       </div>
@@ -217,10 +217,10 @@ function TaskItem({
 
       {/* Body */}
       <div className="flex-1 min-w-0">
-        <div className={`text-[12.5px] font-medium leading-snug ${done ? "line-through text-zinc-500" : "text-white"}`}>
+        <div className={`text-[12.5px] font-medium leading-snug ${done ? "line-through text-white" : "text-white"}`}>
           {task.title}
         </div>
-        <div className="text-[11px] text-zinc-500 mt-0.5">
+        <div className="text-[11px] text-white mt-0.5">
           {pillarLabel(task.pillar)}
           {task.time_estimate ? ` · ${task.time_estimate}` : ""}
           {task.impact ? ` · ${task.impact}` : ""}

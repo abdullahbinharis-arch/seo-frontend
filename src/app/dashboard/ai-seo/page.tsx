@@ -13,7 +13,7 @@ export default function AiSeoPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white font-display">AI Visibility Scan</h1>
-        <p className="text-sm text-zinc-400 mt-1">Likelihood of being cited by ChatGPT, Perplexity, and AI search — plus schema templates and FAQ content.</p>
+        <p className="text-sm text-white mt-1">Likelihood of being cited by ChatGPT, Perplexity, and AI search — plus schema templates and FAQ content.</p>
       </div>
       <AgentRunner<AiSeoAgent>
         endpoint="/agents/ai-seo"

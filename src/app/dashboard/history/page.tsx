@@ -84,7 +84,7 @@ export default function HistoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white font-display">Audit History</h1>
-          <p className="text-sm text-zinc-400 mt-1">All past audits — click any row to view the full report.</p>
+          <p className="text-sm text-white mt-1">All past audits — click any row to view the full report.</p>
         </div>
         <Link href="/dashboard/audit" className="btn-primary text-white font-semibold px-4 py-2 rounded-xl text-sm">
           + New Audit
@@ -92,7 +92,7 @@ export default function HistoryPage() {
       </div>
 
       {loading && (
-        <div className="glass rounded-2xl p-8 text-center text-zinc-400 text-sm">Loading audit history…</div>
+        <div className="glass rounded-2xl p-8 text-center text-white text-sm">Loading audit history…</div>
       )}
 
       {error && (
@@ -101,7 +101,7 @@ export default function HistoryPage() {
 
       {!loading && !error && rows.length === 0 && (
         <div className="glass rounded-2xl p-10 text-center space-y-4">
-          <p className="text-zinc-400">No audits yet.</p>
+          <p className="text-white">No audits yet.</p>
           <Link href="/dashboard/audit" className="btn-primary inline-flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
             Run Your First Audit
           </Link>
@@ -112,7 +112,7 @@ export default function HistoryPage() {
         <div className="glass rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-left text-xs text-zinc-500 uppercase tracking-wider">
+              <tr className="border-b border-white/5 text-left text-xs text-white uppercase tracking-wider">
                 <th className="px-5 py-3 font-medium">Keyword</th>
                 <th className="px-5 py-3 font-medium hidden sm:table-cell">URL</th>
                 <th className="px-5 py-3 font-medium hidden md:table-cell">Location</th>
@@ -128,7 +128,7 @@ export default function HistoryPage() {
                   className={`border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors ${i % 2 === 0 ? "" : "bg-white/1"}`}
                 >
                   <td className="px-5 py-3 text-zinc-200 font-medium">{row.keyword}</td>
-                  <td className="px-5 py-3 text-zinc-400 hidden sm:table-cell">
+                  <td className="px-5 py-3 text-white hidden sm:table-cell">
                     <a
                       href={row.target_url}
                       target="_blank"
@@ -138,11 +138,11 @@ export default function HistoryPage() {
                       {row.target_url.replace(/^https?:\/\//, "")}
                     </a>
                   </td>
-                  <td className="px-5 py-3 text-zinc-400 hidden md:table-cell">{row.location}</td>
-                  <td className="px-5 py-3 text-zinc-500 hidden lg:table-cell font-mono text-xs">
+                  <td className="px-5 py-3 text-white hidden md:table-cell">{row.location}</td>
+                  <td className="px-5 py-3 text-white hidden lg:table-cell font-mono text-xs">
                     {row.execution_time != null ? `${row.execution_time.toFixed(1)}s` : "—"}
                   </td>
-                  <td className="px-5 py-3 text-zinc-500 text-xs font-mono">
+                  <td className="px-5 py-3 text-white text-xs font-mono">
                     {new Date(row.created_at).toLocaleDateString("en-CA", {
                       year: "numeric", month: "short", day: "numeric",
                     })}

@@ -66,7 +66,7 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="reveal reveal-delay-2 text-base sm:text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10">
+          <p className="reveal reveal-delay-2 text-base sm:text-lg md:text-xl text-white max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10">
             The AI engine that audits, optimizes, and monitors your local SEO — so your business shows up first when customers search nearby.
           </p>
 
@@ -75,7 +75,7 @@ export default function LandingPage() {
             <Link href="/dashboard/audit" className="btn-primary text-white font-semibold px-8 py-3.5 rounded-xl text-base w-full max-w-[280px] sm:w-auto sm:max-w-none text-center">
               Run Free Audit →
             </Link>
-            <a href="#how-it-works" className="btn-secondary rounded-xl px-8 py-3.5 text-base text-zinc-300 w-full max-w-[280px] sm:w-auto sm:max-w-none text-center">
+            <a href="#how-it-works" className="btn-secondary rounded-xl px-8 py-3.5 text-base text-white w-full max-w-[280px] sm:w-auto sm:max-w-none text-center">
               See How It Works
             </a>
           </div>
@@ -94,7 +94,7 @@ export default function LandingPage() {
               {/* Details */}
               <div className="flex-1 w-full">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-xs text-zinc-500">localrankr audit</span>
+                  <span className="font-mono text-xs text-white">localrankr audit</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider">Live</span>
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-3">Bright Smile Dental — Chicago, IL</h3>
@@ -106,7 +106,7 @@ export default function LandingPage() {
                     { label: "Reviews", score: "51", color: "text-rose-400" },
                   ].map(({ label, score, color }) => (
                     <div key={label} className="rounded-lg bg-white/[0.03] px-3 py-2.5">
-                      <div className="text-[11px] text-zinc-500 mb-0.5">{label}</div>
+                      <div className="text-[11px] text-white mb-0.5">{label}</div>
                       <div className={`font-semibold ${color}`}>{score}</div>
                     </div>
                   ))}
@@ -120,7 +120,7 @@ export default function LandingPage() {
       {/* ── SOCIAL PROOF TICKER ── */}
       <section className="relative border-y border-white/5 overflow-hidden py-8 bg-surface-1/50">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-xs text-zinc-600 uppercase tracking-widest mb-6 font-medium">
+          <p className="text-center text-xs text-white uppercase tracking-widest mb-6 font-medium">
             Trusted by 2,000+ local businesses
           </p>
           <div
@@ -131,7 +131,7 @@ export default function LandingPage() {
               {[...tickerItems, ...tickerItems].map((name, i) => (
                 <span key={i} className={i % 2 === 1 && i < tickerItems.length * 2 - 1 && (i + 1) % 2 === 0
                   ? "text-zinc-700"
-                  : "text-zinc-600 font-display font-semibold text-lg whitespace-nowrap"
+                  : "text-white font-display font-semibold text-lg whitespace-nowrap"
                 }>
                   {i % 2 === 0 ? name : "✦"}
                 </span>
@@ -149,7 +149,7 @@ export default function LandingPage() {
             <h2 className="reveal reveal-delay-1 font-display font-bold text-3xl md:text-5xl tracking-tight mb-4">
               Everything your local<br />business needs to rank
             </h2>
-            <p className="reveal reveal-delay-2 text-zinc-500 max-w-xl mx-auto">
+            <p className="reveal reveal-delay-2 text-white max-w-xl mx-auto">
               Four AI agents work in parallel to analyze every dimension of your local search presence — then tell you exactly what to fix.
             </p>
           </div>
@@ -200,7 +200,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
                 <h3 className="font-display font-semibold text-base mb-2">{title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{desc}</p>
+                <p className="text-sm text-white leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -228,7 +228,7 @@ export default function LandingPage() {
                   <span className="font-display font-bold text-2xl text-gradient">{num}</span>
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-2">{title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{desc}</p>
+                <p className="text-sm text-white leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -271,12 +271,12 @@ export default function LandingPage() {
             ].map(({ delay, gradient, quote, name, biz }) => (
               <div key={name} className={`reveal ${delay} glass rounded-2xl p-6`}>
                 <Stars />
-                <p className="text-sm text-zinc-300 leading-relaxed mb-4">&ldquo;{quote}&rdquo;</p>
+                <p className="text-sm text-white leading-relaxed mb-4">&ldquo;{quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${gradient}`} />
                   <div>
                     <div className="text-sm font-medium">{name}</div>
-                    <div className="text-xs text-zinc-500">{biz}</div>
+                    <div className="text-xs text-white">{biz}</div>
                   </div>
                 </div>
               </div>
@@ -293,22 +293,22 @@ export default function LandingPage() {
             <h2 className="reveal reveal-delay-1 font-display font-bold text-3xl md:text-5xl tracking-tight mb-4">
               Simple, transparent pricing
             </h2>
-            <p className="reveal reveal-delay-2 text-zinc-500">Start free. Upgrade when you&apos;re ready to grow.</p>
+            <p className="reveal reveal-delay-2 text-white">Start free. Upgrade when you&apos;re ready to grow.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4 items-start">
             {/* Free */}
             <div className="reveal glass rounded-2xl p-6 md:p-8">
-              <div className="text-sm text-zinc-500 font-medium mb-1">Free</div>
+              <div className="text-sm text-white font-medium mb-1">Free</div>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="font-display font-bold text-4xl">$0</span>
-                <span className="text-zinc-500 text-sm">/mo</span>
+                <span className="text-white text-sm">/mo</span>
               </div>
-              <p className="text-xs text-zinc-600 mb-6">For trying it out</p>
-              <Link href="/register" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-300 mb-6">
+              <p className="text-xs text-white mb-6">For trying it out</p>
+              <Link href="/register" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-white mb-6">
                 Get Started
               </Link>
-              <ul className="space-y-3 text-sm text-zinc-400">
+              <ul className="space-y-3 text-sm text-white">
                 {["3 audits per month", "1 business", "Basic report"].map((f) => (
                   <li key={f} className="flex items-start gap-2.5"><Check />{f}</li>
                 ))}
@@ -323,13 +323,13 @@ export default function LandingPage() {
               <div className="text-sm text-emerald-400 font-medium mb-1">Pro</div>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="font-display font-bold text-4xl">$49</span>
-                <span className="text-zinc-500 text-sm">/mo</span>
+                <span className="text-white text-sm">/mo</span>
               </div>
-              <p className="text-xs text-zinc-600 mb-6">For local business owners</p>
+              <p className="text-xs text-white mb-6">For local business owners</p>
               <Link href="/register" className="btn-primary block text-center rounded-xl px-6 py-3 text-sm font-semibold text-white mb-6">
                 Start Pro Trial
               </Link>
-              <ul className="space-y-3 text-sm text-zinc-400">
+              <ul className="space-y-3 text-sm text-white">
                 {["Unlimited audits", "1 business", "GBP optimization", "Review monitoring", "PDF export", "Monthly tracking"].map((f) => (
                   <li key={f} className="flex items-start gap-2.5"><Check />{f}</li>
                 ))}
@@ -338,16 +338,16 @@ export default function LandingPage() {
 
             {/* Agency */}
             <div className="reveal reveal-delay-2 glass rounded-2xl p-6 md:p-8">
-              <div className="text-sm text-zinc-500 font-medium mb-1">Agency</div>
+              <div className="text-sm text-white font-medium mb-1">Agency</div>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="font-display font-bold text-4xl">$149</span>
-                <span className="text-zinc-500 text-sm">/mo</span>
+                <span className="text-white text-sm">/mo</span>
               </div>
-              <p className="text-xs text-zinc-600 mb-6">For marketing agencies</p>
-              <a href="mailto:hello@localrankr.io" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-300 mb-6">
+              <p className="text-xs text-white mb-6">For marketing agencies</p>
+              <a href="mailto:hello@localrankr.io" className="btn-secondary block text-center rounded-xl px-6 py-3 text-sm font-medium text-white mb-6">
                 Contact Sales
               </a>
-              <ul className="space-y-3 text-sm text-zinc-400">
+              <ul className="space-y-3 text-sm text-white">
                 {["Unlimited audits", "Up to 50 businesses", "Everything in Pro", "White-label reports", "Client dashboard", "Team access", "Priority support"].map((f) => (
                   <li key={f} className="flex items-start gap-2.5"><Check />{f}</li>
                 ))}
@@ -365,7 +365,7 @@ export default function LandingPage() {
             Stop guessing.<br />
             <span className="text-gradient">Start ranking.</span>
           </h2>
-          <p className="reveal reveal-delay-1 text-zinc-500 text-lg max-w-xl mx-auto mb-10">
+          <p className="reveal reveal-delay-1 text-white text-lg max-w-xl mx-auto mb-10">
             Run your first free audit in under 3 minutes. No credit card required.
           </p>
           <div className="reveal reveal-delay-2">
@@ -381,10 +381,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Logo size="medium" animated={false} />
-            <div className="flex items-center gap-8 text-sm text-zinc-600">
-              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Privacy</a>
-              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Terms</a>
-              <a href="mailto:support@localrankr.io" className="hover:text-zinc-400 transition-colors">Support</a>
+            <div className="flex items-center gap-8 text-sm text-white">
+              <a href="mailto:support@localrankr.io" className="hover:text-white transition-colors">Privacy</a>
+              <a href="mailto:support@localrankr.io" className="hover:text-white transition-colors">Terms</a>
+              <a href="mailto:support@localrankr.io" className="hover:text-white transition-colors">Support</a>
             </div>
             <p className="text-xs text-zinc-700">&copy; 2026 LocalRankr.io. All rights reserved.</p>
           </div>
