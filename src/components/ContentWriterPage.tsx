@@ -40,7 +40,6 @@ const CONTENT_TYPES = [
   { value: "homepage", label: "Homepage", icon: "H" },
   { value: "service", label: "Service Page", icon: "S" },
   { value: "area", label: "Area Page", icon: "A" },
-  { value: "outrank", label: "Competitor Outrank", icon: "O" },
 ] as const;
 
 /* ── Rule display names ──────────────────────────────── */
@@ -86,7 +85,7 @@ export function ContentWriterPage() {
   const [contentType, setContentType] = useState<string>("homepage");
   const [targetKeyword, setTargetKeyword] = useState("");
   const [yourUrl, setYourUrl] = useState("");
-  const [competitorUrl, setCompetitorUrl] = useState("");
+  const [competitorUrls, setCompetitorUrls] = useState<string[]>([""]);
   const [serviceName, setServiceName] = useState("");
   const [targetCity, setTargetCity] = useState("");
 
@@ -136,13 +135,14 @@ export function ContentWriterPage() {
       const stepTimer2 = setTimeout(() => setEngineStep("scoring"), 12000);
 
       const body: Record<string, unknown> = {
-        content_type: contentType === "outrank" ? "custom" : contentType,
+        content_type: contentType,
         target_keyword: kw,
         secondary_keywords: [],
         business_name: businessName,
         business_type: businessType,
         location,
         target_url: url,
+        competitor_urls: competitorUrls.filter((u) => u.trim()),
       };
 
       if (contentType === "service" && serviceName.trim()) {
@@ -153,29 +153,11 @@ export function ContentWriterPage() {
         body.service_name = serviceName.trim() || businessType;
         body.target_keyword = `${serviceName.trim() || businessType} ${targetCity.trim()}`.toLowerCase();
       }
-      if (contentType === "outrank" && competitorUrl.trim()) {
-        body.competitor_url = competitorUrl.trim();
-      }
 
-      const endpoint = contentType === "outrank"
-        ? `${API}/api/outrank-competitor`
-        : `${API}/api/content/generate`;
-
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API}/api/content/generate`, {
         method: "POST",
         headers,
-        body: JSON.stringify(
-          contentType === "outrank"
-            ? {
-                competitor_url: competitorUrl.trim(),
-                keyword: kw,
-                your_url: url,
-                business_name: businessName,
-                business_type: businessType,
-                location,
-              }
-            : body
-        ),
+        body: JSON.stringify(body),
       });
 
       clearTimeout(stepTimer);
@@ -183,59 +165,17 @@ export function ContentWriterPage() {
 
       if (!res.ok) throw new Error("Generation failed");
 
-      if (contentType === "outrank") {
-        // Outrank returns different shape — wrap into SeoContentResult-like structure
-        const data = await res.json();
-        setEngineStep("done");
-        setSeoResult({
-          content: {
-            meta_title: data.meta_title ?? "",
-            meta_description: data.meta_description ?? "",
-            url_slug: "",
-            content: data.generated_content ?? "",
-            word_count: data.word_count ?? 0,
-            primary_keyword_count: 0,
-            images: [],
-            internal_links: (data.internal_links ?? []).map((l: { anchor: string; target: string }) => ({
-              anchor: l.anchor,
-              url: l.target,
-            })),
-            external_links: [],
-            faqs: [],
-            semantic_keywords_used: [],
-          },
-          seo_score: {
-            total_score: 0,
-            max_score: 100,
-            percentage: 0,
-            grade: "—",
-            rules: {},
-          },
-          competitor_analysis: {
-            avg_words: data.competitor_analysis?.word_count ?? 0,
-            target_words: data.word_count ?? 0,
-            competitors_analyzed: 1,
-            gap_topics: data.competitor_analysis?.weaknesses ?? [],
-          },
-          meta: {
-            generation_time_seconds: 0,
-            model: "claude",
-            auto_fixed: false,
-          },
-        });
-      } else {
-        const data: SeoContentResult = await res.json();
-        setEngineStep("done");
-        setSeoResult(data);
+      const data: SeoContentResult = await res.json();
+      setEngineStep("done");
+      setSeoResult(data);
 
-        const failed: Record<string, boolean> = {};
-        if (data.seo_score?.rules) {
-          for (const [rule, info] of Object.entries(data.seo_score.rules)) {
-            if (info.status === "fail") failed[rule] = true;
-          }
+      const failed: Record<string, boolean> = {};
+      if (data.seo_score?.rules) {
+        for (const [rule, info] of Object.entries(data.seo_score.rules)) {
+          if (info.status === "fail") failed[rule] = true;
         }
-        setExpandedRules(failed);
       }
+      setExpandedRules(failed);
     } catch {
       setEngineStep(null);
       setSeoResult(null);
@@ -387,7 +327,7 @@ export function ContentWriterPage() {
                 <label className="text-[10px] uppercase tracking-wider text-white block mb-2">
                   Content Type
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {CONTENT_TYPES.map((ct) => (
                     <button
                       key={ct.value}
@@ -442,23 +382,53 @@ export function ContentWriterPage() {
                 </div>
               </div>
 
-              {/* Conditional fields based on content type */}
-              {contentType === "outrank" && (
-                <div>
-                  <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
-                    Competitor URL to Outrank
-                  </label>
-                  <input
-                    type="text"
-                    value={competitorUrl}
-                    onChange={(e) => setCompetitorUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                    placeholder="https://competitor.com/their-page"
-                    className="w-full bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
-                  />
+              {/* Competitor URLs (all content types) */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-white block mb-1.5">
+                  Competitor URLs <span className="normal-case text-white">(optional, up to 5)</span>
+                </label>
+                <div className="space-y-2">
+                  {competitorUrls.map((url, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={url}
+                        onChange={(e) => {
+                          const next = [...competitorUrls];
+                          next[i] = e.target.value;
+                          setCompetitorUrls(next);
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                        placeholder="https://competitor-website.com/page"
+                        className="flex-1 bg-white/[0.03] border border-white/6 rounded-[10px] px-3.5 py-2.5 text-[13px] text-white placeholder:text-white focus:outline-none focus:border-emerald-500/40 focus:bg-emerald-500/[0.02] transition-all"
+                      />
+                      {i > 0 && (
+                        <button
+                          onClick={() => setCompetitorUrls((prev) => prev.filter((_, j) => j !== i))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-white/6 text-white hover:text-rose-400 hover:border-rose-500/30 transition-colors shrink-0"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {competitorUrls.length < 5 && (
+                    <button
+                      onClick={() => setCompetitorUrls((prev) => [...prev, ""])}
+                      className="flex items-center gap-1.5 text-[11px] text-white hover:text-emerald-400 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add competitor URL
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
 
+              {/* Conditional fields based on content type */}
               {(contentType === "service" || contentType === "area") && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -524,7 +494,7 @@ export function ContentWriterPage() {
                 </div>
                 <BtnPrimary
                   onClick={handleGenerate}
-                  disabled={seoLoading || (contentType === "outrank" && !competitorUrl.trim())}
+                  disabled={seoLoading}
                 >
                   {seoLoading ? "Generating..." : "Generate Content"}
                 </BtnPrimary>
@@ -542,22 +512,17 @@ export function ContentWriterPage() {
                 onCopyText={() => navigator.clipboard.writeText(stripHtml(seoResult.content.content))}
               />
               {/* RIGHT: Score Card */}
-              {seoResult.seo_score.percentage > 0 ? (
-                <SeoScoreCardPanel
-                  scoreCard={seoResult.seo_score}
-                  competitorAnalysis={seoResult.competitor_analysis}
-                  meta={seoResult.meta}
-                  expandedRules={expandedRules}
-                  onToggleRule={(rule) =>
-                    setExpandedRules((prev) => ({ ...prev, [rule]: !prev[rule] }))
-                  }
-                  onFixIssues={handleFixIssues}
-                  fixLoading={fixLoading}
-                />
-              ) : (
-                /* Outrank result — competitor analysis panel instead of score card */
-                <CompetitorAnalysisPanel analysis={seoResult.competitor_analysis} />
-              )}
+              <SeoScoreCardPanel
+                scoreCard={seoResult.seo_score}
+                competitorAnalysis={seoResult.competitor_analysis}
+                meta={seoResult.meta}
+                expandedRules={expandedRules}
+                onToggleRule={(rule) =>
+                  setExpandedRules((prev) => ({ ...prev, [rule]: !prev[rule] }))
+                }
+                onFixIssues={handleFixIssues}
+                fixLoading={fixLoading}
+              />
             </div>
           )}
 

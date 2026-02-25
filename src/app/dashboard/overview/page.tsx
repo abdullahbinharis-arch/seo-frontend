@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "@/components/DashboardContext";
@@ -10,6 +10,8 @@ import { ServiceTagInput } from "@/components/dashboard/ServiceTagInput";
 import { VersionSelector } from "@/components/dashboard/VersionSelector";
 // countryCities import removed — using plain Location text input
 import type { AuditResult, QuickWin, ImprovementStep, AuditScores } from "@/types";
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -835,12 +837,281 @@ function FieldGroup({
   );
 }
 
+// ── Issue Detail Modal ──────────────────────────────────────────────────
+
+interface IssueDetailItem {
+  page_url?: string;
+  value?: string;
+  length?: number;
+  count?: number;
+  word_count?: number;
+  src?: string;
+  alt?: string;
+  status_code?: number;
+  anchor_text?: string;
+  description?: string;
+  recommendation?: string;
+  [key: string]: unknown;
+}
+
+function IssueDetailModal({
+  auditId,
+  ruleName,
+  pageUrl,
+  onClose,
+}: {
+  auditId: string;
+  ruleName: string;
+  pageUrl: string;
+  onClose: () => void;
+}) {
+  const [data, setData] = useState<{ issue_name: string; status: string; total_count: number; items: IssueDetailItem[] } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDetails() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ rule_name: ruleName, page_url: pageUrl });
+        const res = await fetch(`${API}/api/audit/${auditId}/issue-details?${params}`);
+        if (!res.ok) throw new Error("Failed");
+        setData(await res.json());
+      } catch {
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDetails();
+  }, [auditId, ruleName, pageUrl]);
+
+  // Close on Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  const statusColor = data?.status === "fail" ? "text-rose-400 bg-rose-500/10" : "text-amber-400 bg-amber-500/10";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[8px]" onClick={onClose}>
+      <div
+        className="bg-[#0f0f12] border border-white/8 rounded-2xl max-w-[700px] w-full mx-4 max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/6">
+          <div className="flex items-center gap-3">
+            <h3 className="text-[15px] font-semibold font-display text-white">{ruleName}</h3>
+            {data && (
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${statusColor}`}>
+                {data.status === "fail" ? "Fail" : "Warning"}
+              </span>
+            )}
+          </div>
+          <button onClick={onClose} className="text-white hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="py-12 text-center text-white text-sm animate-pulse">Loading details...</div>
+          ) : !data || data.items.length === 0 ? (
+            <div className="py-12 text-center text-white text-sm">No detailed data available for this issue.</div>
+          ) : (
+            <>
+              <p className="text-[12px] text-white mb-4">{data.total_count} affected item{data.total_count !== 1 ? "s" : ""}</p>
+              <div className="space-y-1.5">
+                {data.items.map((item, i) => (
+                  <div key={i} className="bg-white/4 border border-white/4 rounded-[10px] px-3.5 py-2.5">
+                    {item.page_url && (
+                      <div className="text-[11px] text-emerald-400 font-mono truncate mb-1">
+                        {item.page_url.replace(/^https?:\/\//, "")}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+                      {item.value !== undefined && (
+                        <span className="text-white"><span className="text-white/40">Value:</span> {item.value}</span>
+                      )}
+                      {item.length !== undefined && (
+                        <span className="text-white"><span className="text-white/40">Length:</span> {item.length} chars</span>
+                      )}
+                      {item.word_count !== undefined && (
+                        <span className="text-white"><span className="text-white/40">Words:</span> {item.word_count}</span>
+                      )}
+                      {item.status_code !== undefined && item.status_code > 0 && (
+                        <span className="text-rose-400"><span className="text-white/40">Status:</span> {item.status_code}</span>
+                      )}
+                      {item.anchor_text && (
+                        <span className="text-white"><span className="text-white/40">Anchor:</span> {item.anchor_text}</span>
+                      )}
+                      {item.src && (
+                        <span className="text-white truncate"><span className="text-white/40">Src:</span> {item.src}</span>
+                      )}
+                      {item.description && (
+                        <span className="text-white">{item.description}</span>
+                      )}
+                      {item.recommendation && (
+                        <span className="text-emerald-400">{item.recommendation}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Checklist item type ──────────────────────────────────────────────────
+
+interface ChecklistItem {
+  rule_name: string;
+  status: "pass" | "warn" | "fail";
+  current_value: string;
+  recommended_value: string;
+  page_url: string;
+  details: string;
+}
+
+// ── Per-page SEO Checklist ──────────────────────────────────────────────
+
+function PageChecklistSection({
+  auditId,
+  pageUrls,
+  onOpenDetails,
+}: {
+  auditId: string;
+  pageUrls: string[];
+  onOpenDetails?: (ruleName: string, pageUrl: string) => void;
+}) {
+  const [selectedPage, setSelectedPage] = useState("all");
+  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchChecklist = useCallback(async (pageUrl: string) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page_url: pageUrl });
+      const res = await fetch(`${API}/api/audit/${auditId}/checklist?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch checklist");
+      const data = await res.json();
+      setItems(data.items ?? []);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [auditId]);
+
+  useEffect(() => {
+    fetchChecklist(selectedPage);
+  }, [selectedPage, fetchChecklist]);
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+      pass: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Pass" },
+      warn: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Warning" },
+      fail: { bg: "bg-rose-500/10", text: "text-rose-400", label: "Fail" },
+    };
+    const s = map[status] ?? map.warn;
+    return (
+      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${s.bg} ${s.text}`}>
+        {s.label}
+      </span>
+    );
+  };
+
+  return (
+    <div className="animate-fadeIn border border-white/6 rounded-2xl overflow-hidden mt-6">
+      <div className="flex items-center justify-between px-[22px] py-[18px] bg-zinc-900">
+        <div className="flex items-center gap-3">
+          <div className="w-[42px] h-[42px] rounded-xl bg-cyan-500/12 flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="2">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+              <rect x="9" y="3" width="6" height="4" rx="1" />
+              <path d="M9 14l2 2 4-4" />
+            </svg>
+          </div>
+          <div>
+            <div className="font-display font-semibold text-[17px] text-white">SEO Checklist</div>
+            <div className="text-xs text-white mt-0.5">Per-page analysis of SEO signals</div>
+          </div>
+        </div>
+
+        {/* Page dropdown */}
+        <select
+          value={selectedPage}
+          onChange={(e) => setSelectedPage(e.target.value)}
+          className="bg-white/[0.04] border border-white/6 rounded-[10px] px-3 py-2 text-[12px] text-white focus:outline-none focus:border-emerald-500/40 transition-all max-w-[280px]"
+        >
+          <option value="all">All Pages</option>
+          {pageUrls.map((url) => (
+            <option key={url} value={url}>
+              {url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="p-[22px] bg-[#0f0f12]">
+        {loading ? (
+          <div className="py-8 text-center text-white text-sm animate-pulse">Loading checklist...</div>
+        ) : items.length === 0 ? (
+          <div className="py-8 text-center text-white text-sm">No checklist items for this page.</div>
+        ) : (
+          <div className="flex flex-col gap-1 transition-opacity duration-300">
+            {items.map((item, i) => (
+              <div
+                key={`${item.rule_name}-${item.page_url}-${i}`}
+                className="flex items-center gap-3 px-3.5 py-3 bg-white/4 border border-white/4 rounded-[10px]"
+              >
+                {statusBadge(item.status)}
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-medium text-zinc-100">{item.rule_name}</div>
+                  <div className="text-[11px] text-white mt-0.5">
+                    {item.current_value} → {item.recommended_value}
+                  </div>
+                  {selectedPage === "all" && item.page_url && (
+                    <div className="text-[10px] text-white/40 mt-0.5 truncate">{item.page_url}</div>
+                  )}
+                </div>
+                {(item.status === "warn" || item.status === "fail") && onOpenDetails && (
+                  <button
+                    onClick={() => onOpenDetails(item.rule_name, selectedPage)}
+                    className="text-[11px] px-2.5 py-1 rounded-lg border border-white/8 text-white hover:text-emerald-400 hover:border-emerald-500/30 transition-colors shrink-0"
+                  >
+                    Details
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ────────────────────────────────────────────────────────────
 
 export default function OverviewPage() {
   const { data: session } = useSession();
   const { lastAudit, setLastAudit, activeProfileId, loadProfileAudits } = useDashboard();
   const [activeTab, setActiveTab] = useState<TabKey>("overall");
+
+  // Issue detail modal state
+  const [issueModal, setIssueModal] = useState<{ ruleName: string; pageUrl: string } | null>(null);
 
   // Load audit versions when profile is active
   useEffect(() => {
@@ -865,6 +1136,10 @@ export default function OverviewPage() {
 
   const quickWins: QuickWin[] = lastAudit.quick_wins ?? [];
   const pillars = lastAudit.pillars;
+  const auditId = lastAudit.audit_id ?? "";
+  const crawledPageUrls: string[] = (lastAudit.site_crawl?.pages ?? lastAudit.pages_crawled ?? []).map(
+    (p: { url: string }) => p.url
+  );
 
   return (
     <div>
@@ -903,6 +1178,25 @@ export default function OverviewPage() {
         pillars?.ai_seo
           ? <PillarSection pillarKey="ai_seo" data={pillars.ai_seo} />
           : <NoData />
+      )}
+
+      {/* Per-page SEO Checklist */}
+      {auditId && (
+        <PageChecklistSection
+          auditId={auditId}
+          pageUrls={crawledPageUrls}
+          onOpenDetails={(ruleName, pageUrl) => setIssueModal({ ruleName, pageUrl })}
+        />
+      )}
+
+      {/* Issue Detail Modal */}
+      {issueModal && auditId && (
+        <IssueDetailModal
+          auditId={auditId}
+          ruleName={issueModal.ruleName}
+          pageUrl={issueModal.pageUrl}
+          onClose={() => setIssueModal(null)}
+        />
       )}
     </div>
   );

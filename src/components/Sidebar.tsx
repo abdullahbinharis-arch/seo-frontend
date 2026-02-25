@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,7 +16,7 @@ function scoreBadgeStyle(score: number): { bg: string; color: string } {
   return { bg: "rgba(244,63,94,0.12)", color: "#fb7185" };
 }
 
-// ── Nav items (flat list matching v3 reference) ──────────────────────
+// ── Nav items ────────────────────────────────────────────────────────
 
 interface NavItem {
   id: string;
@@ -24,6 +25,7 @@ interface NavItem {
   icon: React.ReactNode;
   badge?: "score" | "count" | "ai" | "locked";
   dividerBefore?: boolean;
+  children?: NavItem[];
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -52,18 +54,6 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: "gmb",
-    label: "GMB Optimization",
-    href: "/dashboard/gbp",
-    badge: "locked",
-    icon: (
-      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-    ),
-  },
-  {
     id: "keywords",
     label: "Keyword Research",
     href: "/dashboard/keywords",
@@ -76,14 +66,26 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: "backlinks",
-    label: "Backlink Builder",
-    href: "/dashboard/backlinks",
+    id: "keyword-gap",
+    label: "Keyword Gap",
+    href: "/dashboard/keyword-gap",
     badge: "locked",
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+        <path d="M8 11h6" />
+      </svg>
+    ),
+  },
+  {
+    id: "content",
+    label: "Content Writer",
+    href: "/dashboard/content",
+    badge: "ai",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
       </svg>
     ),
   },
@@ -100,15 +102,55 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: "content",
-    label: "Content Writer",
-    href: "/dashboard/content",
-    badge: "ai",
+    id: "backlinks",
+    label: "Backlink Builder",
+    href: "/dashboard/backlinks",
+    badge: "locked",
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
       </svg>
     ),
+  },
+  {
+    id: "technical",
+    label: "Technical SEO",
+    href: "/dashboard/technical",
+    badge: "locked",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    id: "gmb",
+    label: "GMB Optimisation",
+    href: "/dashboard/gbp",
+    badge: "locked",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
+    children: [
+      {
+        id: "gmb-edit",
+        label: "Google My Business Edit",
+        href: "/dashboard/gbp",
+        icon: <></>,
+      },
+      {
+        id: "citations",
+        label: "Local Citation Builder",
+        href: "/dashboard/citations",
+        icon: <></>,
+      },
+    ],
   },
   {
     id: "reports",
@@ -161,8 +203,22 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const scores = lastAudit?.scores;
   const taskCount = lastAudit?.seo_tasks?.length ?? 0;
 
+  // Expandable sub-menu state
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
   function isActive(href: string) {
     return pathname === href;
+  }
+
+  function isChildActive(item: NavItem): boolean {
+    if (!item.children) return false;
+    return item.children.some((child) => pathname === child.href);
+  }
+
+  function toggleExpand(id: string, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpandedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
   function renderBadge(item: NavItem) {
@@ -189,7 +245,6 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     }
 
     if (item.badge === "ai") {
-      // Show "AI" always, but swap to "—" when no audit data
       if (!lastAudit) {
         return (
           <span className="text-[9px] font-semibold px-[7px] py-[2px] rounded-lg font-mono bg-white/[0.04] text-white">
@@ -212,10 +267,79 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           </span>
         );
       }
-      return null; // No badge needed once data exists
+      return null;
     }
 
     return null;
+  }
+
+  function renderNavItem(item: NavItem) {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedItems[item.id] || isChildActive(item);
+    const active = isActive(item.href) || isChildActive(item);
+
+    return (
+      <div key={item.id}>
+        {item.dividerBefore && (
+          <div className="h-px bg-white/6 mx-3 my-2" />
+        )}
+
+        {/* Parent item */}
+        <div className="flex items-center">
+          <Link
+            href={item.href}
+            onClick={onClose}
+            className={`flex-1 flex items-center gap-[11px] px-3 py-[9px] rounded-[9px] text-[13px] mb-[2px] transition-all ${
+              active
+                ? "bg-emerald-500/8 text-emerald-300"
+                : "text-white hover:bg-white/4 hover:text-white"
+            }`}
+          >
+            <span className={`shrink-0 ${active ? "opacity-100" : "opacity-50"}`}>
+              {item.icon}
+            </span>
+            <span className="flex-1">{item.label}</span>
+            {renderBadge(item)}
+            {hasChildren && (
+              <button
+                onClick={(e) => toggleExpand(item.id, e)}
+                className="p-0.5 rounded hover:bg-white/5 transition-colors"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 text-white transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+          </Link>
+        </div>
+
+        {/* Children */}
+        {hasChildren && isExpanded && (
+          <div className="ml-3 border-l border-white/6">
+            {item.children!.map((child) => {
+              const childActive = isActive(child.href);
+              return (
+                <Link
+                  key={child.id}
+                  href={child.href}
+                  onClick={onClose}
+                  className={`block pl-6 pr-3 py-[7px] text-[11.5px] mb-[1px] transition-all rounded-r-lg ${
+                    childActive
+                      ? "text-emerald-400 border-l-2 border-emerald-500 -ml-px bg-emerald-500/[0.04]"
+                      : "text-white hover:text-white hover:bg-white/[0.02]"
+                  }`}
+                >
+                  {child.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   }
 
   const sidebarContent = (
@@ -227,28 +351,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-[10px] px-[10px] scrollbar-none">
-        {NAV_ITEMS.map((item) => (
-          <div key={item.id}>
-            {item.dividerBefore && (
-              <div className="h-px bg-white/6 mx-3 my-2" />
-            )}
-            <Link
-              href={item.href}
-              onClick={onClose}
-              className={`flex items-center gap-[11px] px-3 py-[9px] rounded-[9px] text-[13px] mb-[2px] transition-all ${
-                isActive(item.href)
-                  ? "bg-emerald-500/8 text-emerald-300"
-                  : "text-white hover:bg-white/4 hover:text-white"
-              }`}
-            >
-              <span className={`shrink-0 ${isActive(item.href) ? "opacity-100" : "opacity-50"}`}>
-                {item.icon}
-              </span>
-              <span className="flex-1">{item.label}</span>
-              {renderBadge(item)}
-            </Link>
-          </div>
-        ))}
+        {NAV_ITEMS.map(renderNavItem)}
       </nav>
 
       {/* Profile switcher + sign out */}
