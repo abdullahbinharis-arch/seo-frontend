@@ -77,20 +77,39 @@ export function LandingInteractive() {
       barsObserver.observe(compBars);
     }
 
-    // ═══ MOCK CHART BARS ═══
+    // ═══ MOCK CHART BARS (animate on scroll) ═══
     const chart = document.getElementById("mockChart");
+    let chartObserver: IntersectionObserver | undefined;
     if (chart && chart.children.length === 0) {
       const heights = [
         35, 50, 42, 65, 55, 72, 48, 80, 60, 88, 70, 95, 75, 68, 82, 90, 78,
         85, 92, 88,
       ];
-      heights.forEach((h, i) => {
+      // Create bars paused (scaleY(0), no animation yet)
+      heights.forEach((h) => {
         const bar = document.createElement("div");
-        bar.className = "mock-bar";
+        bar.className = "mock-bar mock-bar-paused";
         bar.style.height = h + "%";
-        bar.style.animationDelay = i * 0.12 + "s";
+        bar.style.transform = "scaleY(0)";
+        bar.style.animation = "none";
         chart.appendChild(bar);
       });
+      // Trigger growth when chart scrolls into view
+      chartObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const bars = chart.querySelectorAll<HTMLElement>(".mock-bar");
+              bars.forEach((bar, i) => {
+                bar.style.animation = `barGrow 2.5s ${i * 0.12}s ease forwards`;
+              });
+              chartObserver?.disconnect();
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      chartObserver.observe(chart);
     }
 
     // ═══ FEATURE CARD SPOTLIGHT ═══
@@ -161,6 +180,7 @@ export function LandingInteractive() {
       counterObserver.disconnect();
       ringObserver?.disconnect();
       barsObserver?.disconnect();
+      chartObserver?.disconnect();
       stepObserver.disconnect();
       spotlightHandlers.forEach(({ card, move, leave }) => {
         card.removeEventListener("mousemove", move);

@@ -187,25 +187,25 @@ export default function LandingPage() {
                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Score: 87/100</span>
+                  <span>Score: <span data-count="87">0</span>/100</span>
                 </div>
               </div>
               <div className="mock-stats">
                 <div className="mock-stat-card">
                   <div className="mock-stat-label">Pages Crawled</div>
-                  <div className="mock-stat-val">38</div>
+                  <div className="mock-stat-val" data-count="38">0</div>
                 </div>
                 <div className="mock-stat-card">
                   <div className="mock-stat-label">SEO Issues</div>
-                  <div className="mock-stat-val">14</div>
+                  <div className="mock-stat-val" data-count="14">0</div>
                 </div>
                 <div className="mock-stat-card">
                   <div className="mock-stat-label">Keywords Found</div>
-                  <div className="mock-stat-val">126</div>
+                  <div className="mock-stat-val" data-count="126">0</div>
                 </div>
                 <div className="mock-stat-card">
                   <div className="mock-stat-label">Backlinks</div>
-                  <div className="mock-stat-val">47</div>
+                  <div className="mock-stat-val" data-count="47">0</div>
                 </div>
               </div>
               <div className="mock-chart" id="mockChart" />
