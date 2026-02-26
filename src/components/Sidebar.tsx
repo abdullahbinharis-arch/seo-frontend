@@ -29,6 +29,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  // ── Core (run audit, see what to fix) ──
   {
     id: "audit",
     label: "Audit Report",
@@ -50,6 +51,82 @@ const NAV_ITEMS: NavItem[] = [
     icon: (
       <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M12 20V10M18 20V4M6 20v-4" />
+      </svg>
+    ),
+  },
+  // ── Local Visibility (highest impact for local businesses) ──
+  {
+    id: "gmb",
+    label: "GMB Optimisation",
+    href: "/dashboard/gbp",
+    badge: "locked",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    ),
+    children: [
+      {
+        id: "gmb-edit",
+        label: "Google My Business Edit",
+        href: "/dashboard/gbp",
+        icon: <></>,
+      },
+      {
+        id: "citations",
+        label: "Local Citation Builder",
+        href: "/dashboard/citations",
+        icon: <></>,
+      },
+    ],
+  },
+  {
+    id: "on-page",
+    label: "On-Page SEO",
+    href: "/dashboard/on-page",
+    badge: "locked",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    id: "rank-tracker",
+    label: "Rank Tracker",
+    href: "/dashboard/rank-tracker",
+    badge: "locked",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
+      </svg>
+    ),
+  },
+  // ── Content & Keywords ──
+  {
+    id: "content",
+    label: "Content Writer",
+    href: "/dashboard/content",
+    badge: "ai",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: "posts",
+    label: "Post Creator",
+    href: "/dashboard/posts",
+    badge: "ai",
+    icon: (
+      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M3 9h18M9 21V9" />
       </svg>
     ),
   },
@@ -78,29 +155,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  {
-    id: "content",
-    label: "Content Writer",
-    href: "/dashboard/content",
-    badge: "ai",
-    icon: (
-      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    ),
-  },
-  {
-    id: "posts",
-    label: "Post Creator",
-    href: "/dashboard/posts",
-    badge: "ai",
-    icon: (
-      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 9h18M9 21V9" />
-      </svg>
-    ),
-  },
+  // ── Technical & Links (advanced) ──
   {
     id: "backlinks",
     label: "Backlink Builder",
@@ -126,32 +181,7 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
-  {
-    id: "gmb",
-    label: "GMB Optimisation",
-    href: "/dashboard/gbp",
-    badge: "locked",
-    icon: (
-      <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-    ),
-    children: [
-      {
-        id: "gmb-edit",
-        label: "Google My Business Edit",
-        href: "/dashboard/gbp",
-        icon: <></>,
-      },
-      {
-        id: "citations",
-        label: "Local Citation Builder",
-        href: "/dashboard/citations",
-        icon: <></>,
-      },
-    ],
-  },
+  // ── Management ──
   {
     id: "reports",
     label: "Reports",
