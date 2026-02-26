@@ -32,11 +32,23 @@ async function loginWithFastAPI(email: string, password: string) {
   return res.json() as Promise<{ id: string; email: string; access_token: string }>;
 }
 
-async function oauthSyncWithFastAPI(email: string, googleSub: string, name?: string) {
+async function oauthSyncWithFastAPI(
+  email: string,
+  googleSub: string,
+  name?: string,
+  googleAccessToken?: string,
+  googleRefreshToken?: string
+) {
   const res = await fetch(`${API_URL}/auth/oauth-sync`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, google_sub: googleSub, name }),
+    body: JSON.stringify({
+      email,
+      google_sub: googleSub,
+      name,
+      google_access_token: googleAccessToken,
+      google_refresh_token: googleRefreshToken,
+    }),
   });
   if (!res.ok) return null;
   return res.json() as Promise<{ id: string; email: string; access_token: string }>;
@@ -68,6 +80,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "openid email profile https://www.googleapis.com/auth/webmasters.readonly",
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
     }),
   ],
 
@@ -94,7 +113,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const data = await oauthSyncWithFastAPI(
           profile.email,
           (profile as { sub?: string }).sub ?? "",
-          profile.name ?? undefined
+          profile.name ?? undefined,
+          account.access_token ?? undefined,
+          account.refresh_token ?? undefined,
         );
         if (data) {
           token.sub = data.id;
